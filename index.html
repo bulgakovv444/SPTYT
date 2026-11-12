@@ -3,97 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СПТ — Учёт техники</title>
+<title>СПТ — Вывод техники</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #1f2933; padding: 15px; font-size: 14px; }
-  h1 { font-size: 20px; margin-bottom: 12px; color: #1e3a8a; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; color: #1f2933; padding: 15px; font-size: 13px; }
+  h1 { font-size: 20px; margin-bottom: 12px; color: #1e3a8a; text-align: center; }
   h2 { font-size: 16px; margin: 16px 0 10px; }
-  h3 { font-size: 14px; margin: 0 0 8px; }
-  .container { max-width: 1200px; margin: 0 auto; }
+  .container { max-width: 1400px; margin: 0 auto; }
 
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
-  .tab-btn { background: none; border: none; font-size: 16px; font-weight: 600; color: #6b7280; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
-  .tab-btn:hover { background: #e5e7eb; color: #1f2933; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
+  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
   .tab-btn.active { background: #2563eb; color: #fff; }
-  .notify-btn { margin-left: auto; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
-  .notify-btn.on { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
 
   .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
   .login-box h2 { margin-top: 0; color: #1e3a8a; }
-  .login-box p { color: #6b7280; margin-bottom: 20px; font-size: 14px; }
+  .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
   .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
 
-  .header-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); flex-wrap: wrap; gap: 10px; }
-  .header-bar h2 { margin: 0; font-size: 18px; }
-  .header-bar .user-info { font-size: 14px; color: #6b7280; }
-  .header-bar .user-info strong { color: #1e3a8a; }
+  .header-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); flex-wrap: wrap; gap: 10px; border-left: 5px solid #2563eb; }
+  .header-bar h2 { margin: 0; font-size: 18px; color: #1e3a8a; }
+  .header-bar .user-info { font-size: 13px; color: #64748b; }
+  .header-bar .user-info strong { color: #0f172a; }
 
   .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
 
-  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
-  .cat-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.07); cursor: pointer; transition: transform .15s, box-shadow .15s; border-left: 5px solid #2563eb; position: relative; }
-  .cat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
-  .cat-card.has-problem { border-left-color: #dc2626; }
-  .cat-card .cat-name { font-size: 18px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px; }
-  .cat-card .cat-counts { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cat-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; }
-  .cat-badge.line { background: #d1fae5; color: #065f46; }
-  .cat-badge.parts { background: #fecaca; color: #7f1d1d; }
-  .cat-badge.off { background: #ffedd5; color: #9a3412; }
-  .cat-badge.total { background: #e5e7eb; color: #374151; }
+  /* ===== ТАБЛИЦА ВЫВОДА ТС ===== */
+  .report-header-title { text-align: center; font-size: 16px; font-weight: 800; margin: 15px 0; color: #1e3a8a; text-transform: uppercase; letter-spacing: 1px; }
+  
+  .table-wrapper { overflow-x: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); padding: 10px; }
+  
+  .grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .grid-table th { background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; font-weight: 800; color: #1e40af; font-size: 14px; }
+  .grid-table td { border: 1px solid #cbd5e1; padding: 0; vertical-align: top; background: #fff; }
+  
+  .cell-list { list-style: none; padding: 0; margin: 0; }
+  .cell-list li { display: flex; align-items: flex-start; padding: 6px 4px; border-bottom: 1px solid #e2e8f0; font-size: 11px; line-height: 1.2; gap: 4px; cursor: pointer; transition: background .2s; }
+  .cell-list li:last-child { border-bottom: none; }
+  .cell-list li:hover { background: #f1f5f9; }
+  
+  .cell-list li .idx { font-weight: 700; color: #94a3b8; width: 14px; flex-shrink: 0; text-align: right; }
+  .cell-list li .info { flex: 1; font-weight: 600; color: #334155; word-break: break-word; }
+  .cell-list li .info .reason { display: block; font-size: 10px; font-weight: 500; color: #b91c1c; margin-top: 2px; }
+  
+  /* Статусы строк */
+  .cell-list li.st-line { background: #dcfce7; } /* Зеленый */
+  .cell-list li.st-off  { background: #fef08a; } /* Желтый */
+  .cell-list li.st-parts{ background: #fecaca; } /* Красный */
 
-  .machines-list { display: flex; flex-direction: column; gap: 10px; }
-  .machine-card { background: #fff; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); border-left: 5px solid #94a3b8; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .machine-card.st-line { border-left-color: #10b981; background: #f0fdf4; }
-  .machine-card.st-off { border-left-color: #f59e0b; background: #fffbeb; }
-  .machine-card.st-parts { border-left-color: #dc2626; background: #fef2f2; }
-  .machine-info { flex: 1; min-width: 200px; }
-  .machine-num { font-size: 17px; font-weight: 800; color: #111827; letter-spacing: .5px; }
-  .machine-model { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .machine-reason { font-size: 12px; color: #991b1b; margin-top: 4px; font-weight: 600; }
-  .machine-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .st-btn { border: 2px solid; background: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
-  .st-btn:hover { transform: translateY(-1px); }
-  .st-btn.line { border-color: #10b981; color: #065f46; }
-  .st-btn.line.active { background: #10b981; color: #fff; }
-  .st-btn.off { border-color: #f59e0b; color: #9a3412; }
-  .st-btn.off.active { background: #f59e0b; color: #fff; }
-  .st-btn.parts { border-color: #dc2626; color: #991b1b; }
-  .st-btn.parts.active { background: #dc2626; color: #fff; }
-
-  input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #d1d5db; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
+  /* Формы */
+  input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
   textarea { resize: vertical; min-height: 60px; }
   .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
   .form-row > div { flex: 1; min-width: 160px; }
-  label.fld { font-size: 12px; color: #6b7280; display: block; margin-bottom: 4px; font-weight: 600; }
+  label.fld { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; }
 
   .btn { display: inline-block; background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background .15s; text-align: center; }
   .btn:hover { background: #1d4ed8; }
   .btn.green { background: #10b981; } .btn.green:hover { background: #059669; }
-  .btn.gray { background: #6b7280; } .btn.gray:hover { background: #4b5563; }
+  .btn.gray { background: #64748b; } .btn.gray:hover { background: #475569; }
   .btn.red { background: #ef4444; } .btn.red:hover { background: #dc2626; }
   .btn.orange { background: #f59e0b; } .btn.orange:hover { background: #d97706; }
   .btn.purple { background: #8b5cf6; } .btn.purple:hover { background: #7c3aed; }
   .btn.small { padding: 6px 10px; font-size: 12px; }
   .btn.block { display: block; width: 100%; }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
   .card h2 { margin-top: 0; }
-  .hint { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+  .hint { font-size: 12px; color: #64748b; margin-bottom: 12px; }
 
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
   .modal-overlay.hidden { display: none !important; }
   .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
   .modal h3 { font-size: 16px; margin-bottom: 6px; }
-  .modal p { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+  .modal p { font-size: 13px; color: #64748b; margin-bottom: 12px; }
   .modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
   .report-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 13px; }
-  .report-table th { text-align: left; background: #f9fafb; padding: 10px; font-weight: 700; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-  .report-table td { padding: 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+  .report-table th { text-align: left; background: #f8fafc; padding: 10px; font-weight: 700; border-bottom: 1px solid #cbd5e1; white-space: nowrap; }
+  .report-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
   .report-table tr:last-child td { border-bottom: none; }
   .report-table .hours-ok { color: #059669; font-weight: 700; }
   .report-table .hours-low { color: #dc2626; font-weight: 700; }
@@ -101,7 +90,7 @@
   .stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
   .stat { background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); min-width: 110px; }
   .stat .num { font-size: 22px; font-weight: 800; }
-  .stat .lbl { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .stat .lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
   .stat.green .num { color: #10b981; }
   .stat.orange .num { color: #f59e0b; }
   .stat.red .num { color: #dc2626; }
@@ -114,44 +103,44 @@
   .builder-card.roles { border-top-color: #8b5cf6; }
   .builder-card h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 15px; }
   .builder-list { list-style: none; margin-bottom: 12px; max-height: 360px; overflow-y: auto; }
-  .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f9fafb; border-radius: 6px; margin-bottom: 6px; font-size: 13px; gap: 8px; }
+  .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; font-size: 13px; gap: 8px; border: 1px solid #e2e8f0; }
   .builder-list li .name { flex: 1; font-weight: 600; }
-  .builder-list li .sub { font-size: 11px; color: #9ca3af; }
+  .builder-list li .sub { font-size: 11px; color: #94a3b8; }
   .builder-add-row { display: flex; gap: 6px; margin-top: 6px; }
   .builder-add-row input, .builder-add-row select { margin-bottom: 0; }
   .builder-add-row .btn { white-space: nowrap; }
 
-  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.05); border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.05); border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border: 1px solid #e2e8f0; }
   .moderation-user.approved { border-left-color: #10b981; }
   .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
 
-  .sub-tabs { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; flex-wrap: wrap; align-items: center; }
-  .sub-tab-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; padding: 6px 12px; border-radius: 4px; }
+  .sub-tabs { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  .sub-tab-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; padding: 6px 12px; border-radius: 4px; }
   .sub-tab-btn.active { background: #e0e7ff; color: #1e3a8a; }
 
-  .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
+  .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
   .toast.error { background: #ef4444; }
   .toast.show { opacity: 1; transform: translateY(0); }
 
   .hidden { display: none !important; }
-  .empty { color: #6b7280; font-size: 14px; padding: 12px 0; }
+  .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
   .back { margin-bottom: 12px; }
 
   .cause-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-  .cause-pill { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 99px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; color: #374151; }
+  .cause-pill { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 99px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; color: #334155; }
   .cause-pill.active { background: #dc2626; color: #fff; border-color: #dc2626; }
 
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
 
-  .db-warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+  .db-warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 16px; text-align: center; }
 </style>
 </head>
 <body>
 <div class="container">
 
   <div class="db-warn">
-    ⚙️ <b>Локальный режим.</b> Данные хранятся в этом браузере (localStorage). Не синхронизируется между устройствами. Для настройки и отладки — ок, позже вернём базу.
+    ⚙️ <b>Локальный режим.</b> Данные хранятся в этом браузере (localStorage). Для синхронизации вернём Firebase позже.
   </div>
 
   <div id="globalPendingAlert" class="pending-alert hidden">
@@ -159,10 +148,10 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn" id="tabMain">🚜 Техника</button>
+    <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
     <button class="tab-btn" id="tabReports">📊 Отчёты</button>
     <button class="tab-btn" id="tabAdmin">🔐 Панель управления</button>
-    <button class="notify-btn" id="notifyBtn">🔔 Включить уведомления</button>
+    <button class="btn gray small" id="notifyBtn" style="margin-left:auto;">🔔 Уведомления</button>
   </div>
 
   <!-- ГЛАВНАЯ -->
@@ -186,22 +175,21 @@
     <div id="mainWorkBlock" class="hidden">
       <div class="header-bar">
         <div>
-          <h2>Техника <span class="project-badge">СПТ</span></h2>
+          <h2>Вывод техники <span class="project-badge">СПТ</span></h2>
           <div class="user-info">Вы: <strong id="loggedName"></strong> · <span id="loggedRole"></span> · <span id="shiftInfo">—</span></div>
         </div>
         <button class="btn gray small" id="logoutBtn">Выйти</button>
       </div>
-      <div class="stats-row" id="topStats"></div>
-      <h2>Категории техники (нажмите для просмотра)</h2>
-      <div class="cat-grid" id="catGrid"></div>
-    </div>
-  </div>
 
-  <!-- МАШИНЫ -->
-  <div id="machinesView" class="hidden">
-    <div class="back"><button class="btn gray" id="backFromMachines">← Назад</button></div>
-    <h1 id="machinesTitle"></h1>
-    <div class="machines-list" id="machinesList"></div>
+      <div class="report-header-title" id="mainDateTitle">Вывод ТС на дату</div>
+      
+      <div class="table-wrapper">
+        <table class="grid-table" id="mainGridTable">
+          <thead id="mainGridHead"></thead>
+          <tbody id="mainGridBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ОТЧЁТЫ -->
@@ -223,7 +211,7 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
         <button class="btn" id="buildReportBtn">Сформировать отчёт</button>
         <button class="btn green" id="exportCsvBtn">⬇ Выгрузить в Excel (CSV)</button>
-        <button class="btn purple" id="exportOneBtn">📄 Детальный отчёт по одной машине</button>
+        <button class="btn purple" id="exportOneBtn">📄 Детальный по машине</button>
       </div>
     </div>
     <div id="reportContent"></div>
@@ -239,28 +227,26 @@
     </div>
     <div id="adminWorkBlock" class="hidden">
       <div class="header-bar" style="background:#fef2f2;border:1px solid #fecaca;">
-        <div><h2 style="color:#991b1b;">Панель Главного инженера <span class="project-badge">СПТ</span></h2>
-        <div class="user-info">Полный доступ к системе</div></div>
+        <div><h2 style="color:#991b1b;">Панель Главного инженера</h2>
+        <div class="user-info">Полный доступ</div></div>
         <button class="btn gray small" id="logoutAdminBtn">Выйти</button>
       </div>
       <div class="sub-tabs">
         <button class="sub-tab-btn active" id="adminTabUsers">👥 Пользователи</button>
         <button class="sub-tab-btn" id="adminTabBuilder">🛠 Конструктор</button>
-        <button class="sub-tab-btn" id="adminTabHistory">📋 История статусов</button>
-        <button class="sub-tab-btn" id="adminTabDanger">⚠ Сброс данных</button>
+        <button class="sub-tab-btn" id="adminTabHistory">📋 История</button>
+        <button class="sub-tab-btn" id="adminTabDanger">⚠ Сброс</button>
       </div>
       <div id="adminUsersBlock">
         <div class="card" style="border-left:4px solid #f59e0b;">
           <h2>Реестр пользователей</h2>
-          <p class="hint">Подтверждайте новых пользователей. Все действия требуют кода.</p>
           <div id="moderationList"></div>
         </div>
       </div>
       <div id="adminBuilderBlock" class="hidden">
         <div class="builder-grid">
           <div class="builder-card cats">
-            <h3>🟢 Категории техники</h3>
-            <p class="hint">Например: ЦА, АЦН, АК, С/Т, С/С, ППУ</p>
+            <h3>🟢 Категории</h3>
             <ul class="builder-list" id="builderCatsList"></ul>
             <div class="builder-add-row">
               <input type="text" id="newCatName" placeholder="Название категории" autocomplete="off">
@@ -269,7 +255,6 @@
           </div>
           <div class="builder-card machines">
             <h3>🟠 Машины</h3>
-            <p class="hint">Госномер + модель + категория + порядок</p>
             <ul class="builder-list" id="builderMachinesList"></ul>
             <div class="builder-add-row" style="flex-direction:column;">
               <input type="text" id="newMachineNum" placeholder="Госномер (А123ВС 86)" autocomplete="off">
@@ -283,7 +268,6 @@
           </div>
           <div class="builder-card roles">
             <h3>🟣 Должности</h3>
-            <p class="hint">С привязкой к категории (СПТ / ИТР ЦТКРС)</p>
             <ul class="builder-list" id="builderRolesList"></ul>
             <div class="builder-add-row" style="flex-direction:column;">
               <input type="text" id="newRoleName" placeholder="Название должности" autocomplete="off">
@@ -298,8 +282,7 @@
       </div>
       <div id="adminHistoryBlock" class="hidden">
         <div class="card">
-          <h2>История смен и статусов</h2>
-          <p class="hint">Все смены и сходы с линии. Используется для отчётов.</p>
+          <h2>История смен</h2>
           <div class="form-row">
             <div><label class="fld">От</label><input type="date" id="histFrom"></div>
             <div><label class="fld">До</label><input type="date" id="histTo"></div>
@@ -310,16 +293,12 @@
       </div>
       <div id="adminDangerBlock" class="hidden">
         <div class="card" style="border-left:4px solid #dc2626;">
-          <h2>⚠ Сброс локальных данных</h2>
-          <p class="hint">Действия необратимы. Используйте для чистой настройки.</p>
+          <h2>⚠ Сброс данных</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn red small" id="resetUsersBtn">Удалить всех пользователей</button>
-            <button class="btn red small" id="resetMachinesBtn">Удалить все машины</button>
-            <button class="btn red small" id="resetCatsBtn">Удалить все категории</button>
-            <button class="btn red small" id="resetRolesBtn">Удалить все должности</button>
-            <button class="btn red small" id="resetShiftsBtn">Удалить все смены</button>
-            <button class="btn red small" id="resetHistoryBtn">Удалить всю историю</button>
-            <button class="btn red" id="resetAllBtn" style="background:#991b1b;">ПОЛНЫЙ СБРОС ВСЕГО</button>
+            <button class="btn red small" id="resetUsersBtn">Удалить пользователей</button>
+            <button class="btn red small" id="resetMachinesBtn">Удалить машины</button>
+            <button class="btn red small" id="resetShiftsBtn">Удалить смены</button>
+            <button class="btn red" id="resetAllBtn" style="background:#991b1b;">ПОЛНЫЙ СБРОС</button>
           </div>
         </div>
       </div>
@@ -327,7 +306,7 @@
   </div>
 </div>
 
-<!-- модалка причины -->
+<!-- Модалка причины -->
 <div class="modal-overlay hidden" id="causeModal">
   <div class="modal">
     <h3 id="causeModalTitle">Сход с линии</h3>
@@ -343,7 +322,7 @@
   </div>
 </div>
 
-<!-- модалка пользователей -->
+<!-- Модалка кода пользователей -->
 <div class="modal-overlay hidden" id="usersCodeModal">
   <div class="modal">
     <h3>Подтверждение действия</h3>
@@ -356,7 +335,7 @@
   </div>
 </div>
 
-<!-- модалка регистрации Главного инженера -->
+<!-- Модалка кода Главного инженера -->
 <div class="modal-overlay hidden" id="chiefEngineerRegModal">
   <div class="modal">
     <h3>Регистрация Главного инженера</h3>
@@ -373,11 +352,8 @@
 
 <script>
 // ============================================================
-// ЛОКАЛЬНАЯ ВЕРСИЯ (БЕЗ FIREBASE)
-// Все данные — в localStorage под ключом spt_db_v1
+// ЛОКАЛЬНАЯ ВЕРСИЯ (localStorage)
 // ============================================================
-
-// ===== КОДЫ =====
 const ADMIN_CODE = 'admin2483';
 const USERS_CODE = '1104';
 const CHIEF_ENGINEER_CODE = '2483';
@@ -386,7 +362,7 @@ const SHIFT_HOURS = 11;
 const LUNCH_HOURS = 1;
 const CAUSES = ['ШМР', 'ДВС', 'КПП', 'Ходовая', 'Гидравлика', 'Тормозная', 'Пневмосистема'];
 
-const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ'];
+const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ', 'Опер.'];
 const DEFAULT_ROLES = [
   { id:'r_spt_deputy_autocolonna', name:'Зам. нач. автоколонны', cat:'SPT' },
   { id:'r_spt_mechanic',           name:'Механик СПТ',           cat:'SPT' },
@@ -401,13 +377,12 @@ const CAT_LABELS = { SPT:'Специалист СПТ', ITR:'ИТР ЦТКРС' 
 
 const DB_KEY = 'spt_db_v1';
 
-// ===== СОСТОЯНИЕ =====
 let CATS = [], MACHINES = [], USERS = [], SHIFTS = [], HISTORY = [], ROLES = [];
 let loggedUser = { name:'', phone:'', cat:'', catLabel:'', role:'', roleName:'', status:'pending' };
 let isAdminLoggedIn = false;
 let selectedMachineForCause = null;
 let selectedCause = '';
-let currentCatView = '';
+let currentDetailView = '';
 let audioCtx = null;
 let pendingChiefEngineerReg = null;
 let pendingUserAction = null;
@@ -420,20 +395,14 @@ function fmtDateOnly(d){ if(!d) return ''; return new Date(d).toLocaleDateString
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function shiftOfNow(){ const h = new Date().getHours(); return (h>=8 && h<20) ? 1 : 2; }
 function catName(id){ const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
-function machineLabel(m){ return m ? `${m.num}${m.model ? ' ('+m.model+')' : ''}` : '—'; }
 function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
 
 // ===== БАЗА (localStorage) =====
 function loadDB(){
-  try {
-    const raw = localStorage.getItem(DB_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch(e){ console.warn('DB load error', e); return null; }
+  try { const raw = localStorage.getItem(DB_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
 }
 function saveDB(){
-  const data = { cats:CATS, machines:MACHINES, users:USERS, shifts:SHIFTS, history:HISTORY, roles:ROLES };
-  localStorage.setItem(DB_KEY, JSON.stringify(data));
+  localStorage.setItem(DB_KEY, JSON.stringify({ cats:CATS, machines:MACHINES, users:USERS, shifts:SHIFTS, history:HISTORY, roles:ROLES }));
 }
 function initDB(){
   const data = loadDB();
@@ -445,20 +414,16 @@ function initDB(){
     HISTORY = data.history || [];
     ROLES = data.roles || [];
   }
-  // Засеиваем дефолты, если пусто
   if (!CATS.length) CATS = DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
   if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
   saveDB();
 }
 
 function showToast(msg, isErr){
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.toggle('error', !!isErr);
-  t.classList.add('show');
+  const t = $('toast'); t.textContent = msg;
+  t.classList.toggle('error', !!isErr); t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 3200);
 }
-
 function initAudio(){
   if (!audioCtx) { try { audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
   if (audioCtx && audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
@@ -470,35 +435,20 @@ function playDing(){
       const o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.type='sine'; o.frequency.value = [880,1174][i];
       const at = audioCtx.currentTime + t;
-      g.gain.setValueAtTime(0.0001, at);
-      g.gain.exponentialRampToValueAtTime(0.2, at+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, at+0.35);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(at); o.stop(at+0.4);
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.2, at+0.02); g.gain.exponentialRampToValueAtTime(0.0001, at+0.35);
+      o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at+0.4);
     });
   } catch(e){}
 }
-
-function updateNotifyBtn(){
-  const b = $('notifyBtn'); if (!b) return;
-  if (!('Notification' in window)) { b.textContent='🔕 Не поддерживается'; b.disabled=true; return; }
-  if (Notification.permission==='granted') { b.textContent='🔔 Уведомления включены'; b.classList.add('on'); }
-  else { b.textContent='🔔 Включить уведомления'; b.classList.remove('on'); }
-}
-$('notifyBtn').addEventListener('click', ()=>{
-  if (!('Notification' in window)) return showToast('Браузер не поддерживает', true);
-  if (Notification.permission==='granted') { showToast('Уже включены'); initAudio(); playDing(); return; }
-  Notification.requestPermission().then(p=>{ updateNotifyBtn(); if(p==='granted'){ showToast('Включены'); initAudio(); playDing(); } });
-});
 document.addEventListener('click', ()=>{ initAudio(); }, { once:true });
 
 // ===== ВКЛАДКИ =====
 function switchToTab(name){
   ['tabMain','tabReports','tabAdmin'].forEach(t=>$(t).classList.remove('active'));
-  ['mainView','reportsView','adminView','machinesView'].forEach(v=>$(v).classList.add('hidden'));
+  ['mainView','reportsView','adminView'].forEach(v=>$(v).classList.add('hidden'));
   if (name==='main') {
     $('tabMain').classList.add('active'); $('mainView').classList.remove('hidden');
-    if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMain(); }
+    if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); }
     else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); }
   }
   if (name==='reports') { $('tabReports').classList.add('active'); $('reportsView').classList.remove('hidden'); renderReportsFilters(); }
@@ -507,7 +457,6 @@ function switchToTab(name){
     if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
     else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
   }
-  renderShiftInfo();
 }
 $('tabMain').addEventListener('click', ()=>switchToTab('main'));
 $('tabReports').addEventListener('click', ()=>switchToTab('reports'));
@@ -518,733 +467,117 @@ function renderShiftInfo(){
   const d = new Date(); const h = d.getHours(), m = d.getMinutes();
   el.textContent = `Смена ${shiftOfNow()} · ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
+setInterval(renderShiftInfo, 30000);
 
-// ===== РОЛИ =====
+// ===== ГЛАВНАЯ (ТАБЛИЦА) =====
 function renderRoleOptions(){
   const cat = $('loginCategory').value;
   const sel = $('loginRole');
   if (!cat) { sel.innerHTML = '<option value="">— сначала выберите категорию —</option>'; return; }
   const list = ROLES.filter(r=>r.cat===cat);
-  if (!list.length) {
-    sel.innerHTML = '<option value="">— нет должностей для этой категории —</option>';
-    return;
-  }
-  sel.innerHTML = '<option value="">— выберите должность —</option>' +
-    list.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
+  sel.innerHTML = '<option value="">— выберите должность —</option>' + list.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
 }
 $('loginCategory').addEventListener('change', renderRoleOptions);
 
-// ===== РЕГИСТРАЦИЯ =====
-$('loginBtn').addEventListener('click', ()=>{
-  const name = $('loginName').value.trim();
-  const phone = $('loginPhone').value.trim();
-  const cat = $('loginCategory').value;
-  const roleId = $('loginRole').value;
-
-  if (!name) return showToast('Введите имя', true);
-  if (!phone) return showToast('Введите телефон', true);
-  if (!cat) return showToast('Выберите категорию', true);
-  if (!roleId) return showToast('Выберите должность', true);
-
-  const roleObj = ROLES.find(r=>r.id===roleId);
-  if (!roleObj) return showToast('Неизвестная должность', true);
-  const roleName = roleObj.name;
-
-  const existing = USERS.find(u=>u.phone===phone);
-  if (existing && existing.cat !== cat) {
-    return showToast('Этот номер уже зарегистрирован в другой категории', true);
-  }
-
-  // Главный инженер — код
-  if (roleName === 'Главный инженер') {
-    const chief = USERS.find(u=>u.roleName==='Главный инженер' && u.phone!==phone && u.status!=='rejected');
-    if (chief) return showToast('Главный инженер уже зарегистрирован (' + chief.name + ')', true);
-    pendingChiefEngineerReg = { name, phone, cat, roleId, roleName };
-    $('chiefEngineerRegCode').value = '';
-    $('chiefEngineerRegModal').classList.remove('hidden');
-    $('chiefEngineerRegCode').focus();
-    return;
-  }
-
-  doRegisterUser({ name, phone, cat, roleId, roleName });
-});
-
-function doRegisterUser({ name, phone, cat, roleId, roleName }){
-  const existing = USERS.find(u=>u.phone===phone);
-  if (existing) {
-    if (existing.status === 'rejected') return showToast('Аккаунт отклонён', true);
-    loggedUser = { name, phone, cat, catLabel: CAT_LABELS[cat], role: roleId, roleName, status: existing.status };
-  } else {
-    USERS.push({
-      id: newId('u'), name, phone, cat, catLabel: CAT_LABELS[cat],
-      role: roleId, roleName, status: 'pending', createdAt: Date.now()
-    });
-    saveDB();
-    loggedUser = { name, phone, cat, catLabel: CAT_LABELS[cat], role: roleId, roleName, status: 'pending' };
-    showToast('Регистрация отправлена. Ожидайте подтверждения.');
-  }
-  localStorage.setItem('spt_user', JSON.stringify(loggedUser));
-  $('mainLoginBlock').classList.add('hidden');
-  $('mainWorkBlock').classList.remove('hidden');
-  $('loggedName').textContent = name;
-  $('loggedRole').textContent = roleName + ' (' + (CAT_LABELS[cat]||cat) + ')';
-  renderMain(); renderShiftInfo(); updateUIState();
-  if (isAdminLoggedIn) renderUsers();
-}
-
-$('cancelChiefEngineerReg').addEventListener('click', ()=>{
-  $('chiefEngineerRegModal').classList.add('hidden'); pendingChiefEngineerReg = null;
-});
-$('confirmChiefEngineerReg').addEventListener('click', ()=>{
-  if (!pendingChiefEngineerReg) return;
-  if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) {
-    showToast('Неверный код Главного инженера', true);
-    $('chiefEngineerRegCode').value = ''; $('chiefEngineerRegCode').focus(); return;
-  }
-  $('chiefEngineerRegModal').classList.add('hidden');
-  const reg = pendingChiefEngineerReg; pendingChiefEngineerReg = null;
-  doRegisterUser(reg);
-});
-
-$('logoutBtn').addEventListener('click', ()=>{
-  localStorage.removeItem('spt_user');
-  loggedUser = { name:'', phone:'', cat:'', catLabel:'', role:'', roleName:'', status:'pending' };
-  $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden');
-  $('globalPendingAlert').classList.add('hidden');
-});
-
-function restoreUser(){
-  const s = localStorage.getItem('spt_user');
-  if (!s) return;
-  try {
-    loggedUser = JSON.parse(s);
-    const u = USERS.find(x=>x.phone===loggedUser.phone);
-    if (u) {
-      loggedUser.status = u.status;
-      if (u.name) loggedUser.name = u.name;
-      if (u.roleName) loggedUser.roleName = u.roleName;
-    }
-    if (loggedUser.name) {
-      $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
-      $('loggedName').textContent = loggedUser.name;
-      $('loggedRole').textContent = (loggedUser.roleName||'') + ' (' + (loggedUser.catLabel||'') + ')';
-      updateUIState();
-    }
-  } catch(e){}
-}
-
-function updateUIState(){
-  if (loggedUser.name) {
-    const text = $('globalPendingText');
-    if (loggedUser.status === 'pending') {
-      $('globalPendingAlert').classList.remove('hidden');
-      if (text) text.textContent = 'Ваш аккаунт на проверке у Главного инженера. Ожидайте подтверждения.';
-    } else if (loggedUser.status === 'rejected') {
-      $('globalPendingAlert').classList.remove('hidden');
-      if (text) text.textContent = 'Ваш аккаунт отклонён или удалён. Обратитесь к администратору.';
-    } else {
-      $('globalPendingAlert').classList.add('hidden');
-    }
-  } else {
-    $('globalPendingAlert').classList.add('hidden');
-  }
-}
-
-// ===== ГЛАВНАЯ =====
-function renderMain(){
+function renderMainGrid(){
   if (!loggedUser.name) return;
-  const today = todayStr(); const nowShift = shiftOfNow();
-  const activeByMachine = {};
-  SHIFTS.filter(s=>s.date===today && s.shift===nowShift).forEach(s=>{ activeByMachine[s.machineId] = s; });
+  const today = todayStr();
+  const shift = shiftOfNow();
+  
+  $('mainDateTitle').textContent = `Вывод ТС на ${fmtDateOnly(today)} · ${shift} смена`;
 
-  const machineStatuses = {};
-  let totalLine=0, totalOff=0, totalParts=0;
+  // Собираем текущие статусы
+  const activeByMachine = {};
+  SHIFTS.filter(s=>s.date===today && s.shift===shift).forEach(s=>{ activeByMachine[s.machineId] = s; });
+  
+  const machineStatus = {}; // id -> { st, cause, detail }
   MACHINES.forEach(m=>{
     const s = activeByMachine[m.id];
-    let st = 'line';
+    let st = 'none', c = '', d = '';
     if (s) {
       const ev = (s.events||[]).slice().sort((a,b)=>a.time-b.time);
-      if (ev.length) st = ev[ev.length-1].status;
+      if (ev.length) { const last = ev[ev.length-1]; st = last.status; c = last.cause||''; d = last.detail||''; }
     }
-    machineStatuses[m.id] = st;
-    if (st==='line') totalLine++; else if (st==='off') totalOff++; else if (st==='parts') totalParts++;
-  });
-  $('topStats').innerHTML = `
-    <div class="stat green"><div class="num">${totalLine}</div><div class="lbl">На линии</div></div>
-    <div class="stat orange"><div class="num">${totalOff}</div><div class="lbl">Сошел с линии</div></div>
-    <div class="stat red"><div class="num">${totalParts}</div><div class="lbl">Ждёт запчастей</div></div>
-    <div class="stat blue"><div class="num">${MACHINES.length}</div><div class="lbl">Всего машин</div></div>
-  `;
-
-  $('catGrid').innerHTML = CATS.map(cat=>{
-    const machines = MACHINES.filter(m=>m.catId===cat.id);
-    let line=0, off=0, parts=0;
-    machines.forEach(m=>{
-      const st = machineStatuses[m.id] || 'line';
-      if (st==='line') line++; else if (st==='off') off++; else if (st==='parts') parts++;
-    });
-    const hasProblem = off>0 || parts>0;
-    return `<div class="cat-card ${hasProblem?'has-problem':''}" data-cat="${esc(cat.id)}">
-      <div class="cat-name">${esc(cat.name)}</div>
-      <div class="cat-counts">
-        <span class="cat-badge total">${machines.length} всего</span>
-        <span class="cat-badge line">🟢 ${line}</span>
-        ${off>0?`<span class="cat-badge off">🟡 ${off}</span>`:''}
-        ${parts>0?`<span class="cat-badge parts">🔴 ${parts}</span>`:''}
-      </div>
-    </div>`;
-  }).join('') || '<p class="empty">Категорий пока нет. Зайдите в Панель управления → Конструктор.</p>';
-
-  $('catGrid').querySelectorAll('.cat-card').forEach(c=>{
-    c.addEventListener('click', ()=>openMachines(c.dataset.cat));
-  });
-}
-
-// ===== МАШИНЫ =====
-function openMachines(catId){
-  currentCatView = catId;
-  $('mainView').classList.add('hidden');
-  $('machinesView').classList.remove('hidden');
-  const cat = CATS.find(c=>c.id===catId);
-  $('machinesTitle').textContent = cat ? cat.name : 'Машины';
-  renderMachinesList(catId);
-}
-$('backFromMachines').addEventListener('click', ()=>{
-  $('machinesView').classList.add('hidden');
-  switchToTab('main');
-});
-
-function renderMachinesList(catId){
-  const machines = MACHINES.filter(m=>m.catId===catId).sort((a,b)=>(a.order||0)-(b.order||0));
-  if (!machines.length) { $('machinesList').innerHTML = '<p class="empty">Машин в этой категории нет. Добавьте в Конструкторе.</p>'; return; }
-  const today = todayStr(); const nowShift = shiftOfNow();
-  const activeByMachine = {};
-  SHIFTS.filter(s=>s.date===today && s.shift===nowShift).forEach(s=>{ activeByMachine[s.machineId] = s; });
-
-  $('machinesList').innerHTML = machines.map(m=>{
-    const s = activeByMachine[m.id];
-    let st = 'line', lastCause = '', lastDetail = '';
-    if (s) {
-      const ev = (s.events||[]).slice().sort((a,b)=>a.time-b.time);
-      if (ev.length) { const last = ev[ev.length-1]; st = last.status; lastCause = last.cause||''; lastDetail = last.detail||''; }
-    }
-    const cls = st==='line'?'st-line':st==='off'?'st-off':'st-parts';
-    const reasonHtml = (st!=='line' && (lastCause||lastDetail))
-      ? `<div class="machine-reason">Причина: ${esc(lastCause||'—')}${lastDetail?' · '+esc(lastDetail):''}</div>` : '';
-    return `<div class="machine-card ${cls}">
-      <div class="machine-info">
-        <div class="machine-num">${esc(m.num)}</div>
-        <div class="machine-model">${esc(m.model||'')} · порядок: ${m.order||0}</div>
-        ${reasonHtml}
-      </div>
-      <div class="machine-actions">
-        <button class="st-btn line ${st==='line'?'active':''}" data-act="line" data-id="${esc(m.id)}">🟢 На линии</button>
-        <button class="st-btn off ${st==='off'?'active':''}" data-act="off" data-id="${esc(m.id)}">🟡 Сошёл</button>
-        <button class="st-btn parts ${st==='parts'?'active':''}" data-act="parts" data-id="${esc(m.id)}">🔴 Запчасти</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  $('machinesList').querySelectorAll('.st-btn').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      const act = b.dataset.act, id = b.dataset.id;
-      if (act==='line') setMachineLine(id);
-      else openCauseModal(id, act);
-    });
-  });
-}
-
-// ===== СМЕНЫ =====
-function ensureShift(machineId, date, shift){
-  let found = SHIFTS.find(s=>s.machineId===machineId && s.date===date && s.shift===shift);
-  if (found) return found;
-  const data = {
-    id: newId('sh'), machineId, date, shift,
-    startLine: Date.now(), endLine: null,
-    events: [], totalOffMs: 0, totalOffByCause: {}
-  };
-  SHIFTS.push(data);
-  saveDB();
-  return data;
-}
-
-function appendShiftEvent(shiftId, ev){
-  const sh = SHIFTS.find(s=>s.id===shiftId);
-  if (!sh) return;
-  sh.events = (sh.events||[]).concat([ev]);
-  HISTORY.push({
-    id: newId('h'),
-    machineId: sh.machineId, date: sh.date, shift: sh.shift,
-    action: ev.status, cause: ev.cause||'', detail: ev.detail||'', time: ev.time
-  });
-  saveDB();
-}
-
-function setMachineLine(machineId){
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  const today = todayStr(); const nowShift = shiftOfNow();
-  const shift = ensureShift(machineId, today, nowShift);
-  const events = (shift.events||[]).slice().sort((a,b)=>a.time-b.time);
-  const last = events[events.length-1];
-  if (last && (last.status==='off' || last.status==='parts')) {
-    const offMs = Date.now() - last.time;
-    shift.totalOffMs = (shift.totalOffMs||0) + offMs;
-    shift.totalOffByCause = { ...(shift.totalOffByCause||{}) };
-    const key = last.cause || 'Не указана';
-    shift.totalOffByCause[key] = (shift.totalOffByCause[key]||0) + offMs;
-    saveDB();
-  }
-  appendShiftEvent(shift.id, { status:'line', time: Date.now(), by: loggedUser.name });
-  playDing();
-  showToast('Машина на линии');
-  if (currentCatView) renderMachinesList(currentCatView);
-  renderMain();
-}
-
-function setMachineStatus(machineId, status, cause, detail){
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  const today = todayStr(); const nowShift = shiftOfNow();
-  const shift = ensureShift(machineId, today, nowShift);
-  appendShiftEvent(shift.id, { status, cause: cause||'', detail: detail||'', time: Date.now(), by: loggedUser.name });
-  playDing();
-  showToast(status==='off' ? 'Сход зафиксирован' : 'Ожидание запчастей зафиксировано');
-  if (currentCatView) renderMachinesList(currentCatView);
-  renderMain();
-}
-
-// ===== МОДАЛКА ПРИЧИНЫ =====
-function openCauseModal(machineId, status){
-  selectedMachineForCause = { machineId, status };
-  selectedCause = '';
-  $('causeModalTitle').textContent = status==='off' ? 'Сход с линии' : 'Ожидание запчастей';
-  $('causeModalSub').textContent = status==='off'
-    ? 'Укажите причину схода. Время схода зафиксируется.'
-    : 'Укажите, что ждём и причину. Время зафиксируется.';
-  $('causePills').innerHTML = CAUSES.map(c=>`<div class="cause-pill" data-cause="${esc(c)}">${esc(c)}</div>`).join('');
-  $('causePills').querySelectorAll('.cause-pill').forEach(p=>{
-    p.addEventListener('click', ()=>{
-      $('causePills').querySelectorAll('.cause-pill').forEach(x=>x.classList.remove('active'));
-      if (selectedCause === p.dataset.cause) { selectedCause = ''; }
-      else { selectedCause = p.dataset.cause; p.classList.add('active'); }
-    });
-  });
-  $('causeDetail').value = '';
-  $('causeModal').classList.remove('hidden');
-}
-$('cancelCause').addEventListener('click', ()=>{ $('causeModal').classList.add('hidden'); selectedMachineForCause=null; });
-$('confirmCause').addEventListener('click', ()=>{
-  if (!selectedMachineForCause) return;
-  const detail = $('causeDetail').value.trim();
-  if (!selectedCause && !detail) return showToast('Укажите причину', true);
-  const { machineId, status } = selectedMachineForCause;
-  $('causeModal').classList.add('hidden');
-  setMachineStatus(machineId, status, selectedCause, detail);
-  selectedMachineForCause = null; selectedCause = '';
-});
-
-// ===== ОТЧЁТЫ =====
-function renderReportsFilters(){
-  $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
-  $('repMachine').innerHTML = '<option value="">Все</option>' + MACHINES.map(m=>`<option value="${esc(m.id)}">${esc(machineLabel(m))}</option>`).join('');
-  if (!$('repDate').value) $('repDate').value = todayStr();
-}
-
-function calcShiftHours(shift, now){
-  const end = shift.endLine || now;
-  const totalMs = Math.max(0, end - shift.startLine);
-  const offMs = shift.totalOffMs || 0;
-  const workingMs = Math.max(0, totalMs - offMs);
-  const hours = Math.max(0, workingMs / 3600000 - LUNCH_HOURS);
-  return { totalHours: workingMs/3600000, offHours: offMs/3600000, netHours: Math.max(0, hours) };
-}
-
-$('buildReportBtn').addEventListener('click', buildReport);
-$('exportCsvBtn').addEventListener('click', exportCsv);
-
-function buildReport(){
-  const date = $('repDate').value || todayStr();
-  const shift = $('repShift').value;
-  const catId = $('repCat').value;
-  const machineId = $('repMachine').value;
-
-  let shifts = SHIFTS.filter(s=>s.date===date);
-  if (shift) shifts = shifts.filter(s=>String(s.shift)===shift);
-  if (machineId) shifts = shifts.filter(s=>s.machineId===machineId);
-  if (catId) shifts = shifts.filter(s=>{ const m = MACHINES.find(x=>x.id===s.machineId); return m && m.catId===catId; });
-
-  if (!shifts.length) { $('reportContent').innerHTML = '<p class="empty">Нет данных за выбранный период.</p>'; return; }
-
-  const now = Date.now();
-  const rows = shifts.map(s=>{
-    const m = MACHINES.find(x=>x.id===s.machineId);
-    const calc = calcShiftHours(s, now);
-    const events = (s.events||[]).slice().sort((a,b)=>a.time-b.time);
-    const offEvents = events.filter(e=>e.status!=='line');
-    const reasons = offEvents.map(e=>e.cause||'—').filter((v,i,arr)=>arr.indexOf(v)===i);
-    return {
-      machine: m ? machineLabel(m) : '—',
-      num: m ? m.num : '—',
-      cat: m ? catName(m.catId) : '—',
-      date: s.date, shift: s.shift,
-      hours: calc.netHours, offHours: calc.offHours,
-      causes: reasons.join(', ') || '—',
-      details: offEvents.map(e=>`${e.cause||'—'}${e.detail?' ('+e.detail+')':''} — ${fmtDate(e.time)}`).join('; ') || '—'
-    };
+    machineStatus[m.id] = { st, cause: c, detail: d };
   });
 
-  let totalHours = 0, totalOff = 0;
-  rows.forEach(r=>{ totalHours+=r.hours; totalOff+=r.offHours; });
+  // Генерируем шапку таблицы
+  // Разбиваем на колонки по 4 категории в ряд
+  const colsPerRow = 4;
+  let headHtml = '';
+  let bodyHtml = '';
 
-  const summary = `<div class="stats-row">
-    <div class="stat blue"><div class="num">${rows.length}</div><div class="lbl">Машин</div></div>
-    <div class="stat green"><div class="num">${totalHours.toFixed(1)}</div><div class="lbl">Часов на линии</div></div>
-    <div class="stat red"><div class="num">${totalOff.toFixed(1)}</div><div class="lbl">Часов схода</div></div>
-  </div>`;
-
-  const table = `<table class="report-table">
-    <thead><tr>
-      <th>Машина</th><th>Госномер</th><th>Категория</th><th>Дата</th><th>Смена</th>
-      <th>Часы работы</th><th>Часы схода</th><th>Причины</th><th>Детали</th>
-    </tr></thead>
-    <tbody>${rows.map(r=>`
-      <tr>
-        <td>${esc(r.machine)}</td><td>${esc(r.num)}</td><td>${esc(r.cat)}</td>
-        <td>${fmtDateOnly(r.date)}</td><td>${r.shift==1?'08–20':'20–08'}</td>
-        <td class="${r.hours >= SHIFT_HOURS-1 ? 'hours-ok' : 'hours-low'}">${r.hours.toFixed(2)}</td>
-        <td>${r.offHours.toFixed(2)}</td>
-        <td>${esc(r.causes)}</td>
-        <td style="font-size:12px;">${esc(r.details)}</td>
-      </tr>`).join('')}</tbody></table>`;
-  $('reportContent').innerHTML = summary + table;
-  window.__lastReportRows = rows;
-}
-
-function exportCsv(){
-  const rows = window.__lastReportRows || [];
-  if (!rows.length) return showToast('Сначала сформируйте отчёт', true);
-  const header = ['Машина','Госномер','Категория','Дата','Смена','Часы работы','Часы схода','Причины','Детали'];
-  const lines = [header.join(';')];
-  rows.forEach(r=>{
-    lines.push([
-      r.machine, r.num, r.cat, fmtDateOnly(r.date),
-      r.shift==1?'08-20':'20-08',
-      r.hours.toFixed(2), r.offHours.toFixed(2),
-      r.causes.replace(/[\r\n;]+/g,' '),
-      r.details.replace(/[\r\n;]+/g,' ')
-    ].join(';'));
+  // Определяем максимальное количество машин в категории (для высоты колонок)
+  const catMachines = {};
+  CATS.forEach(c => {
+    catMachines[c.id] = MACHINES.filter(m=>m.catId===c.id).sort((a,b)=>(a.order||0)-(b.order||0));
   });
-  const blob = new Blob(['\uFEFF'+lines.join('\r\n')], { type:'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `СПТ_отчёт_${$('repDate').value||todayStr()}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  showToast('Выгружено в Excel (CSV)');
-}
+  let maxRows = 0;
+  CATS.forEach(c => { if (catMachines[c.id].length > maxRows) maxRows = catMachines[c.id].length; });
+  if (maxRows < 8) maxRows = 8; // минимальная высота
 
-$('exportOneBtn').addEventListener('click', ()=>{
-  const mid = $('repMachine').value;
-  if (!mid) return showToast('Выберите машину для детального отчёта', true);
-  const date = $('repDate').value || todayStr();
-  const m = MACHINES.find(x=>x.id===mid);
-  if (!m) return;
+  // Строим сетку по строкам
+  for (let i = 0; i < CATS.length; i += colsPerRow) {
+    const rowCats = CATS.slice(i, i + colsPerRow);
+    
+    // Заголовки
+    headHtml += '<tr>';
+    rowCats.forEach(c => headHtml += `<th>${esc(c.name)}</th>`);
+    // Добиваем пустыми ячейками, если в ряду меньше 4 категорий
+    for (let k = rowCats.length; k < colsPerRow; k++) headHtml += '<th></th>';
+    headHtml += '</tr>';
 
-  const shifts = SHIFTS.filter(s=>s.machineId===mid && s.date===date).sort((a,b)=>a.shift-b.shift);
-  if (!shifts.length) return showToast('Нет данных по этой машине за дату', true);
-
-  const now = Date.now();
-  let html = `<h2>Детальный отчёт: ${esc(machineLabel(m))} · ${fmtDateOnly(date)}</h2>`;
-  let totalWork = 0, totalOff = 0;
-  shifts.forEach(s=>{
-    const calc = calcShiftHours(s, now);
-    totalWork += calc.netHours; totalOff += calc.offHours;
-    const events = (s.events||[]).slice().sort((a,b)=>a.time-b.time);
-    const causeCount = {}; const causeMs = {};
-    let offStart = null, offCause = null;
-    events.forEach(e=>{
-      if (e.status!=='line') { if (offStart===null) { offStart = e.time; offCause = e.cause||'—'; } }
-      else {
-        if (offStart!==null) {
-          const ms = e.time - offStart;
-          causeCount[offCause] = (causeCount[offCause]||0)+1;
-          causeMs[offCause] = (causeMs[offCause]||0)+ms;
-          offStart = null; offCause = null;
+    // Тело
+    bodyHtml += '<tr>';
+    rowCats.forEach(c => {
+      bodyHtml += '<td><ul class="cell-list">';
+      const list = catMachines[c.id];
+      for (let r = 0; r < maxRows; r++) {
+        const m = list[r];
+        if (m) {
+          const stat = machineStatus[m.id];
+          let cls = '';
+          let reasonHtml = '';
+          
+          if (stat.st === 'line') cls = 'st-line';
+          else if (stat.st === 'off') { cls = 'st-off'; reasonHtml = `<span class="reason">${esc(stat.cause||'Сход')} ${esc(stat.detail? '('+stat.detail+')':'')}</span>`; }
+          else if (stat.st === 'parts') { cls = 'st-parts'; reasonHtml = `<span class="reason">Ждет запчастей: ${esc(stat.cause||'')}</span>`; }
+          
+          const label = `${esc(m.num)} ${esc(m.model||'')}`;
+          bodyHtml += `<li class="${cls}" data-id="${esc(m.id)}">
+            <span class="idx">${r+1}</span>
+            <span class="info">${label}${reasonHtml}</span>
+          </li>`;
+        } else {
+          bodyHtml += `<li><span class="idx">${r+1}</span><span class="info" style="color:#cbd5e1;">—</span></li>`;
         }
       }
+      bodyHtml += '</ul></td>';
     });
-    if (offStart!==null) {
-      const ms = now - offStart;
-      causeCount[offCause] = (causeCount[offCause]||0)+1;
-      causeMs[offCause] = (causeMs[offCause]||0)+ms;
-    }
-    html += `<div class="card" style="border-left:4px solid #2563eb;">
-      <h3>Смена ${s.shift} (${s.shift==1?'08–20':'20–08'})</h3>
-      <p style="font-size:13px;color:#6b7280;">Начало: ${fmtDate(s.startLine)} · Работа: <b>${calc.netHours.toFixed(2)} ч</b> · Сход: <b>${calc.offHours.toFixed(2)} ч</b></p>
-      <h3 style="margin-top:10px;">Сходы:</h3>`;
-    if (!events.filter(e=>e.status!=='line').length) {
-      html += '<p class="empty">Сходов не было</p>';
-    } else {
-      html += '<ul style="list-style:none;">';
-      for (const cause in causeCount) {
-        html += `<li style="padding:6px 0;border-bottom:1px dashed #e5e7eb;">
-          <b>${esc(cause)}</b> — ${causeCount[cause]} раз, всего ${(causeMs[cause]/3600000).toFixed(2)} ч
-        </li>`;
-      }
-      html += '</ul>';
-    }
-    html += '</div>';
-  });
-  html += `<div class="stats-row">
-    <div class="stat green"><div class="num">${totalWork.toFixed(2)}</div><div class="lbl">Часов на линии</div></div>
-    <div class="stat red"><div class="num">${totalOff.toFixed(2)}</div><div class="lbl">Часов схода</div></div>
-  </div>`;
-  $('reportContent').innerHTML = html;
-});
+    for (let k = rowCats.length; k < colsPerRow; k++) bodyHtml += '<td></td>';
+    bodyHtml += '</tr>';
+  }
 
-// ===== АДМИН =====
-$('adminLoginBtn').addEventListener('click', ()=>{
-  if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
-  isAdminLoggedIn = true;
-  $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden');
-  setAdminTab('users');
-  renderAdmin();
-});
-$('logoutAdminBtn').addEventListener('click', ()=>{
-  isAdminLoggedIn = false;
-  $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden');
-  $('adminCodeInput').value = '';
-});
+  $('mainGridHead').innerHTML = headHtml;
+  $('mainGridBody').innerHTML = bodyHtml;
 
-function setAdminTab(name){
-  ['adminTabUsers','adminTabBuilder','adminTabHistory','adminTabDanger'].forEach(t=>$(t).classList.remove('active'));
-  ['adminUsersBlock','adminBuilderBlock','adminHistoryBlock','adminDangerBlock'].forEach(b=>$(b).classList.add('hidden'));
-  if (name==='users') { $('adminTabUsers').classList.add('active'); $('adminUsersBlock').classList.remove('hidden'); renderUsers(); }
-  if (name==='builder') { $('adminTabBuilder').classList.add('active'); $('adminBuilderBlock').classList.remove('hidden'); renderBuilder(); }
-  if (name==='history') { $('adminTabHistory').classList.add('active'); $('adminHistoryBlock').classList.remove('hidden'); renderHistoryAdmin(); }
-  if (name==='danger') { $('adminTabDanger').classList.add('active'); $('adminDangerBlock').classList.remove('hidden'); }
-}
-$('adminTabUsers').addEventListener('click', ()=>setAdminTab('users'));
-$('adminTabBuilder').addEventListener('click', ()=>setAdminTab('builder'));
-$('adminTabHistory').addEventListener('click', ()=>setAdminTab('history'));
-$('adminTabDanger').addEventListener('click', ()=>setAdminTab('danger'));
-
-function renderAdmin(){
-  if (!isAdminLoggedIn) return;
-  if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers();
-  if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
-}
-
-// ===== ПОЛЬЗОВАТЕЛИ =====
-function renderUsers(){
-  const sorted = USERS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
-  $('moderationList').innerHTML = sorted.map(u=>{
-    const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
-    const statusText = u.status==='approved'?'✅ Подтвержден'
-                     : u.status==='rejected'?'⛔ Отклонён'
-                     : '⏳ На проверке';
-    return `<div class="moderation-user ${cls}">
-      <div><strong>${esc(u.name||'—')}</strong> (${esc(u.phone||'—')})<br>
-      <span style="font-size:12px;color:#6b7280;">${esc(u.catLabel||CAT_LABELS[u.cat]||'—')} · ${esc(u.roleName||u.role||'—')} · ${statusText}</span></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        ${u.status!=='approved'?`<button class="btn green small" data-uid="${esc(u.id)}" data-act="approve">Одобрить</button>`:''}
-        ${u.status!=='rejected'?`<button class="btn red small" data-uid="${esc(u.id)}" data-act="reject">Отклонить</button>`:''}
-        <button class="btn gray small" style="background:#dc2626;" data-uid="${esc(u.id)}" data-act="delete">Удалить</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  $('moderationList').querySelectorAll('[data-uid]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      pendingUserAction = { uid: b.dataset.uid, act: b.dataset.act };
-      $('usersCodeInput').value = '';
-      $('usersCodeModal').classList.remove('hidden');
-      $('usersCodeInput').focus();
-    });
+  // Клик по машине -> открываем модалку статуса
+  $('mainGridBody').querySelectorAll('li[data-id]').forEach(li=>{
+    li.addEventListener('click', ()=> openMachineActions(li.dataset.id));
   });
 }
 
-$('cancelUsersCode').addEventListener('click', ()=>{
-  $('usersCodeModal').classList.add('hidden');
-  pendingUserAction = null;
-});
-
-$('confirmUsersCode').addEventListener('click', ()=>{
-  if (!pendingUserAction) {
-    showToast('Нет выбранного действия', true);
-    $('usersCodeModal').classList.add('hidden');
-    return;
-  }
-  if ($('usersCodeInput').value !== USERS_CODE) {
-    showToast('Неверный код', true);
-    $('usersCodeInput').value = '';
-    $('usersCodeInput').focus();
-    return;
-  }
-  const { uid, act } = pendingUserAction;
-  const idx = USERS.findIndex(u=>u.id===uid);
-  if (idx === -1) {
-    showToast('Пользователь не найден', true);
-    $('usersCodeModal').classList.add('hidden');
-    pendingUserAction = null;
-    return;
-  }
-  if (act === 'approve') USERS[idx].status = 'approved';
-  else if (act === 'reject') USERS[idx].status = 'rejected';
-  else if (act === 'delete') {
-    if (!confirm('Удалить аккаунт безвозвратно?')) return;
-    USERS.splice(idx, 1);
-  }
-  saveDB();
-  // Если редактируем сами себя — обновим статус
-  if (loggedUser.name && loggedUser.phone === USERS[idx]?.phone) {
-    const me = USERS.find(u=>u.phone===loggedUser.phone);
-    if (me) loggedUser.status = me.status;
-    updateUIState();
-  }
-  $('usersCodeModal').classList.add('hidden');
-  pendingUserAction = null;
-  showToast('Готово');
-  renderUsers();
-});
-
-// ===== КОНСТРУКТОР =====
-function renderBuilder(){
-  $('builderCatsList').innerHTML = CATS.map(c=>`
-    <li><span class="name">${esc(c.name)}</span>
-    <button class="btn red small" data-del-cat="${esc(c.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-  $('builderCatsList').querySelectorAll('[data-del-cat]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      if (!confirm('Удалить категорию? Машины этой категории останутся без категории.')) return;
-      CATS = CATS.filter(c=>c.id!==b.dataset.delCat);
-      saveDB();
-      renderBuilder();
-    });
-  });
-
-  const sorted = MACHINES.slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  $('builderMachinesList').innerHTML = sorted.map(m=>`
-    <li><span class="name">${esc(m.num)} <span class="sub">${esc(m.model||'')} · ${esc(catName(m.catId))} · #${m.order||0}</span></span>
-    <button class="btn red small" data-del-mach="${esc(m.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-  $('builderMachinesList').querySelectorAll('[data-del-mach]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      if (!confirm('Удалить машину?')) return;
-      MACHINES = MACHINES.filter(m=>m.id!==b.dataset.delMach);
-      saveDB();
-      renderBuilder();
-    });
-  });
-
-  $('newMachineCat').innerHTML = CATS.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
-
-  $('builderRolesList').innerHTML = ROLES.map(r=>`
-    <li><span class="name">${esc(r.name)} <span class="sub">${esc(CAT_LABELS[r.cat]||r.cat)}</span></span>
-    <button class="btn red small" data-del-role="${esc(r.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-  $('builderRolesList').querySelectorAll('[data-del-role]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      if (!confirm('Удалить должность?')) return;
-      ROLES = ROLES.filter(r=>r.id!==b.dataset.delRole);
-      saveDB();
-      renderBuilder();
-      renderRoleOptions();
-    });
-  });
+// Модалка выбора статуса для конкретной машины
+function openMachineActions(id){
+  const m = MACHINES.find(x=>x.id===id);
+  if (!m) return;
+  // Мы используем существующую модалку причины, но добавим туда выбор "На линии"
+  selectedMachineForCause = { machineId: id, status: '' };
+  
+  // Для простоты используем confirm-подобное окно или прямо модалку причины
+  // Пока сделаем так: клик открывает окно с 3 кнопками
+  const action = prompt(`Машина ${m.num}\nВведите действие:\n1 - На линии (Зеленый)\n2 - Сошёл (Желтый)\n3 - Ждет запчастей (Красный)`, '1');
+  if (action === '1') setMachineLine(id);
+  else if (action === '2') openCauseModal(id, 'off');
+  else if (action === '3') openCauseModal(id, 'parts');
 }
-
-$('addCatBtn').addEventListener('click', ()=>{
-  const name = $('newCatName').value.trim();
-  if (!name) return showToast('Введите название', true);
-  if (CATS.find(c=>c.name.toLowerCase()===name.toLowerCase())) return showToast('Уже есть', true);
-  CATS.push({ id: newId('cat'), name });
-  saveDB();
-  $('newCatName').value = '';
-  renderBuilder();
-  showToast('Категория добавлена');
-});
-
-$('addMachineBtn').addEventListener('click', ()=>{
-  const num = $('newMachineNum').value.trim();
-  const model = $('newMachineModel').value.trim();
-  const catId = $('newMachineCat').value;
-  const order = parseInt($('newMachineOrder').value) || 0;
-  if (!num) return showToast('Введите госномер', true);
-  if (!catId) return showToast('Выберите категорию', true);
-  MACHINES.push({ id: newId('mach'), num, model, catId, order });
-  saveDB();
-  $('newMachineNum').value = ''; $('newMachineModel').value = ''; $('newMachineOrder').value = '';
-  renderBuilder();
-  showToast('Машина добавлена');
-});
-
-$('addRoleBtn').addEventListener('click', ()=>{
-  const name = $('newRoleName').value.trim();
-  const cat = $('newRoleCat').value;
-  if (!name) return showToast('Введите название', true);
-  if (ROLES.find(r=>r.name.toLowerCase()===name.toLowerCase() && r.cat===cat)) return showToast('Уже есть', true);
-  ROLES.push({ id: newId('role'), name, cat });
-  saveDB();
-  $('newRoleName').value = '';
-  renderBuilder();
-  renderRoleOptions();
-  showToast('Должность добавлена');
-});
-
-// ===== ИСТОРИЯ =====
-function renderHistoryAdmin(){
-  if (!$('histFrom').value) { const d = new Date(); d.setDate(d.getDate()-7); $('histFrom').value = d.toISOString().slice(0,10); }
-  if (!$('histTo').value) $('histTo').value = todayStr();
-  const from = $('histFrom').value, to = $('histTo').value;
-  const filtered = HISTORY.filter(h=>h.date>=from && h.date<=to).sort((a,b)=>b.time-a.time);
-  if (!filtered.length) { $('histContent').innerHTML = '<p class="empty">Нет записей.</p>'; return; }
-  const rows = filtered.map(h=>{
-    const m = MACHINES.find(x=>x.id===h.machineId);
-    return `<tr>
-      <td>${fmtDate(h.time)}</td>
-      <td>${esc(m?machineLabel(m):'—')}</td>
-      <td>${esc(m?catName(m.catId):'—')}</td>
-      <td>${h.shift==1?'08–20':'20–08'}</td>
-      <td>${h.action==='line'?'🟢 На линии':h.action==='off'?'🟡 Сход':'🔴 Запчасти'}</td>
-      <td>${esc(h.cause||'—')}</td>
-      <td>${esc(h.detail||'—')}</td>
-    </tr>`;
-  }).join('');
-  $('histContent').innerHTML = `<table class="report-table">
-    <thead><tr><th>Время</th><th>Машина</th><th>Категория</th><th>Смена</th><th>Действие</th><th>Причина</th><th>Детали</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
-}
-$('histRefreshBtn').addEventListener('click', renderHistoryAdmin);
-
-// ===== СБРОС =====
-function resetPart(key, label){
-  if (!confirm('Удалить ' + label + '? Необратимо.')) return;
-  if (key==='users') USERS = [];
-  else if (key==='machines') MACHINES = [];
-  else if (key==='cats') CATS = [];
-  else if (key==='roles') ROLES = [];
-  else if (key==='shifts') SHIFTS = [];
-  else if (key==='history') HISTORY = [];
-  saveDB();
-  showToast('Удалено: ' + label);
-  renderAdmin();
-}
-$('resetUsersBtn').addEventListener('click', ()=>resetPart('users','всех пользователей'));
-$('resetMachinesBtn').addEventListener('click', ()=>resetPart('machines','все машины'));
-$('resetCatsBtn').addEventListener('click', ()=>resetPart('cats','все категории'));
-$('resetRolesBtn').addEventListener('click', ()=>resetPart('roles','все должности'));
-$('resetShiftsBtn').addEventListener('click', ()=>resetPart('shifts','все смены'));
-$('resetHistoryBtn').addEventListener('click', ()=>resetPart('history','всю историю'));
-$('resetAllBtn').addEventListener('click', ()=>{
-  if (!confirm('ПОЛНЫЙ СБРОС ВСЕХ ДАННЫХ. Продолжить?')) return;
-  localStorage.removeItem(DB_KEY);
-  localStorage.removeItem('spt_user');
-  location.reload();
-});
-
-// ===== СТАРТ =====
-initDB();
-setInterval(renderShiftInfo, 30000);
-updateNotifyBtn();
-restoreUser();
-switchToTab('main');
-</script>
-</body>
-</html>
