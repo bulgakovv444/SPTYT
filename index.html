@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; }
-  h1 { font-size: 20px; margin-bottom: 12px; color: #1e3a8a; text-align: center; }
+  h1 { font-size: 22px; margin-bottom: 12px; color: #1e3a8a; }
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
@@ -18,34 +18,38 @@
   .tab-btn.active { background: #2563eb; color: #fff; }
   .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
 
-  /* ===== ШАПКА И СТАТИСТИКА ===== */
+  /* ===== ШАПКА ===== */
   .top-bar {
     margin: 0 auto 15px auto; background: #fff;
     padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;
     border-left: 5px solid #2563eb;
   }
-  .header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .header-left h1 { font-size: 18px; color: #1e3a8a; margin: 0; }
+  
+  .header-left { display: flex; flex-direction: column; gap: 12px; }
+  .user-greeting { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-bottom: 5px; }
+  .user-greeting span { color: #059669; }
 
-  .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* Бейджи статистики (сделаны крупнее) */
+  .global-stats { display: flex; gap: 10px; flex-wrap: wrap; }
   .stat-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: 99px; font-weight: 700;
-    font-size: 13px; border: 2px solid transparent;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 99px; font-weight: 800;
+    font-size: 16px; border: 2px solid transparent;
     cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
   }
-  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,.15); }
+  .stat-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.15); }
   .stat-badge:active { transform: translateY(0); }
-  .stat-badge .icon { font-size: 14px; }
-  .stat-badge .val { font-family: monospace; font-size: 14px; }
-  .stat-badge .lbl { font-size: 12px; opacity: 0.8; font-weight: 600; }
+  .stat-badge .icon { font-size: 18px; }
+  .stat-badge .val { font-family: monospace; font-size: 18px; }
+  .stat-badge .lbl { font-size: 13px; opacity: 0.9; }
+  
   .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
   .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
 
-  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-family: monospace; border: 1px solid #cbd5e1; }
+  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; }
   .clock-block span { color: #2563eb; }
 
   /* ===== СЕТКА МАШИН ===== */
@@ -79,7 +83,9 @@
   .reason-badge { background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 4px; font-weight: 700; }
   .reason-badge.red { background: #fee2e2; color: #b91c1c; }
   .timer-badge { background: #fecaca; color: #991b1b; padding: 1px 5px; border-radius: 4px; font-weight: 800; font-family: monospace; }
-  .author-badge { color: #64748b; font-style: italic; font-size: 10px; }
+  
+  /* Автор действия (сделан заметнее) */
+  .author-badge { color: #475569; font-style: italic; font-size: 11px; font-weight: 600; background: #f1f5f9; padding: 1px 5px; border-radius: 4px;}
 
   .row.st-line { background: #dcfce7; }
   .row.st-off  { background: #fef08a; }
@@ -107,7 +113,6 @@
   .btn.purple { background: #8b5cf6; } .btn.purple:hover { background: #7c3aed; }
   .btn.small { padding: 6px 10px; font-size: 12px; }
   .btn.block { display: block; width: 100%; }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
 
@@ -188,7 +193,8 @@
   .report-table th { background: #f8fafc; padding: 12px 15px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
   .report-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
   .report-table tr:last-child td { border-bottom: none; }
-  .report-table tr:hover { background: #f8fafc; }
+  .report-table tr:hover { background: #f8fafc; cursor: pointer; } /* Курсор для истории */
+  
   .status-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
   .status-badge.line { background: #dcfce7; color: #166534; }
   .status-badge.off { background: #fef08a; color: #854d0e; }
@@ -238,7 +244,7 @@
     <div id="mainWorkBlock" class="hidden">
       <div class="top-bar">
         <div class="header-left">
-          <h1>Вывод техники СПТ</h1>
+          <div class="user-greeting">Рабочий стол: <span id="greetingUserName">—</span></div>
           
           <div class="global-stats">
             <div class="stat-badge total" onclick="showLogModal('total')">
@@ -256,7 +262,7 @@
           </div>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
           <div class="clock-block" id="clock">
             Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span>
           </div>
@@ -307,7 +313,7 @@
     <div class="report-stats" id="reportStatsRow"></div>
 
     <div id="reportContent">
-      <p class="empty">Выберите период и нажмите «Сформировать»</p>
+      <p class="empty">Выберите период и нажмите «Сформировать». (Клик по строке откроет историю машины)</p>
     </div>
   </div>
 
@@ -492,7 +498,8 @@ const DEFAULT_ROLES = [
   { id:'r6', name:'Начальник цеха', cat:'ITR' }
 ];
 
-const DB_KEY = 'spt_db_final_v2';
+const DB_KEY = 'spt_db_final_v4';
+const USER_KEY = 'spt_logged_user'; // Ключ для запоминания вошедшего пользователя
 
 let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
 let monthlyStats = {}; 
@@ -505,9 +512,11 @@ let editingRowId = null;
 let currentCatForAdd = null;
 let pendingUserAction = null;
 let pendingChiefEngineerReg = null;
+let currentReportRows = []; // Для сохранения строк отчета
 
 const activeTimers = {};
 let currentLogType = 'total';
+let reportStatusFilter = '';
 
 // ===== УТИЛИТЫ =====
 const $ = id => document.getElementById(id);
@@ -576,6 +585,66 @@ function initDB(){
     ];
   }
   saveDB();
+}
+
+// ===== СЕССИЯ ПОЛЬЗОВАТЕЛЯ =====
+function restoreUserSession() {
+  const saved = localStorage.getItem(USER_KEY);
+  if (!saved) return false;
+
+  try {
+    const user = JSON.parse(saved);
+    const u = USERS.find(x=>x.phone === user.phone);
+    
+    // Если пользователь есть в базе, берем актуальный статус из базы
+    if (u) {
+      loggedUser = { ...user, status: u.status, roleName: u.roleName, catLabel: u.catLabel };
+    } else {
+      loggedUser = user;
+    }
+
+    $('mainLoginBlock').classList.add('hidden');
+    $('mainWorkBlock').classList.remove('hidden');
+    $('greetingUserName').textContent = loggedUser.name;
+    renderMainGrid();
+    
+    if (loggedUser.status === 'pending') {
+      $('globalPendingAlert').classList.remove('hidden');
+    } else if (loggedUser.status === 'rejected') {
+      $('globalPendingAlert').classList.remove('hidden');
+      $('globalPendingText').textContent = 'Ваш аккаунт отклонён или удалён.';
+    }
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function finishLogin(data) {
+  let u = USERS.find(x=>x.phone===data.phone);
+  if (u) {
+    loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
+  } else {
+    loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
+    USERS.push({ id: newId('u'), ...loggedUser, createdAt: Date.now() });
+    saveDB();
+  }
+
+  localStorage.setItem(USER_KEY, JSON.stringify(loggedUser));
+
+  $('mainLoginBlock').classList.add('hidden');
+  $('mainWorkBlock').classList.remove('hidden');
+  $('greetingUserName').textContent = loggedUser.name;
+  renderMainGrid();
+  showToast('Добро пожаловать!');
+}
+
+function logoutUser() {
+  localStorage.removeItem(USER_KEY);
+  loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+  $('mainLoginBlock').classList.remove('hidden'); 
+  $('mainWorkBlock').classList.add('hidden');
+  $('globalPendingAlert').classList.add('hidden');
 }
 
 // ===== РЕНДЕР ГЛАВНОЙ =====
@@ -810,15 +879,20 @@ function addNewMachine() {
   renderMainGrid();
 }
 
-// ===== ЖУРНАЛ =====
-function showLogModal(type) {
+// ===== ЖУРНАЛ (Общий и по машине) =====
+let logModalMachineFilter = null; // Для фильтрации по конкретной машине
+
+function showLogModal(type, machineName = null) {
   currentLogType = type;
+  logModalMachineFilter = machineName; // Сохраняем фильтр
+
   const uniqueMonths = [...new Set(eventLog.map(e => e.month))].sort().reverse();
   const curMonth = getCurrentMonthStr();
   if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
 
   const select = $('logMonthSelect');
   select.innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
+  
   $('logModal').classList.remove('hidden');
   renderLogTable();
 }
@@ -828,14 +902,19 @@ function renderLogTable() {
   const type = currentLogType;
   
   let filtered = eventLog.filter(e => e.month === month);
-  let title = '';
-
-  if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
-  else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
-  else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
-  else { title = 'Все события'; }
-
-  $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+  
+  // Если открыт из отчета по конкретной машине
+  if (logModalMachineFilter) {
+    filtered = filtered.filter(e => e.machine === logModalMachineFilter);
+    $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`;
+  } else {
+    let title = '';
+    if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+    else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+    else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+    else { title = 'Все события'; }
+    $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+  }
   
   let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0);
   $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
@@ -864,8 +943,6 @@ function renderLogTable() {
 }
 
 // ===== ОТЧЕТЫ =====
-let reportStatusFilter = '';
-
 function setReportStatus(status) {
   reportStatusFilter = status;
   document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
@@ -906,7 +983,7 @@ function buildReport() {
     return m && m.catId === filterCat;
   });
 
-  let totalLine = 0, totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
+  let totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
   filtered.forEach(r => {
     if (r.status === 'off') { totalOff++; totalOffMs += r.duration; }
     if (r.status === 'parts') { totalParts++; totalOffMs += r.duration; }
@@ -930,7 +1007,7 @@ function buildReport() {
   filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
 
   let rowsHtml = filtered.map(r => `
-    <tr>
+    <tr onclick="showLogModal('', '${r.machine}')" title="Показать историю этой машины">
       <td>${r.date}</td>
       <td><strong>${esc(r.machine)}</strong></td>
       <td>${esc(r.driver || '—')}</td>
@@ -943,7 +1020,7 @@ function buildReport() {
 
   $('reportContent').innerHTML = `
     <table class="report-table">
-      <thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
+      <thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
   `;
@@ -1033,7 +1110,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initDB();
   updateClocks();
   setInterval(updateClocks, 1000);
-  setInterval(renderMainGrid, 60000); // Автообновление каждую минуту для смены водителей
+  setInterval(renderMainGrid, 60000); // Автообновление смен каждую минуту
+
+  // Пробуем восстановить сессию при загрузке
+  const sessionRestored = restoreUserSession();
 
   // Вкладки
   $('tabMain').onclick = () => {
@@ -1047,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
     $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
     
-    // Заполняем фильтры
     $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
     $('repCause').innerHTML = '<option value="">Все</option>' + CAUSES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
     
@@ -1065,6 +1144,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
     else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
   };
+
+  // Если пользователь уже был залогинен, открываем главную
+  if (sessionRestored) {
+    $('tabMain').click();
+  }
 
   // Логин
   $('loginCategory').onchange = () => {
@@ -1094,27 +1178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     finishLogin({ name, phone, cat, roleId, roleName: roleObj.name });
   };
 
-  function finishLogin(data) {
-    let u = USERS.find(x=>x.phone===data.phone);
-    if (u) {
-      loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
-    } else {
-      loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
-      USERS.push({ id: newId('u'), ...loggedUser, createdAt: Date.now() });
-      saveDB();
-    }
-
-    $('mainLoginBlock').classList.add('hidden');
-    $('mainWorkBlock').classList.remove('hidden');
-    renderMainGrid();
-    showToast('Добро пожаловать!');
-  }
-
-  $('logoutBtn').onclick = () => {
-    loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
-    $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden');
-    $('globalPendingAlert').classList.add('hidden');
-  };
+  $('logoutBtn').onclick = logoutUser;
 
   // Админ
   $('adminLoginBtn').onclick = () => {
