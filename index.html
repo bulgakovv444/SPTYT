@@ -11,31 +11,42 @@
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
-  /* Табы */
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
-  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
-  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
-  .tab-btn.active { background: #2563eb; color: #fff; }
-  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+  /* ===== ШАПКА И СТАТИСТИКА ===== */
+  .top-bar {
+    margin: 0 auto 15px auto; background: #fff;
+    padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    border-left: 5px solid #2563eb;
+  }
+  .header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .header-left h1 { font-size: 18px; color: #1e3a8a; margin: 0; }
 
-  /* Логин */
-  .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
-  .login-box h2 { margin-top: 0; color: #1e3a8a; }
-  .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
-  .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
+  .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  .stat-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 99px; font-weight: 700;
+    font-size: 13px; border: 2px solid transparent;
+    cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,.15); }
+  .stat-badge:active { transform: translateY(0); }
+  .stat-badge .icon { font-size: 14px; }
+  .stat-badge .val { font-family: monospace; font-size: 14px; }
+  .stat-badge .lbl { font-size: 12px; opacity: 0.8; font-weight: 600; }
+  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+  .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
+  .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
+  .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
 
-  /* Хедер */
-  .top-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05); margin-bottom: 15px; border-left: 5px solid #2563eb; }
-  .top-bar h1 { font-size: 18px; color: #1e3a8a; margin: 0; }
-  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-family: monospace; }
+  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-family: monospace; border: 1px solid #cbd5e1; }
   .clock-block span { color: #2563eb; }
 
-  /* Сетка */
+  /* ===== СЕТКА МАШИН ===== */
   .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 15px; align-items: start; }
   .col { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,.05); overflow: hidden; display: flex; flex-direction: column; }
   .col-header { background: #f8fafc; color: #1e3a8a; font-weight: 800; font-size: 16px; text-align: center; padding: 10px; border-bottom: 2px solid #cbd5e1; }
+  .col-body { max-height: 600px; overflow-y: auto; }
 
-  /* Строка машины */
   .row { display: flex; flex-direction: column; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; gap: 6px; transition: background 0.2s; }
   .row:last-child { border-bottom: none; }
   .row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; }
@@ -43,7 +54,7 @@
   .row-num { font-weight: 800; color: #94a3b8; font-size: 13px; width: 14px; text-align: right; }
   .row-name { font-weight: 700; font-size: 13px; color: #1e293b; }
 
-  /* Кнопки */
+  /* 4 кнопки */
   .row-actions { display: flex; gap: 3px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .btn-st { border: 1px solid #cbd5e1; background: #fff; color: #64748b; border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .15s; }
   .btn-st:hover { background: #f1f5f9; }
@@ -58,7 +69,6 @@
   .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; margin-right: 2px; transition: transform .1s; }
   .edit-driver-btn:hover { transform: scale(1.2); }
   .no-driver-badge { background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 4px; font-weight: 800; border: 1px solid #eab308; }
-  
   .reason-badge { background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 4px; font-weight: 700; }
   .reason-badge.red { background: #fee2e2; color: #b91c1c; }
   .timer-badge { background: #fecaca; color: #991b1b; padding: 1px 5px; border-radius: 4px; font-weight: 800; font-family: monospace; }
@@ -73,7 +83,13 @@
   .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 1px dashed #10b981; background: #ecfdf5; color: #059669; transition: all 0.15s; }
   .footer-btn:hover { background: #d1fae5; }
 
-  /* Формы и кнопки */
+  /* ===== ОБЩИЕ ЭЛЕМЕНТЫ ===== */
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
+  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
+  .tab-btn.active { background: #2563eb; color: #fff; }
+  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
   textarea { resize: vertical; min-height: 60px; }
@@ -94,12 +110,20 @@
 
   .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
 
-  /* Модалки */
+  /* ===== ЛОГИН ===== */
+  .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
+  .login-box h2 { margin-top: 0; color: #1e3a8a; }
+  .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
+  .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
+
+  /* ===== МОДАЛКИ ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
   .modal-overlay.hidden { display: none !important; }
-  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 400px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
+  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 450px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
+  .modal.wide { max-width: 800px; }
   .modal h3 { font-size: 16px; margin-bottom: 6px; }
   .modal p { font-size: 13px; color: #64748b; margin-bottom: 12px; }
+  .modal label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; margin-top: 10px; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
   .btn-modal { display: inline-block; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #fff; }
   .btn-modal.gray { background: #64748b; }
@@ -107,7 +131,15 @@
   .btn-modal.green { background: #10b981; }
   .btn-modal.yellow { background: #eab308; }
 
-  /* Конструктор */
+  /* ===== ЖУРНАЛ ===== */
+  .log-filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .log-table th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #475569; }
+  .log-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+  .log-table tr:last-child td { border-bottom: none; }
+  .log-empty { text-align: center; color: #94a3b8; padding: 30px; }
+
+  /* ===== КОНСТРУКТОР ===== */
   .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
   .builder-card.cats { border-top-color: #10b981; }
@@ -117,16 +149,14 @@
   .builder-card h3 { margin-bottom: 12px; font-size: 15px; }
   .builder-list { list-style: none; margin-bottom: 12px; max-height: 250px; overflow-y: auto; }
   .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
-  .builder-add-row { display: flex; gap: 6px; margin-top: 6px; }
+  .builder-add-row { display: flex; gap: 6px; margin-top: 6px; flex-direction: column; }
   .builder-add-row input, .builder-add-row select { margin-bottom: 0; }
-
-  /* Пользователи */
-  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border: 1px solid #e2e8f0; }
-  .moderation-user.approved { border-left-color: #10b981; }
-  .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
   .sub-tabs { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; flex-wrap: wrap; }
   .sub-tab-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; padding: 6px 12px; border-radius: 4px; }
   .sub-tab-btn.active { background: #e0e7ff; color: #1e3a8a; }
+  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border: 1px solid #e2e8f0; }
+  .moderation-user.approved { border-left-color: #10b981; }
+  .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
 
   .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
   .toast.error { background: #ef4444; }
@@ -146,11 +176,10 @@
 
   <div class="tabs">
     <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
-    <button class="tab-btn" id="tabReports">📊 Отчёты</button>
     <button class="tab-btn" id="tabAdmin">🔐 Панель управления</button>
   </div>
 
-  <!-- ГЛАВНАЯ -->
+  <!-- ===== ГЛАВНАЯ ===== -->
   <div id="mainView">
     <div id="mainLoginBlock" class="login-box">
       <h2>Вход <span class="project-badge">СПТ</span></h2>
@@ -170,32 +199,38 @@
 
     <div id="mainWorkBlock" class="hidden">
       <div class="top-bar">
-        <h1>Вывод техники СПТ</h1>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <div class="clock-block">
+        <div class="header-left">
+          <h1>Вывод техники СПТ</h1>
+          
+          <div class="global-stats">
+            <div class="stat-badge total" onclick="showLogModal('total')">
+              <span class="icon">📊</span><span class="val" id="statTotal">0 ч 0 м</span><span class="lbl">Всего</span>
+            </div>
+            <div class="stat-badge off" onclick="showLogModal('off')">
+              <span class="icon">🟡</span><span class="val" id="statOff">0 ч 0 м</span><span class="lbl">Сходы</span>
+            </div>
+            <div class="stat-badge parts" onclick="showLogModal('parts')">
+              <span class="icon">🔴</span><span class="val" id="statParts">0 ч 0 м</span><span class="lbl">Ож. рем.</span>
+            </div>
+            <div class="stat-badge bv" onclick="showLogModal('bv')">
+              <span class="icon">⚪</span><span class="val" id="statBv">0 ч 0 м</span><span class="lbl">БВ</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="clock-block" id="clock">
             Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span>
           </div>
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
       </div>
+      
       <div class="grid-wrapper" id="mainGrid"></div>
     </div>
   </div>
 
-  <!-- ОТЧЁТЫ -->
-  <div id="reportsView" class="hidden">
-    <h1>📊 Отчёты</h1>
-    <div class="card">
-      <div class="form-row">
-        <div><label class="fld">Дата</label><input type="date" id="repDate"></div>
-        <div><label class="fld">Категория</label><select id="repCat"><option value="">Все</option></select></div>
-      </div>
-      <button class="btn" id="buildReportBtn">Сформировать отчёт</button>
-    </div>
-    <div id="reportContent"></div>
-  </div>
-
-  <!-- АДМИН -->
+  <!-- ===== АДМИН ===== -->
   <div id="adminView" class="hidden">
     <div id="adminLoginBlock" class="login-box">
       <h2>Панель Главного инженера</h2>
@@ -222,20 +257,20 @@
       <div id="adminBuilderBlock" class="hidden">
         <div class="builder-grid">
           <div class="builder-card cats">
-            <h3>🟢 Категории (Колонки)</h3>
+            <h3>🟢 Категории</h3>
             <ul class="builder-list" id="builderCatsList"></ul>
             <div class="builder-add-row">
               <input type="text" id="newCatName" placeholder="ЦА, ППУ..." autocomplete="off">
-              <button class="btn green small" id="addCatBtn">+</button>
+              <button class="btn green small" id="addCatBtn">+ Добавить</button>
             </div>
           </div>
           
           <div class="builder-card machines">
             <h3>🟠 Машины</h3>
             <ul class="builder-list" id="builderMachinesList"></ul>
-            <div class="builder-add-row" style="flex-direction:column;">
-              <input type="text" id="newMachineNum" placeholder="Номер (А123ВС)" autocomplete="off">
-              <input type="text" id="newMachineModel" placeholder="Модель (Урал)" autocomplete="off">
+            <div class="builder-add-row">
+              <input type="text" id="newMachineNum" placeholder="Номер" autocomplete="off">
+              <input type="text" id="newMachineModel" placeholder="Модель" autocomplete="off">
               <select id="newMachineCat"></select>
               <button class="btn orange small" id="addMachineBtn">+ Добавить</button>
             </div>
@@ -244,7 +279,7 @@
           <div class="builder-card roles">
             <h3>🟣 Должности</h3>
             <ul class="builder-list" id="builderRolesList"></ul>
-            <div class="builder-add-row" style="flex-direction:column;">
+            <div class="builder-add-row">
               <input type="text" id="newRoleName" placeholder="Название" autocomplete="off">
               <select id="newRoleCat">
                 <option value="SPT">Специалист СПТ</option>
@@ -255,11 +290,11 @@
           </div>
 
           <div class="builder-card causes">
-            <h3>🔴 Причины схода / ремонта</h3>
+            <h3>🔴 Причины</h3>
             <ul class="builder-list" id="builderCausesList"></ul>
             <div class="builder-add-row">
-              <input type="text" id="newCauseName" placeholder="Например: ДВС, КПП" autocomplete="off">
-              <button class="btn red small" id="addCauseBtn">+</button>
+              <input type="text" id="newCauseName" placeholder="ДВС, КПП" autocomplete="off">
+              <button class="btn red small" id="addCauseBtn">+ Добавить</button>
             </div>
           </div>
         </div>
@@ -268,14 +303,29 @@
   </div>
 </div>
 
-<!-- Модалки -->
+<!-- МОДАЛКИ -->
+<div class="modal-overlay hidden" id="logModal">
+  <div class="modal wide">
+    <h3 id="logModalTitle">Журнал</h3>
+    <div class="log-filter-row">
+      <label style="margin:0; font-weight:600;">Период:</label>
+      <select id="logMonthSelect" onchange="renderLogTable()"></select>
+      <div id="logTotalSum" style="margin-left:auto; font-weight:800; color:#1e293b;"></div>
+    </div>
+    <div id="logModalContent"></div>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="causeModal">
   <div class="modal">
-    <h3 id="causeModalTitle">Укажите причину</h3>
-    <p id="causeModalSub">Это попадёт в отчёт.</p>
-    <label class="fld">Причина</label>
-    <select id="causeSelect" style="margin-bottom:10px;"></select>
-    <label class="fld">Уточнение (необязательно)</label>
+    <h3 id="causeModalTitle">Сход</h3>
+    <p id="causeModalSub">Укажите причину.</p>
+    <label>Причина</label>
+    <select id="causeSelect"></select>
+    <label>Уточнение</label>
     <textarea id="causeDetail" placeholder="Например: течь масла..."></textarea>
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button>
@@ -287,10 +337,8 @@
 <div class="modal-overlay hidden" id="editDriverModal">
   <div class="modal">
     <h3>Смена водителя</h3>
-    <label class="fld">Водитель 1 смены</label>
-    <input type="text" id="editDriver1" placeholder="Иванов И.И.">
-    <label class="fld" style="margin-top:10px;">Водитель 2 смены</label>
-    <input type="text" id="editDriver2" placeholder="Петров П.П.">
+    <label>ФИО Водителя</label>
+    <input type="text" id="editDriverName" placeholder="Иванов И.И." autocomplete="off">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button>
       <button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button>
@@ -301,14 +349,12 @@
 <div class="modal-overlay hidden" id="addMachineModal">
   <div class="modal">
     <h3>Добавить машину</h3>
-    <label class="fld">Госномер</label>
+    <label>Госномер</label>
     <input type="text" id="addNum" placeholder="А123ВС186">
-    <label class="fld" style="margin-top:10px;">Модель</label>
+    <label style="margin-top:10px;">Модель</label>
     <input type="text" id="addModel" placeholder="Урал">
-    <label class="fld" style="margin-top:10px;">Водитель 1 см</label>
-    <input type="text" id="addDriver1" placeholder="Иванов И.И.">
-    <label class="fld" style="margin-top:10px;">Водитель 2 см</label>
-    <input type="text" id="addDriver2" placeholder="Петров П.П.">
+    <label style="margin-top:10px;">Водитель (ФИО)</label>
+    <input type="text" id="addDriver" placeholder="Иванов И.И.">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button>
       <button class="btn-modal green" onclick="addNewMachine()">Добавить</button>
@@ -316,7 +362,6 @@
   </div>
 </div>
 
-<!-- Модалки кодов -->
 <div class="modal-overlay hidden" id="usersCodeModal">
   <div class="modal">
     <h3>Подтверждение действия</h3>
@@ -345,13 +390,12 @@
 
 <script>
 // ============================================================
-// ЛОКАЛЬНАЯ ВЕРСИЯ (localStorage)
+// БАЗА ДАННЫХ (localStorage)
 // ============================================================
 const ADMIN_CODE = 'admin2483';
 const USERS_CODE = '1104';
 const CHIEF_ENGINEER_CODE = '2483';
 
-// Начальные данные
 const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ', 'Опер.'];
 const DEFAULT_CAUSES = ['ДВС', 'КПП', 'Гидравлика', 'ШМР', 'Ходовая', 'Тормозная'];
 const DEFAULT_ROLES = [
@@ -363,52 +407,55 @@ const DEFAULT_ROLES = [
   { id:'r6', name:'Начальник цеха', cat:'ITR' }
 ];
 
-const DB_KEY = 'spt_db_v6';
+const DB_KEY = 'spt_db_final_v1';
 
-let CATS = [], MACHINES = [], USERS = [], SHIFTS = [], ROLES = [], CAUSES = [];
+let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
+let monthlyStats = {}; 
+let eventLog = [];
 let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
 let isAdminLoggedIn = false;
 let currentRowId = null;
 let currentStatusType = null;
 let editingRowId = null;
 let currentCatForAdd = null;
-let pendingChiefEngineerReg = null;
 let pendingUserAction = null;
+let pendingChiefEngineerReg = null;
 
-// Таймеры
 const activeTimers = {};
+let currentLogType = 'total';
 
 // ===== УТИЛИТЫ =====
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function catName(id){ const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
+function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
 
-function formatTime(ms) {
-  if (ms < 0) ms = 0;
+function formatMs(ms) {
+  const totalMins = Math.floor(ms / 60000);
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  return `${h} ч ${m} м`;
+}
+
+function formatTimer(ms) {
   const totalSec = Math.floor(ms / 1000);
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  return '⏱ ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return `⏱ ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// ===== БАЗА =====
-function saveDB(){
-  localStorage.setItem(DB_KEY, JSON.stringify({ cats:CATS, machines:MACHINES, users:USERS, shifts:SHIFTS, roles:ROLES, causes:CAUSES }));
+function getShiftInfo() {
+  const now = new Date();
+  const h = now.getHours();
+  const isShift1 = (h >= 8 && h < 20);
+  return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: now.toLocaleTimeString('ru-RU') };
 }
-function initDB(){
-  const raw = localStorage.getItem(DB_KEY);
-  if (raw) {
-    const d = JSON.parse(raw);
-    CATS = d.cats || []; MACHINES = d.machines || []; USERS = d.users || [];
-    SHIFTS = d.shifts || []; ROLES = d.roles || []; CAUSES = d.causes || [];
-  }
-  if (!CATS.length) CATS = DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
-  if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
-  if (!CAUSES.length) CAUSES = DEFAULT_CAUSES.map((n,i)=>({id:'cause_'+i, name:n}));
-  saveDB();
+
+function getMonthName(monthStr) {
+  const [y, m] = monthStr.split('-');
+  const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  return `${months[parseInt(m) - 1]} ${y}`;
 }
 
 function showToast(msg, isErr){
@@ -417,77 +464,78 @@ function showToast(msg, isErr){
   setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
-// ===== СМЕНЫ И ЧАСЫ =====
-function getShiftInfo() {
-  const now = new Date();
-  const h = now.getHours();
-  const isShift1 = (h >= 8 && h < 20);
-  return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: now.toLocaleTimeString('ru-RU') };
+// ===== БАЗА =====
+function saveDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify({ 
+    cats: CATS, machines: MACHINES, users: USERS, roles: ROLES, 
+    causes: CAUSES, monthlyStats, eventLog, shifts: SHIFTS 
+  }));
 }
 
+function initDB(){
+  const raw = localStorage.getItem(DB_KEY);
+  if (raw) {
+    const d = JSON.parse(raw);
+    CATS = d.cats || []; MACHINES = d.machines || []; USERS = d.users || [];
+    ROLES = d.roles || []; CAUSES = d.causes || []; SHIFTS = d.shifts || [];
+    monthlyStats = d.monthlyStats || {}; eventLog = d.eventLog || [];
+  }
+  if (!CATS.length) CATS = DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
+  if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
+  if (!CAUSES.length) CAUSES = DEFAULT_CAUSES.map((n,i)=>({id:'cause_'+i, name:n}));
+  
+  // Если машин нет, создадим дефолтные для теста
+  if (!MACHINES.length) {
+    MACHINES = [
+      { id:'m1', num:'А174ВА186', model:'Урал', catId: CATS[0].id, driver: 'Иванов И.И.', lastStatus: 'line', lastTime: 0 },
+      { id:'m2', num:'В222ЕЕ186', model:'Урал', catId: CATS[0].id, driver: 'Смирнов А.А.', lastStatus: 'line', lastTime: 0 }
+    ];
+  }
+  saveDB();
+}
+
+// ===== РЕНДЕР ГЛАВНОЙ =====
 function updateClocks() {
   const { shiftName, timeStr } = getShiftInfo();
   if ($('shiftName')) $('shiftName').textContent = shiftName;
   if ($('timeText')) $('timeText').textContent = timeStr;
   
-  // Обновляем водителей по времени
-  document.querySelectorAll('.driver-badge').forEach(badge => {
-    const isShift1 = getShiftInfo().isShift1;
-    const d1 = badge.getAttribute('data-d1') || '';
-    const d2 = badge.getAttribute('data-d2') || '';
-    const activeDriver = isShift1 ? d1 : d2;
-    const label = isShift1 ? '1 см' : '2 см';
-    const textSpan = badge.querySelector('.driver-text');
-    if (textSpan) {
-      textSpan.textContent = activeDriver ? `${label}: ${activeDriver}` : `${label}: Нет`;
-      badge.style.background = activeDriver ? '#e0f2fe' : '#fef3c7';
-      badge.style.color = activeDriver ? '#0369a1' : '#b45309';
-    }
-  });
+  const curMonth = getCurrentMonthStr();
+  const stats = monthlyStats[curMonth] || { total: 0, off: 0, parts: 0, bv: 0 };
+  
+  if ($('statTotal')) $('statTotal').textContent = formatMs(stats.total);
+  if ($('statOff')) $('statOff').textContent = formatMs(stats.off);
+  if ($('statParts')) $('statParts').textContent = formatMs(stats.parts);
+  if ($('statBv')) $('statBv').textContent = formatMs(stats.bv);
 }
-setInterval(updateClocks, 1000);
 
-// ===== РЕНДЕР ТАБЛИЦЫ =====
 function renderMainGrid(){
-  // Останавливаем старые таймеры
   for (let key in activeTimers) clearInterval(activeTimers[key]);
   for (let key in activeTimers) delete activeTimers[key];
 
   if (!loggedUser.name) return;
-  const today = todayStr();
-  const shift = getShiftInfo().isShift1 ? 1 : 2;
 
-  // Получаем активные смены
-  const activeByMachine = {};
-  SHIFTS.filter(s=>s.date===today && s.shift===shift).forEach(s=>{ activeByMachine[s.machineId] = s; });
-  
   let html = '';
   CATS.forEach(cat => {
-    const machines = MACHINES.filter(m=>m.catId===cat.id);
+    const catMachines = MACHINES.filter(m=>m.catId===cat.id);
     html += `<div class="col">
       <div class="col-header">${esc(cat.name)}</div>
-      <div id="rows-container-${cat.id}">`;
+      <div class="col-body" id="rows-container-${cat.id}">`;
 
-    if (!machines.length) {
+    if (!catMachines.length) {
       html += `<p class="empty">Нет машин</p>`;
     } else {
-      machines.forEach((m, idx) => {
-        const s = activeByMachine[m.id];
-        let st = 'line', cause = '', time = null;
-        if (s && s.lastStatus) {
-          st = s.lastStatus;
-          cause = s.lastCause || '';
-          time = s.lastTime || null;
-        }
-
+      catMachines.forEach((m, idx) => {
+        const st = m.lastStatus || 'line';
+        const cause = m.lastCause || '';
         const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
         
-        // Формируем низ
+        // Низ строки
         let bottomHtml = '';
         if (st !== 'bv') {
-          bottomHtml += `<span class="driver-badge" data-d1="${esc(m.driver1||'')}" data-d2="${esc(m.driver2||'')}">
+          bottomHtml += `<span class="driver-badge" data-driver="${esc(m.driver||'')}">
             <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить">✏️</button>
-            <span class="driver-text"></span>
+            <span class="driver-text">${esc(m.driver || 'Нет')}</span>
           </span>`;
         } else {
           bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
@@ -498,7 +546,7 @@ function renderMainGrid(){
           bottomHtml += `<span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
         }
 
-        bottomHtml += `<span class="author-badge">${esc(s?.author || 'На линии')}</span>`;
+        bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
 
         // Кнопки
         let btnsHtml = `
@@ -508,7 +556,7 @@ function renderMainGrid(){
           <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
         `;
 
-        html += `<div class="row ${rowClass}" id="row-${m.id}" data-d1="${esc(m.driver1||'')}" data-d2="${esc(m.driver2||'')}">
+        html += `<div class="row ${rowClass}" id="row-${m.id}">
           <div class="row-top">
             <div class="row-left">
               <span class="row-num">${idx + 1}</span>
@@ -519,15 +567,15 @@ function renderMainGrid(){
           <div class="row-bottom">${bottomHtml}</div>
         </div>`;
 
-        // Запуск таймера, если есть время
-        if ((st === 'off' || st === 'parts') && time) {
+        // Таймер
+        if ((st === 'off' || st === 'parts') && m.lastTime) {
           setTimeout(() => {
             const timerSpan = $('timer-' + m.id);
             if (timerSpan) {
               activeTimers[m.id] = setInterval(() => {
-                timerSpan.textContent = formatTime(Date.now() - time);
+                timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
               }, 1000);
-              timerSpan.textContent = formatTime(Date.now() - time);
+              timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
             }
           }, 50);
         }
@@ -548,20 +596,43 @@ function renderMainGrid(){
 function setStatus(machineId, status, causeText = '') {
   if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
   
-  const today = todayStr();
-  const shift = getShiftInfo().isShift1 ? 1 : 2;
-  
-  let shiftObj = SHIFTS.find(s=>s.machineId===machineId && s.date===today && s.shift===shift);
-  if (!shiftObj) {
-    shiftObj = { id: newId('sh'), machineId, date: today, shift, lastStatus: 'line', lastCause: '', lastTime: null, author: '' };
-    SHIFTS.push(shiftObj);
+  const m = MACHINES.find(x=>x.id===machineId);
+  if (!m) return;
+
+  const now = Date.now();
+  const monthStr = new Date().toISOString().slice(0, 7);
+
+  // Если закрываем простой
+  if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
+    const elapsed = now - m.lastTime;
+
+    if (!monthlyStats[monthStr]) monthlyStats[monthStr] = { total: 0, off: 0, parts: 0, bv: 0 };
+    
+    monthlyStats[monthStr].total += elapsed;
+    if (m.lastStatus === 'off') monthlyStats[monthStr].off += elapsed;
+    if (m.lastStatus === 'parts') monthlyStats[monthStr].parts += elapsed;
+    if (m.lastStatus === 'bv') monthlyStats[monthStr].bv += elapsed;
+
+    eventLog.push({
+      month: monthStr,
+      date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
+      time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
+      machine: `${m.num} ${m.model}`,
+      driver: m.driver || '',
+      status: m.lastStatus,
+      cause: m.lastCause || '—',
+      duration: elapsed,
+      author: m.author || 'Неизвестно'
+    });
   }
 
-  shiftObj.lastStatus = status;
-  shiftObj.lastCause = causeText;
-  shiftObj.lastTime = (status === 'off' || status === 'parts') ? Date.now() : null;
-  shiftObj.author = (status === 'line' ? 'На линии: ' : status === 'off' ? 'Сход: ' : status === 'parts' ? 'Ремонт: ' : 'БВ: ') + loggedUser.name;
+  m.lastStatus = status;
+  m.lastCause = causeText;
+  m.lastTime = status === 'line' ? 0 : now;
   
+  const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
+  m.author = labels[status] + loggedUser.name;
+
   saveDB();
   renderMainGrid();
 }
@@ -609,9 +680,7 @@ function openEditDriverModal(machineId) {
   editingRowId = machineId;
   const m = MACHINES.find(x=>x.id===machineId);
   if (!m) return;
-
-  $('editDriver1').value = m.driver1 || '';
-  $('editDriver2').value = m.driver2 || '';
+  $('editDriverName').value = m.driver || '';
   $('editDriverModal').classList.remove('hidden');
 }
 
@@ -619,14 +688,10 @@ function saveNewDrivers() {
   if (!editingRowId) return;
   const m = MACHINES.find(x=>x.id===editingRowId);
   if (!m) return;
-
-  m.driver1 = $('editDriver1').value.trim();
-  m.driver2 = $('editDriver2').value.trim();
-  
+  m.driver = $('editDriverName').value.trim();
   saveDB();
   closeModal('editDriverModal');
   renderMainGrid();
-  showToast('Водители обновлены');
 }
 
 // ===== ДОБАВЛЕНИЕ МАШИНЫ =====
@@ -634,8 +699,7 @@ function openAddMachineModal(catId) {
   currentCatForAdd = catId;
   $('addNum').value = '';
   $('addModel').value = '';
-  $('addDriver1').value = '';
-  $('addDriver2').value = '';
+  $('addDriver').value = '';
   $('addMachineModal').classList.remove('hidden');
 }
 
@@ -648,17 +712,69 @@ function addNewMachine() {
     id: newId('mach'),
     num, model,
     catId: currentCatForAdd,
-    driver1: $('addDriver1').value.trim(),
-    driver2: $('addDriver2').value.trim()
+    driver: $('addDriver').value.trim(),
+    lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
   });
   
   saveDB();
   closeModal('addMachineModal');
   renderMainGrid();
-  showToast('Машина добавлена');
 }
 
-// ===== АДМИН ПАНЕЛЬ =====
+// ===== ЖУРНАЛ =====
+function showLogModal(type) {
+  currentLogType = type;
+  const uniqueMonths = [...new Set(eventLog.map(e => e.month))].sort().reverse();
+  const curMonth = getCurrentMonthStr();
+  if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
+
+  const select = $('logMonthSelect');
+  select.innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
+  $('logModal').classList.remove('hidden');
+  renderLogTable();
+}
+
+function renderLogTable() {
+  const month = $('logMonthSelect').value;
+  const type = currentLogType;
+  
+  let filtered = eventLog.filter(e => e.month === month);
+  let title = '';
+
+  if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+  else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+  else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+  else { title = 'Все события'; }
+
+  $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+  
+  let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0);
+  $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+
+  if (!filtered.length) {
+    $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>';
+    return;
+  }
+
+  let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
+  
+  filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).forEach(e => {
+    html += `
+      <tr>
+        <td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td>
+        <td><strong>${esc(e.machine)}</strong></td>
+        <td>${esc(e.driver || '—')}</td>
+        <td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td>
+        <td style="font-family:monospace;font-weight:600;">${formatMs(e.duration)}</td>
+        <td style="font-size:11px;color:#64748b;">${esc(e.author)}</td>
+      </tr>
+    `;
+  });
+  html += '</tbody></table>';
+  $('logModalContent').innerHTML = html;
+}
+
+// ===== АДМИН =====
 function renderAdmin() {
   if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers();
   if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
@@ -709,7 +825,8 @@ function renderBuilder() {
   $('newMachineCat').innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
 }
 
-// ===== ДЕЙСТВИЯ КОНСТРУКТОРА =====
+function catName(id) { const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
+
 function delCat(id) { if(confirm('Удалить?')) { CATS = CATS.filter(x=>x.id!==id); saveDB(); renderBuilder(); } }
 function delMach(id) { if(confirm('Удалить?')) { MACHINES = MACHINES.filter(x=>x.id!==id); saveDB(); renderBuilder(); renderMainGrid(); } }
 function delRole(id) { if(confirm('Удалить?')) { ROLES = ROLES.filter(x=>x.id!==id); saveDB(); renderBuilder(); } }
@@ -721,33 +838,24 @@ function closeModal(id) { $(id).classList.add('hidden'); }
 document.addEventListener('DOMContentLoaded', () => {
   initDB();
   updateClocks();
+  setInterval(updateClocks, 1000);
 
-  // --- Вкладки ---
+  // Вкладки
   $('tabMain').onclick = () => {
-    ['tabMain','tabReports','tabAdmin'].forEach(t=>$(t).classList.remove('active'));
-    ['mainView','reportsView','adminView'].forEach(v=>$(v).classList.add('hidden'));
-    $('tabMain').classList.add('active'); $('mainView').classList.remove('hidden');
+    $('tabMain').classList.add('active'); $('tabAdmin').classList.remove('active');
+    $('mainView').classList.remove('hidden'); $('adminView').classList.add('hidden');
     if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); }
     else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); }
   };
 
-  $('tabReports').onclick = () => {
-    ['tabMain','tabReports','tabAdmin'].forEach(t=>$(t).classList.remove('active'));
-    ['mainView','reportsView','adminView'].forEach(v=>$(v).classList.add('hidden'));
-    $('tabReports').classList.add('active'); $('reportsView').classList.remove('hidden');
-    $('repDate').value = todayStr();
-    $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  };
-
   $('tabAdmin').onclick = () => {
-    ['tabMain','tabReports','tabAdmin'].forEach(t=>$(t).classList.remove('active'));
-    ['mainView','reportsView','adminView'].forEach(v=>$(v).classList.add('hidden'));
-    $('tabAdmin').classList.add('active'); $('adminView').classList.remove('hidden');
+    $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active');
+    $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden');
     if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
     else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
   };
 
-  // --- Логин ---
+  // Логин
   $('loginCategory').onchange = () => {
     const cat = $('loginCategory').value;
     const list = ROLES.filter(r=>r.cat===cat);
@@ -776,19 +884,28 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function finishLogin(data) {
-    loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'approved' };
     let u = USERS.find(x=>x.phone===data.phone);
-    if (!u) {
+    if (u) {
+      loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
+    } else {
+      loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
       USERS.push({ id: newId('u'), ...loggedUser, createdAt: Date.now() });
       saveDB();
     }
+
     $('mainLoginBlock').classList.add('hidden');
     $('mainWorkBlock').classList.remove('hidden');
     renderMainGrid();
     showToast('Добро пожаловать!');
   }
 
-  // --- Админ ---
+  $('logoutBtn').onclick = () => {
+    loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+    $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden');
+    $('globalPendingAlert').classList.add('hidden');
+  };
+
+  // Админ
   $('adminLoginBtn').onclick = () => {
     if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
     isAdminLoggedIn = true;
@@ -796,10 +913,16 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdmin();
   };
 
+  $('logoutAdminBtn').onclick = () => {
+    isAdminLoggedIn = false;
+    $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden');
+    $('adminCodeInput').value = '';
+  };
+
   $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
   $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
 
-  // --- Подтверждение действий ---
+  // Подтверждение
   $('confirmUsersCodeBtn').onclick = () => {
     if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
     if (!pendingUserAction) return;
@@ -825,44 +948,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // --- Конструктор ---
-  $('addCatBtn').onclick = () => {
-    const v = $('newCatName').value.trim();
-    if (v) { CATS.push({ id: newId('cat'), name: v }); saveDB(); renderBuilder(); $('newCatName').value = ''; }
-  };
+  // Конструктор
+  $('addCatBtn').onclick = () => { const v = $('newCatName').value.trim(); if (v) { CATS.push({ id: newId('cat'), name: v }); saveDB(); renderBuilder(); $('newCatName').value = ''; } };
   $('addMachineBtn').onclick = () => {
-    const num = $('newMachineNum').value.trim();
-    const model = $('newMachineModel').value.trim();
-    const catId = $('newMachineCat').value;
-    if (num && catId) {
-      MACHINES.push({ id: newId('mach'), num, model, catId, driver1: '', driver2: '' });
-      saveDB(); renderBuilder(); $('newMachineNum').value = ''; $('newMachineModel').value = '';
-    }
+    const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value;
+    if (num && catId) { MACHINES.push({ id: newId('mach'), num, model, catId, driver: '', lastStatus: 'line', lastTime: 0 }); saveDB(); renderBuilder(); $('newMachineNum').value = ''; $('newMachineModel').value = ''; }
   };
-  $('addRoleBtn').onclick = () => {
-    const v = $('newRoleName').value.trim();
-    const cat = $('newRoleCat').value;
-    if (v) { ROLES.push({ id: newId('role'), name: v, cat }); saveDB(); renderBuilder(); $('newRoleName').value = ''; }
-  };
-  $('addCauseBtn').onclick = () => {
-    const v = $('newCauseName').value.trim();
-    if (v) { CAUSES.push({ id: newId('cause'), name: v }); saveDB(); renderBuilder(); $('newCauseName').value = ''; }
-  };
-
-  // --- Отчёты ---
-  $('buildReportBtn').onclick = () => {
-    const date = $('repDate').value;
-    const cat = $('repCat').value;
-    
-    // Заглушка для отчета
-    $('reportContent').innerHTML = `
-      <div class="card">
-        <h2>Отчет за ${date}</h2>
-        <p>Фильтр по категории: ${cat ? catName(cat) : 'Все'}</p>
-        <p class="empty">(Здесь будет таблица с выгрузкой в Excel: Машина, Водитель, Часы работы, Сходы)</p>
-      </div>
-    `;
-  };
+  $('addRoleBtn').onclick = () => { const v = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (v) { ROLES.push({ id: newId('role'), name: v, cat }); saveDB(); renderBuilder(); $('newRoleName').value = ''; } };
+  $('addCauseBtn').onclick = () => { const v = $('newCauseName').value.trim(); if (v) { CAUSES.push({ id: newId('cause'), name: v }); saveDB(); renderBuilder(); $('newCauseName').value = ''; } };
 });
 </script>
 </body>
