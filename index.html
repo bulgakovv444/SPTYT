@@ -25,7 +25,6 @@
     border-left: 5px solid #2563eb; margin-bottom: 15px;
   }
   
-  /* Левая часть: Профиль */
   .header-left { display: flex; align-items: center; gap: 15px; }
 
   .user-profile {
@@ -46,7 +45,6 @@
     border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content;
   }
 
-  /* Правая часть: Статистика, Часы, Выйти */
   .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
 
   .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -93,6 +91,9 @@
   .btn-st.active-off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .btn-st.active-parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .btn-st.active-bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
+  
+  /* Заблокированные кнопки */
+  .btn-st:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
   /* Низ строки */
   .row-bottom { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-left: 20px; font-size: 11px; }
@@ -113,6 +114,7 @@
   .col-footer { padding: 8px; background: #f8fafc; border-top: 1px solid #cbd5e1; }
   .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 1px dashed #10b981; background: #ecfdf5; color: #059669; transition: all 0.15s; }
   .footer-btn:hover { background: #d1fae5; }
+  .footer-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
   /* ===== ОБЩИЕ ЭЛЕМЕНТЫ ===== */
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
@@ -226,6 +228,14 @@
   .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
+  
+  /* Баннер для неавторизованных */
+  .blocked-banner {
+    background: #fee2e2; border: 2px solid #ef4444; color: #991b1b;
+    padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px;
+  }
+  .blocked-banner h2 { font-size: 20px; margin-bottom: 10px; color: #991b1b; }
+  .blocked-banner p { font-size: 16px; }
 </style>
 </head>
 <body>
@@ -294,6 +304,12 @@
 
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
+      </div>
+      
+      <!-- Баннер блокировки для неподтвержденных -->
+      <div id="blockedBanner" class="blocked-banner hidden">
+        <h2>⛔ Доступ заблокирован</h2>
+        <p>Ваш аккаунт находится на проверке у Главного инженера. Действия будут доступны только после подтверждения.</p>
       </div>
       
       <div class="grid-wrapper" id="mainGrid"></div>
@@ -524,7 +540,7 @@ const DEFAULT_ROLES = [
   { id:'r6', name:'Начальник цеха', cat:'ITR' }
 ];
 
-const DB_KEY = 'spt_db_final_v7'; // Версия базы обновлена (сброс старых тестовых аккаунтов)
+const DB_KEY = 'spt_db_final_v8'; // Версия базы обновлена (сброс старых тестовых аккаунтов)
 const USER_KEY = 'spt_logged_user';
 
 let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
@@ -667,7 +683,6 @@ function finishLogin(data) {
   showToast('Добро пожаловать!');
 }
 
-// Функция заполнения шапки данными пользователя
 function updateUserProfileBlock() {
   if (!loggedUser.name) return;
   $('userAvatar').textContent = loggedUser.name.charAt(0).toUpperCase();
@@ -683,6 +698,7 @@ function logoutUser() {
   $('mainLoginBlock').classList.remove('hidden'); 
   $('mainWorkBlock').classList.add('hidden');
   $('globalPendingAlert').classList.add('hidden');
+  $('blockedBanner').classList.add('hidden');
 }
 
 // ===== РЕНДЕР ГЛАВНОЙ =====
@@ -705,6 +721,17 @@ function renderMainGrid(){
   for (let key in activeTimers) delete activeTimers[key];
 
   if (!loggedUser.name) return;
+
+  // Проверка статуса: если не подтвержден, блокируем весь интерфейс
+  const isApproved = loggedUser.status === 'approved';
+  const isPending = loggedUser.status === 'pending';
+  
+  // Показываем баннер блокировки, если не подтвержден
+  if (!isApproved) {
+    $('blockedBanner').classList.remove('hidden');
+  } else {
+    $('blockedBanner').classList.add('hidden');
+  }
 
   let html = '';
   CATS.forEach(cat => {
@@ -729,7 +756,7 @@ function renderMainGrid(){
           const displayText = activeDriver ? `${label}: ${activeDriver}` : `${label}: Нет`;
 
           bottomHtml += `<span class="driver-badge" data-d1="${esc(m.driver1||'')}" data-d2="${esc(m.driver2||'')}">
-            <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить">✏️</button>
+            <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить" ${!isApproved ? 'disabled' : ''}>✏️</button>
             <span class="driver-text">${esc(displayText)}</span>
           </span>`;
         } else {
@@ -744,10 +771,10 @@ function renderMainGrid(){
         bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
 
         let btnsHtml = `
-          <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')">На линии</button>
-          <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
-          <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')">Ож. ремонта</button>
-          <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
+          <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')" ${!isApproved ? 'disabled' : ''}>На линии</button>
+          <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')" ${!isApproved ? 'disabled' : ''}>Сход</button>
+          <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')" ${!isApproved ? 'disabled' : ''}>Ож. ремонта</button>
+          <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')" ${!isApproved ? 'disabled' : ''}>БВ</button>
         `;
 
         html += `<div class="row ${rowClass}" id="row-${m.id}">
@@ -776,7 +803,7 @@ function renderMainGrid(){
     }
     html += `</div>
       <div class="col-footer">
-        <button class="footer-btn" onclick="openAddMachineModal('${cat.id}')">+ Добавить машину</button>
+        <button class="footer-btn" onclick="openAddMachineModal('${cat.id}')" ${!isApproved ? 'disabled' : ''}>+ Добавить машину</button>
       </div>
     </div>`;
   });
@@ -787,6 +814,11 @@ function renderMainGrid(){
 
 // ===== СТАТУСЫ =====
 function setStatus(machineId, status, causeText = '') {
+  // Проверка: нельзя нажимать, если не подтвержден
+  if (loggedUser.status !== 'approved') {
+    return showToast('Ваш аккаунт не подтвержден. Ожидайте.', true);
+  }
+  
   const m = MACHINES.find(x=>x.id===machineId);
   if (!m) return;
 
@@ -828,6 +860,8 @@ function setStatus(machineId, status, causeText = '') {
 }
 
 function openCauseModal(machineId, status) {
+  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+  
   currentRowId = machineId;
   currentStatusType = status;
 
@@ -867,6 +901,8 @@ function applyCause() {
 
 // ===== ВОДИТЕЛИ =====
 function openEditDriverModal(machineId) {
+  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+  
   editingRowId = machineId;
   const m = MACHINES.find(x=>x.id===machineId);
   if (!m) return;
@@ -888,6 +924,8 @@ function saveNewDrivers() {
 
 // ===== ДОБАВЛЕНИЕ МАШИНЫ =====
 function openAddMachineModal(catId) {
+  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+  
   currentCatForAdd = catId;
   $('addNum').value = '';
   $('addModel').value = '';
