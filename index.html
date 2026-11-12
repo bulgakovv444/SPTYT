@@ -11,22 +11,18 @@
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
-  /* ===== ВКЛАДКИ ===== */
   .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
   .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
   .tab-btn.active { background: #2563eb; color: #fff; }
   .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
 
-  /* ===== ШАПКА ===== */
   .top-bar {
     background: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
     display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
     border-left: 5px solid #2563eb; margin-bottom: 15px;
   }
-  
   .header-left { display: flex; align-items: center; gap: 15px; }
-
   .user-profile {
     display: flex; align-items: center; gap: 15px; background: #f8fafc;
     padding: 10px 20px; border-radius: 10px; border: 1px solid #e2e8f0; min-width: 320px;
@@ -70,7 +66,6 @@
   }
   .clock-block span { color: #2563eb; }
 
-  /* ===== СЕТКА МАШИН ===== */
   .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 15px; align-items: start; }
   .col { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,.05); overflow: hidden; display: flex; flex-direction: column; }
   .col-header { background: #f8fafc; color: #1e3a8a; font-weight: 800; font-size: 16px; text-align: center; padding: 10px; border-bottom: 2px solid #cbd5e1; }
@@ -83,7 +78,6 @@
   .row-num { font-weight: 800; color: #94a3b8; font-size: 13px; width: 14px; text-align: right; }
   .row-name { font-weight: 700; font-size: 13px; color: #1e293b; }
 
-  /* Кнопки */
   .row-actions { display: flex; gap: 3px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .btn-st { border: 1px solid #cbd5e1; background: #fff; color: #64748b; border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .15s; }
   .btn-st:hover { background: #f1f5f9; }
@@ -91,10 +85,8 @@
   .btn-st.active-off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .btn-st.active-parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .btn-st.active-bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
-  
   .btn-st:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-  /* Низ строки */
   .row-bottom { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-left: 20px; font-size: 11px; }
   .driver-badge { background: #e0f2fe; color: #0369a1; padding: 1px 5px; border-radius: 4px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
   .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; margin-right: 2px; transition: transform .1s; }
@@ -115,7 +107,6 @@
   .footer-btn:hover { background: #d1fae5; }
   .footer-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-  /* ===== ОБЩИЕ ЭЛЕМЕНТЫ ===== */
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
   textarea { resize: vertical; min-height: 60px; }
@@ -135,15 +126,12 @@
 
   .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
 
-  /* ===== ЛОГИН ===== */
   .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
   .login-box h2 { margin-top: 0; color: #1e3a8a; }
   .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
   .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
-  
   .login-box select:disabled { background: #f8fafc; color: #94a3b8; cursor: wait; }
 
-  /* ===== МОДАЛКИ ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
   .modal-overlay.hidden { display: none !important; }
   .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 450px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
@@ -158,7 +146,6 @@
   .btn-modal.green { background: #10b981; }
   .btn-modal.yellow { background: #eab308; }
 
-  /* ===== ЖУРНАЛ ===== */
   .log-filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
   .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .log-table th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #475569; }
@@ -166,7 +153,6 @@
   .log-table tr:last-child td { border-bottom: none; }
   .log-empty { text-align: center; color: #94a3b8; padding: 30px; }
 
-  /* ===== КОНСТРУКТОР ===== */
   .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
   .builder-card.cats { border-top-color: #10b981; }
@@ -185,13 +171,11 @@
   .moderation-user.approved { border-left-color: #10b981; }
   .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
 
-  /* ===== ОТЧЕТ ===== */
   .report-filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
   .report-filters .filter-group { flex: 1; min-width: 140px; }
   .date-group { display: flex; gap: 5px; align-items: center; }
   .date-group input { padding: 8px 5px; text-align: center; }
   .date-group span { font-weight: 700; color: #64748b; }
-  
   .status-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
   .status-filter-btn { border: 2px solid #cbd5e1; background: #fff; color: #64748b; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
   .status-filter-btn:hover { background: #f1f5f9; }
@@ -215,7 +199,6 @@
   .report-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
   .report-table tr:last-child td { border-bottom: none; }
   .report-table tr:hover { background: #f8fafc; cursor: pointer; }
-  
   .status-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
   .status-badge.line { background: #dcfce7; color: #166534; }
   .status-badge.off { background: #fef08a; color: #854d0e; }
@@ -229,13 +212,18 @@
   .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
-  
+
   .blocked-banner {
     background: #fee2e2; border: 2px solid #ef4444; color: #991b1b;
     padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px;
   }
   .blocked-banner h2 { font-size: 20px; margin-bottom: 10px; color: #991b1b; }
   .blocked-banner p { font-size: 16px; }
+
+  .danger-zone { margin-top: 20px; padding: 16px; border: 2px dashed #ef4444; border-radius: 10px; background: #fef2f2; text-align: center; }
+  .danger-zone h3 { color: #991b1b; margin-bottom: 8px; font-size: 15px; }
+  .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
+  .danger-zone .btn { margin: 0 4px; }
 </style>
 </head>
 <body>
@@ -305,12 +293,12 @@
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
       </div>
-      
+
       <div id="blockedBanner" class="blocked-banner hidden">
         <h2>⛔ Доступ заблокирован</h2>
         <p>Ваш аккаунт находится на проверке у Главного инженера. Действия будут доступны только после подтверждения.</p>
       </div>
-      
+
       <div class="grid-wrapper" id="mainGrid"></div>
     </div>
   </div>
@@ -318,7 +306,7 @@
   <!-- ===== ОТЧЕТЫ ===== -->
   <div id="reportsView" class="hidden">
     <h1>📊 Отчёт по технике СПТ</h1>
-    
+
     <div class="card">
       <div class="report-filters">
         <div class="filter-group" style="flex: 1.5;">
@@ -366,20 +354,28 @@
       <input type="password" id="adminCodeInput" placeholder="Код доступа" autocomplete="off">
       <button class="btn block red" id="adminLoginBtn">Войти</button>
     </div>
-    
+
     <div id="adminWorkBlock" class="hidden">
       <div class="top-bar" style="background:#fef2f2; border-left-color:#dc2626;">
         <h1 style="color:#991b1b;">Панель управления</h1>
         <button class="btn gray small" id="logoutAdminBtn">Выйти</button>
       </div>
-      
+
       <div class="sub-tabs">
         <button class="sub-tab-btn active" id="adminTabUsers">👥 Пользователи</button>
         <button class="sub-tab-btn" id="adminTabBuilder">🛠 Конструктор</button>
       </div>
 
       <div id="adminUsersBlock">
-        <div class="card"><h2>Реестр пользователей</h2><div id="moderationList"></div></div>
+        <div class="card"><h2>Реестр пользователей</h2><div id="moderationList"></div>
+
+          <div class="danger-zone">
+            <h3>⚠️ Опасная зона</h3>
+            <p>Действия ниже необратимы. Используйте только если уверены.</p>
+            <button class="btn red small" id="cleanBrokenUsersBtn">🧹 Очистить битые аккаунты</button>
+            <button class="btn red small" id="deleteAllUsersBtn">🗑 Удалить ВСЕХ пользователей</button>
+          </div>
+        </div>
       </div>
 
       <div id="adminBuilderBlock" class="hidden">
@@ -392,7 +388,7 @@
               <button class="btn green small" id="addCatBtn">+ Добавить</button>
             </div>
           </div>
-          
+
           <div class="builder-card machines">
             <h3>🟠 Машины</h3>
             <ul class="builder-list" id="builderMachinesList"></ul>
@@ -541,7 +537,6 @@
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
-  // Теперь данные храним в виде объектов (словарей)
   const DEFAULT_CATS = {
     'cat_1': { id: 'cat_1', name: 'ЦА' },
     'cat_2': { id: 'cat_2', name: 'АЦН' },
@@ -572,11 +567,10 @@
     'r8': { id: 'r8', name: 'Зам. Исполнительного директора', cat: 'ITR' }
   };
 
-  // Глобальные переменные
   let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {};
-  let monthlyStats = {}; 
+  let monthlyStats = {};
   let eventLog = {};
-  
+
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false;
   let currentRowId = null;
@@ -585,15 +579,14 @@
   let currentCatForAdd = null;
   let pendingUserAction = null;
   let pendingChiefEngineerReg = null;
-  
+
   const activeTimers = {};
   let currentLogType = 'total';
   let reportStatusFilter = '';
   let isDataReady = false;
 
   const $ = id => document.getElementById(id);
-  
-  // Утилиты
+
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
   function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
@@ -631,45 +624,53 @@
   // ============================================================
   // СИНХРОНИЗАЦИЯ FIREBASE
   // ============================================================
-  onValue(ref(db, 'cats'), snap => { 
-    CATS = snap.val() || {}; 
+  onValue(ref(db, 'cats'), snap => {
+    CATS = snap.val() || {};
     if(Object.keys(CATS).length === 0) {
        CATS = DEFAULT_CATS;
        set(ref(db, 'cats'), CATS);
     }
-    checkDataReady(); 
+    checkDataReady();
   });
-  
+
   onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || {}; checkDataReady(); });
-  
-  onValue(ref(db, 'roles'), snap => { 
-    ROLES = snap.val() || {}; 
+
+  onValue(ref(db, 'roles'), snap => {
+    ROLES = snap.val() || {};
     if(Object.keys(ROLES).length === 0) {
        ROLES = DEFAULT_ROLES;
        set(ref(db, 'roles'), ROLES);
     }
     updateRoleSelect();
-    checkDataReady(); 
+    checkDataReady();
   });
-  
-  onValue(ref(db, 'causes'), snap => { 
-    CAUSES = snap.val() || {}; 
+
+  onValue(ref(db, 'causes'), snap => {
+    CAUSES = snap.val() || {};
     if(Object.keys(CAUSES).length === 0) {
        CAUSES = DEFAULT_CAUSES;
        set(ref(db, 'causes'), CAUSES);
     }
-    checkDataReady(); 
+    checkDataReady();
   });
-  
-  onValue(ref(db, 'users'), snap => { 
-    USERS = snap.val() || {}; 
-    if (loggedUser.name) {
-      const u = Object.values(USERS).find(x=>x.phone===loggedUser.phone);
-      if (u) loggedUser.status = u.status;
+
+  onValue(ref(db, 'users'), snap => {
+    USERS = snap.val() || {};
+    // Обновляем статус текущего залогиненного по телефону
+    if (loggedUser.name && loggedUser.phone) {
+      const entry = Object.entries(USERS).find(([k,u]) => u && u.phone === loggedUser.phone);
+      if (entry) {
+        const [key, u] = entry;
+        loggedUser.status = u.status || 'pending';
+        // Если у старой записи нет id — подлатаем
+        if (!u.id) {
+          update(ref(db, 'users/' + key), { id: key }).catch(()=>{});
+        }
+      }
     }
-    checkDataReady(); 
+    checkDataReady();
   });
-  
+
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || {}; checkDataReady(); });
 
@@ -697,10 +698,10 @@
     const { shiftName, timeStr } = getShiftInfo();
     if ($('shiftName')) $('shiftName').textContent = shiftName;
     if ($('timeText')) $('timeText').textContent = timeStr;
-    
+
     const curMonth = getCurrentMonthStr();
     const stats = monthlyStats[curMonth] || { total: 0, off: 0, parts: 0, bv: 0 };
-    
+
     if ($('statTotal')) $('statTotal').textContent = formatMs(stats.total);
     if ($('statOff')) $('statOff').textContent = formatMs(stats.off);
     if ($('statParts')) $('statParts').textContent = formatMs(stats.parts);
@@ -715,7 +716,7 @@
     $('userPhone').textContent = loggedUser.phone || '—';
     $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
-    
+
     if (loggedUser.status !== 'approved') {
       $('blockedBanner').classList.remove('hidden');
     } else {
@@ -744,7 +745,7 @@
           const st = m.lastStatus || 'line';
           const cause = m.lastCause || '';
           const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
-          
+
           let bottomHtml = '';
           if (st !== 'bv') {
             const { isShift1 } = getShiftInfo();
@@ -814,7 +815,7 @@
   // ============================================================
   async function setStatus(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    
+
     const m = MACHINES[machineId];
     if (!m) return;
 
@@ -827,12 +828,12 @@
       const statsRef = ref(db, `monthlyStats/${monthStr}`);
       const statsSnap = await get(statsRef);
       let stats = statsSnap.val() || { total: 0, off: 0, parts: 0, bv: 0 };
-      
+
       stats.total += elapsed;
       if (m.lastStatus === 'off') stats.off += elapsed;
       if (m.lastStatus === 'parts') stats.parts += elapsed;
       if (m.lastStatus === 'bv') stats.bv += elapsed;
-      
+
       await set(statsRef, stats);
 
       await push(ref(db, 'eventLog'), {
@@ -851,7 +852,7 @@
     m.lastStatus = status;
     m.lastCause = causeText;
     m.lastTime = status === 'line' ? 0 : now;
-    
+
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
 
@@ -867,7 +868,7 @@
     const sub = $('causeModalSub');
     const select = $('causeSelect');
     const confirmBtn = $('confirmCauseBtn');
-    
+
     if (status === 'off') {
       title.textContent = 'Сход с линии';
       sub.textContent = 'Укажите причину схода.';
@@ -944,7 +945,7 @@
       driver2: $('addDriver2').value.trim(),
       lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
     };
-    
+
     await set(ref(db, 'machines/' + newIdVal), newMachine);
     closeModal('addMachineModal');
   }
@@ -965,7 +966,7 @@
 
     const select = $('logMonthSelect');
     select.innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-    
+
     $('logModal').classList.remove('hidden');
     renderLogTable();
   }
@@ -973,9 +974,9 @@
   function renderLogTable() {
     const month = $('logMonthSelect').value;
     const type = currentLogType;
-    
+
     let filtered = Object.values(eventLog).filter(e => e.month === month);
-    
+
     if (logModalMachineFilter) {
       filtered = filtered.filter(e => e.machine === logModalMachineFilter);
       $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`;
@@ -987,7 +988,7 @@
       else { title = 'Все события'; }
       $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
     }
-    
+
     let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0);
     $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
 
@@ -997,7 +998,7 @@
     }
 
     let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
-    
+
     filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).forEach(e => {
       html += `
         <tr>
@@ -1038,7 +1039,7 @@
     const filterCat = $('repCat').value;
 
     let filtered = Object.values(eventLog);
-    
+
     if (dateFrom) {
       const parts = dateFrom.split('-');
       const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
@@ -1049,7 +1050,7 @@
       const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
       filtered = filtered.filter(r => r.date <= dStr);
     }
-    
+
     if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
     if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
     if (filterCat) filtered = filtered.filter(r => {
@@ -1127,7 +1128,6 @@
     if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
   }
 
-  // ФУНКЦИИ, ВЫЗЫВАЕМЫЕ ИЗ HTML (через window)
   window.userAction = function(uid, act) {
     pendingUserAction = { uid, act };
     $('usersCodeInput').value = '';
@@ -1154,15 +1154,23 @@
   window.setReportStatus = setReportStatus;
   window.closeModal = closeModal;
 
+  // ---------- РЕЕСТР ПОЛЬЗОВАТЕЛЕЙ (ИСПРАВЛЕНО) ----------
   function renderUsers() {
-    const sorted = Object.values(USERS).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
-    
-    $('moderationList').innerHTML = sorted.map(u=>{
+    // КЛЮЧЕВОЕ: используем реальный Firebase-ключ (key), а не u.id
+    const sorted = Object.entries(USERS)
+      .map(([key, u]) => ({ ...(u || {}), _key: key }))
+      .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+    if (!sorted.length) {
+      $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>';
+      return;
+    }
+
+    $('moderationList').innerHTML = sorted.map(u => {
       const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
-      const statusText = u.status==='approved'?'✅ Подтвержден' : u.status==='rejected'?'⛔ Отклонён' : '⏳ На проверке';
-      
-      // Если имя пустое или "0", пишем "Без имени"
+      const statusText = u.status==='approved'?'✅ Подтвержден'
+                       : u.status==='rejected'?'⛔ Отклонён'
+                       : '⏳ На проверке';
       const displayName = (!u.name || u.name === '0') ? 'Без имени' : u.name;
       const displayPhone = (!u.phone || u.phone === '0') ? '—' : u.phone;
 
@@ -1170,44 +1178,62 @@
         <div><strong>${esc(displayName)}</strong> (${esc(displayPhone)})<br>
         <span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div>
         <div style="display:flex;gap:6px;">
-          ${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u.id}','approve')">Одобрить</button>`:''}
-          ${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u.id}','reject')">Отклонить</button>`:''}
-          <button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u.id}','delete')">Удалить</button>
+          ${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u._key}','approve')">Одобрить</button>`:''}
+          ${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u._key}','reject')">Отклонить</button>`:''}
+          <button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u._key}','delete')">Удалить</button>
         </div>
       </div>`;
     }).join('');
-
-    // Добавляем кнопку очистки битых аккаунтов
-    $('moderationList').innerHTML += `
-      <div style="margin-top: 20px; text-align: center;">
-        <button class="btn red small" onclick="window.cleanBrokenUsers()">🧹 Очистить битые аккаунты</button>
-      </div>
-    `;
   }
 
-  // Добавляем глобальную функцию для очистки
-  window.cleanBrokenUsers = async function() {
-    if (!confirm('Удалить всех пользователей с пустым именем или телефоном?')) return;
-    
-    let count = 0;
-    for (const [id, u] of Object.entries(USERS)) {
-      if (!u.name || !u.phone || u.name === '0' || u.phone === '0') {
-        await remove(ref(db, 'users/' + id));
-        count++;
+  // ---------- ОЧИСТКА БИТЫХ ----------
+  async function cleanBrokenUsers() {
+    if (!confirm('Удалить всех пользователей, у которых нет поля id, пустое имя/телефон или ключ не совпадает с id?')) return;
+    let count = 0, errors = 0;
+    const entries = Object.entries(USERS);
+    for (const [key, u] of entries) {
+      const bad = !u || !u.name || !u.phone
+        || u.name === '0' || u.phone === '0'
+        || !u.id || u.id !== key;
+      if (bad) {
+        try { await remove(ref(db, 'users/' + key)); count++; }
+        catch(e) { errors++; console.error('Не удалилось', key, e); }
       }
     }
-    showToast(`Удалено битых аккаунтов: ${count}`);
-  };
+    showToast(`Удалено битых: ${count}${errors ? `, ошибок: ${errors}` : ''}`);
+    // Перечитать состояние
+    try {
+      const snap = await get(ref(db, 'users'));
+      USERS = snap.val() || {};
+      renderUsers();
+    } catch(e) {}
+  }
 
-  // Обработчик кнопки подтверждения действия с пользователем
-  $('confirmUsersCodeBtn').onclick = async () => {
+  // ---------- УДАЛЕНИЕ ВСЕХ ----------
+  async function deleteAllUsers() {
+    if (!confirm('УДАЛИТЬ ВСЕХ пользователей? Это необратимо. Продолжить?')) return;
+    if (!confirm('Точно удалить ВСЕХ? Все аккаунты исчезнут, включая главного инженера.')) return;
+    try {
+      await remove(ref(db, 'users'));
+      showToast('Все пользователи удалены');
+      localStorage.removeItem('spt_user');
+      USERS = {};
+      renderUsers();
+    } catch(e) {
+      showToast('Ошибка: ' + e.message, true);
+    }
+  }
+
+  // ---------- ПОДТВЕРЖДЕНИЕ ДЕЙСТВИЯ С ПОЛЬЗОВАТЕЛЕМ ----------
+  // ВАЖНО: обработчик навешивается ОДИН раз (см. ниже в DOMContentLoaded)
+  async function confirmUserAction() {
     if ($('usersCodeInput').value !== USERS_CODE) {
       showToast('Неверный код', true);
       $('usersCodeInput').value = '';
       $('usersCodeInput').focus();
       return;
     }
-    
+
     if (!pendingUserAction) {
       showToast('Нет действия', true);
       closeModal('usersCodeModal');
@@ -1215,35 +1241,37 @@
     }
 
     const { uid, act } = pendingUserAction;
-    
-    // Блокируем кнопку, чтобы не нажали дважды
-    $('confirmUsersCodeBtn').disabled = true;
-    $('confirmUsersCodeBtn').textContent = '...';
+    const btn = $('confirmUsersCodeBtn');
+    btn.disabled = true;
+    btn.textContent = '...';
 
     try {
       if (act === 'approve') {
         await update(ref(db, 'users/' + uid), { status: 'approved' });
         showToast('Пользователь одобрен');
-      } 
-      else if (act === 'reject') {
+      } else if (act === 'reject') {
         await update(ref(db, 'users/' + uid), { status: 'rejected' });
         showToast('Пользователь отклонен');
-      } 
-      else if (act === 'delete') {
-        // Убрали confirm, удаляем сразу
+      } else if (act === 'delete') {
         await remove(ref(db, 'users/' + uid));
-        showToast('Пользователь удален');
+        showToast('Пользователь удалён');
       }
     } catch (e) {
       console.error(e);
       showToast('Ошибка: ' + e.message, true);
     } finally {
-      $('confirmUsersCodeBtn').disabled = false;
-      $('confirmUsersCodeBtn').textContent = 'Подтвердить';
+      btn.disabled = false;
+      btn.textContent = 'Подтвердить';
       closeModal('usersCodeModal');
       pendingUserAction = null;
+      // Принудительно перечитаем пользователей
+      try {
+        const snap = await get(ref(db, 'users'));
+        USERS = snap.val() || {};
+        renderUsers();
+      } catch(e) {}
     }
-  };
+  }
 
   function renderBuilder() {
     $('builderCatsList').innerHTML = Object.values(CATS).map(c=>`
@@ -1273,31 +1301,29 @@
   function updateRoleSelect() {
     const cat = $('loginCategory').value;
     const sel = $('loginRole');
-    
+
     if (Object.keys(ROLES).length === 0) {
       sel.innerHTML = '<option value="">— загрузка должностей... —</option>';
       sel.disabled = true;
       return;
     }
-    
+
     sel.disabled = false;
-    if (!cat) { 
-      sel.innerHTML = '<option value="">— сначала выберите категорию —</option>'; 
-      return; 
+    if (!cat) {
+      sel.innerHTML = '<option value="">— сначала выберите категорию —</option>';
+      return;
     }
-    
+
     const list = Object.values(ROLES).filter(r=>r.cat===cat);
     sel.innerHTML = '<option value="">— выберите должность —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    
+
     // Восстановление сессии
     const savedUser = localStorage.getItem('spt_user');
     if (savedUser) {
-      try {
-        loggedUser = JSON.parse(savedUser);
-      } catch(e){}
+      try { loggedUser = JSON.parse(savedUser); } catch(e){}
     }
 
     $('tabMain').onclick = () => {
@@ -1310,10 +1336,10 @@
     $('tabReports').onclick = () => {
       $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
       $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
-      
+
       $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
       $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
-      
+
       if (!$('repDateFrom').value) {
         const d = new Date();
         const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -1338,7 +1364,7 @@
       const roleId = $('loginRole').value;
 
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
-      
+
       const roleObj = ROLES[roleId];
       if (!roleObj) return showToast('Ошибка должности', true);
 
@@ -1353,12 +1379,25 @@
     };
 
     async function finishLogin(data) {
-      let u = Object.values(USERS).find(x=>x.phone===data.phone);
-      if (u) {
-        loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
+      // Ищем по телефону среди всех, у кого есть поле phone
+      const entry = Object.entries(USERS).find(([k,u]) => u && u.phone === data.phone);
+      if (entry) {
+        const [key, u] = entry;
+        loggedUser = { ...data, catLabel: u.catLabel || data.catLabel, status: u.status || 'pending' };
+        // Обновим запись: гарантируем id = key
+        try {
+          await update(ref(db, 'users/' + key), {
+            ...u,
+            id: u.id || key,
+            name: u.name || data.name,
+            roleId: u.roleId || data.roleId,
+            roleName: u.roleName || data.roleName,
+            catLabel: u.catLabel || (data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС')
+          });
+        } catch(e) { console.error(e); }
       } else {
-        loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
         const newUid = newId('u');
+        loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
         const newUser = { id: newUid, ...loggedUser, createdAt: Date.now() };
         await set(ref(db, 'users/' + newUid), newUser);
       }
@@ -1375,7 +1414,7 @@
     $('logoutBtn').onclick = () => {
       localStorage.removeItem('spt_user');
       loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
-      $('mainLoginBlock').classList.remove('hidden'); 
+      $('mainLoginBlock').classList.remove('hidden');
       $('mainWorkBlock').classList.add('hidden');
       $('globalPendingAlert').classList.add('hidden');
       $('blockedBanner').classList.add('hidden');
@@ -1397,34 +1436,12 @@
     $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
     $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
 
-    $('confirmUsersCodeBtn').onclick = async () => {
-      if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
-      if (!pendingUserAction) return;
-      
-      const { uid, act } = pendingUserAction;
-      
-      closeModal('usersCodeModal');
-      
-      try {
-        if (act === 'approve') {
-          await update(ref(db, 'users/' + uid), { status: 'approved' });
-          showToast('Пользователь одобрен');
-        } else if (act === 'reject') {
-          await update(ref(db, 'users/' + uid), { status: 'rejected' });
-          showToast('Пользователь отклонен');
-        } else if (act === 'delete') {
-          if (confirm('Удалить аккаунт?')) {
-             await remove(ref(db, 'users/' + uid));
-             showToast('Пользователь удален');
-          }
-        }
-      } catch(e) {
-        console.error(e);
-        showToast('Ошибка сети: ' + e.message, true);
-      }
+    // Кнопки опасной зоны
+    $('cleanBrokenUsersBtn').onclick = cleanBrokenUsers;
+    $('deleteAllUsersBtn').onclick = deleteAllUsers;
 
-      pendingUserAction = null;
-    };
+    // ВАЖНО: единственный обработчик подтверждения пользовательского действия
+    $('confirmUsersCodeBtn').onclick = confirmUserAction;
 
     $('confirmChiefEngineerRegBtn').onclick = async () => {
       if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) return showToast('Неверный код', true);
@@ -1436,48 +1453,48 @@
     };
 
     // Добавления в конструкторе
-    $('addCatBtn').onclick = async () => { 
-      const v = $('newCatName').value.trim(); 
-      if (v) { 
+    $('addCatBtn').onclick = async () => {
+      const v = $('newCatName').value.trim();
+      if (v) {
         const newCatId = newId('cat');
         const newCat = { id: newCatId, name: v };
         await set(ref(db, 'cats/' + newCatId), newCat);
-        $('newCatName').value = ''; 
-      } 
-    };
-    
-    $('addMachineBtn').onclick = async () => {
-      const num = $('newMachineNum').value.trim(); 
-      const model = $('newMachineModel').value.trim(); 
-      const catId = $('newMachineCat').value;
-      if (num && catId) { 
-        const newMachId = newId('mach');
-        const newMach = { id: newMachId, num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
-        await set(ref(db, 'machines/' + newMachId), newMach); 
-        $('newMachineNum').value = ''; 
-        $('newMachineModel').value = ''; 
+        $('newCatName').value = '';
       }
     };
-    
-    $('addRoleBtn').onclick = async () => { 
-      const v = $('newRoleName').value.trim(); 
-      const cat = $('newRoleCat').value; 
-      if (v) { 
+
+    $('addMachineBtn').onclick = async () => {
+      const num = $('newMachineNum').value.trim();
+      const model = $('newMachineModel').value.trim();
+      const catId = $('newMachineCat').value;
+      if (num && catId) {
+        const newMachId = newId('mach');
+        const newMach = { id: newMachId, num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
+        await set(ref(db, 'machines/' + newMachId), newMach);
+        $('newMachineNum').value = '';
+        $('newMachineModel').value = '';
+      }
+    };
+
+    $('addRoleBtn').onclick = async () => {
+      const v = $('newRoleName').value.trim();
+      const cat = $('newRoleCat').value;
+      if (v) {
         const newRoleId = newId('role');
         const newRole = { id: newRoleId, name: v, cat };
         await set(ref(db, 'roles/' + newRoleId), newRole);
-        $('newRoleName').value = ''; 
-      } 
+        $('newRoleName').value = '';
+      }
     };
-    
-    $('addCauseBtn').onclick = async () => { 
-      const v = $('newCauseName').value.trim(); 
-      if (v) { 
+
+    $('addCauseBtn').onclick = async () => {
+      const v = $('newCauseName').value.trim();
+      if (v) {
         const newCauseId = newId('cause');
         const newCause = { id: newCauseId, name: v };
         await set(ref(db, 'causes/' + newCauseId), newCause);
-        $('newCauseName').value = ''; 
-      } 
+        $('newCauseName').value = '';
+      }
     };
   });
 </script>
