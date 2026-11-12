@@ -541,25 +541,42 @@
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
-  const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ', 'Опер.'];
-  const DEFAULT_CAUSES = ['ДВС', 'КПП', 'Гидравлика', 'ШМР', 'Ходовая', 'Тормозная'];
-  const DEFAULT_ROLES = [
-    { id:'r1', name:'Зам. нач. автоколонны', cat:'SPT' },
-    { id:'r2', name:'Механик СПТ', cat:'SPT' },
-    { id:'r3', name:'Мастер РММ', cat:'SPT' },
-    { id:'r4', name:'Исполнительный директор', cat:'ITR' },
-    { id:'r5', name:'Главный инженер', cat:'ITR' },
-    { id:'r6', name:'Начальник цеха', cat:'ITR' },
-    { id:'r7', name:'Ведущий инженер', cat:'ITR' },
-    { id:'r8', name:'Зам. Исполнительного директора', cat:'ITR' }
-  ];
+  // Теперь данные храним в виде объектов (словарей), а не массивов
+  const DEFAULT_CATS = {
+    'cat_1': { id: 'cat_1', name: 'ЦА' },
+    'cat_2': { id: 'cat_2', name: 'АЦН' },
+    'cat_3': { id: 'cat_3', name: 'АК' },
+    'cat_4': { id: 'cat_4', name: 'С/Т' },
+    'cat_5': { id: 'cat_5', name: 'С/С' },
+    'cat_6': { id: 'cat_6', name: 'ППУ' },
+    'cat_7': { id: 'cat_7', name: 'Опер.' }
+  };
 
-  // Данные
-  let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [];
+  const DEFAULT_CAUSES = {
+    'c1': { id: 'c1', name: 'ДВС' },
+    'c2': { id: 'c2', name: 'КПП' },
+    'c3': { id: 'c3', name: 'Гидравлика' },
+    'c4': { id: 'c4', name: 'ШМР' },
+    'c5': { id: 'c5', name: 'Ходовая' },
+    'c6': { id: 'c6', name: 'Тормозная' }
+  };
+
+  const DEFAULT_ROLES = {
+    'r1': { id: 'r1', name: 'Зам. нач. автоколонны', cat: 'SPT' },
+    'r2': { id: 'r2', name: 'Механик СПТ', cat: 'SPT' },
+    'r3': { id: 'r3', name: 'Мастер РММ', cat: 'SPT' },
+    'r4': { id: 'r4', name: 'Исполнительный директор', cat: 'ITR' },
+    'r5': { id: 'r5', name: 'Главный инженер', cat: 'ITR' },
+    'r6': { id: 'r6', name: 'Начальник цеха', cat: 'ITR' },
+    'r7': { id: 'r7', name: 'Ведущий инженер', cat: 'ITR' },
+    'r8': { id: 'r8', name: 'Зам. Исполнительного директора', cat: 'ITR' }
+  };
+
+  // Глобальные переменные (теперь это объекты, а не массивы)
+  let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {};
   let monthlyStats = {}; 
-  let eventLog = [];
+  let eventLog = {};
   
-  // Состояние
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false;
   let currentRowId = null;
@@ -615,20 +632,20 @@
   // СИНХРОНИЗАЦИЯ FIREBASE
   // ============================================================
   onValue(ref(db, 'cats'), snap => { 
-    CATS = snap.val() || []; 
-    if(CATS.length === 0) {
-       CATS = DEFAULT_CATS.map((name, i) => ({ id: 'cat_'+i, name }));
+    CATS = snap.val() || {}; 
+    if(Object.keys(CATS).length === 0) {
+       CATS = DEFAULT_CATS;
        set(ref(db, 'cats'), CATS);
     }
     checkDataReady(); 
   });
   
-  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || []; checkDataReady(); });
+  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || {}; checkDataReady(); });
   
   onValue(ref(db, 'roles'), snap => { 
-    ROLES = snap.val() || []; 
-    if(ROLES.length === 0) {
-       ROLES = DEFAULT_ROLES.slice();
+    ROLES = snap.val() || {}; 
+    if(Object.keys(ROLES).length === 0) {
+       ROLES = DEFAULT_ROLES;
        set(ref(db, 'roles'), ROLES);
     }
     updateRoleSelect();
@@ -636,25 +653,25 @@
   });
   
   onValue(ref(db, 'causes'), snap => { 
-    CAUSES = snap.val() || []; 
-    if(CAUSES.length === 0) {
-       CAUSES = DEFAULT_CAUSES.map((name, i) => ({ id: 'cause_'+i, name }));
+    CAUSES = snap.val() || {}; 
+    if(Object.keys(CAUSES).length === 0) {
+       CAUSES = DEFAULT_CAUSES;
        set(ref(db, 'causes'), CAUSES);
     }
     checkDataReady(); 
   });
   
   onValue(ref(db, 'users'), snap => { 
-    USERS = snap.val() || []; 
+    USERS = snap.val() || {}; 
     if (loggedUser.name) {
-      const u = USERS.find(x=>x.phone===loggedUser.phone);
+      const u = Object.values(USERS).find(x=>x.phone===loggedUser.phone);
       if (u) loggedUser.status = u.status;
     }
     checkDataReady(); 
   });
   
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
-  onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; checkDataReady(); });
+  onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || {}; checkDataReady(); });
 
   function checkDataReady() {
     if (!isDataReady) {
@@ -714,8 +731,8 @@
     const isApproved = loggedUser.status === 'approved';
 
     let html = '';
-    CATS.forEach(cat => {
-      const catMachines = MACHINES.filter(m=>m.catId===cat.id);
+    Object.values(CATS).forEach(cat => {
+      const catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
       html += `<div class="col">
         <div class="col-header">${esc(cat.name)}</div>
         <div class="col-body" id="rows-container-${cat.id}">`;
@@ -798,7 +815,7 @@
   async function setStatus(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     
-    const m = MACHINES.find(x=>x.id===machineId);
+    const m = MACHINES[machineId];
     if (!m) return;
 
     const now = Date.now();
@@ -854,12 +871,12 @@
     if (status === 'off') {
       title.textContent = 'Сход с линии';
       sub.textContent = 'Укажите причину схода.';
-      select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      select.innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
       confirmBtn.className = 'btn-modal yellow';
     } else {
       title.textContent = 'Ожидание ремонта';
       sub.textContent = 'Укажите, что ждем.';
-      select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      select.innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
       confirmBtn.className = 'btn-modal red';
     }
 
@@ -886,7 +903,7 @@
   function openEditDriverModal(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     editingRowId = machineId;
-    const m = MACHINES.find(x=>x.id===machineId);
+    const m = MACHINES[machineId];
     if (!m) return;
     $('editDriver1').value = m.driver1 || '';
     $('editDriver2').value = m.driver2 || '';
@@ -895,7 +912,7 @@
 
   async function saveNewDrivers() {
     if (!editingRowId) return;
-    const m = MACHINES.find(x=>x.id===editingRowId);
+    const m = MACHINES[editingRowId];
     if (!m) return;
     m.driver1 = $('editDriver1').value.trim();
     m.driver2 = $('editDriver2').value.trim();
@@ -941,7 +958,8 @@
     currentLogType = type;
     logModalMachineFilter = machineName;
 
-    const uniqueMonths = [...new Set(eventLog.map(e => e.month))].sort().reverse();
+    const logsArr = Object.values(eventLog);
+    const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
     const curMonth = getCurrentMonthStr();
     if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
 
@@ -956,7 +974,7 @@
     const month = $('logMonthSelect').value;
     const type = currentLogType;
     
-    let filtered = eventLog.filter(e => e.month === month);
+    let filtered = Object.values(eventLog).filter(e => e.month === month);
     
     if (logModalMachineFilter) {
       filtered = filtered.filter(e => e.machine === logModalMachineFilter);
@@ -1019,7 +1037,7 @@
     const filterCause = $('repCause').value;
     const filterCat = $('repCat').value;
 
-    let filtered = eventLog;
+    let filtered = Object.values(eventLog);
     
     if (dateFrom) {
       const parts = dateFrom.split('-');
@@ -1035,7 +1053,7 @@
     if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
     if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
     if (filterCat) filtered = filtered.filter(r => {
-      const m = MACHINES.find(x => `${x.num} ${x.model}` === r.machine);
+      const m = Object.values(MACHINES).find(x => `${x.num} ${x.model}` === r.machine);
       return m && m.catId === filterCat;
     });
 
@@ -1110,7 +1128,7 @@
   }
 
   function renderUsers() {
-    const sorted = USERS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const sorted = Object.values(USERS).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
     
     $('moderationList').innerHTML = sorted.map(u=>{
@@ -1135,31 +1153,31 @@
   }
 
   function renderBuilder() {
-    $('builderCatsList').innerHTML = CATS.map(c=>`
+    $('builderCatsList').innerHTML = Object.values(CATS).map(c=>`
       <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${c.id}')">✕</button></li>
     `).join('') || '<li class="empty">Пусто</li>';
 
-    $('builderMachinesList').innerHTML = MACHINES.map(m=>`
+    $('builderMachinesList').innerHTML = Object.values(MACHINES).map(m=>`
       <li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${m.id}')">✕</button></li>
     `).join('') || '<li class="empty">Пусто</li>';
 
-    $('builderRolesList').innerHTML = ROLES.map(r=>`
+    $('builderRolesList').innerHTML = Object.values(ROLES).map(r=>`
       <li><span>${esc(r.name)} <small>${r.cat}</small></span><button class="btn red small" onclick="delRole('${r.id}')">✕</button></li>
     `).join('') || '<li class="empty">Пусто</li>';
 
-    $('builderCausesList').innerHTML = CAUSES.map(c=>`
+    $('builderCausesList').innerHTML = Object.values(CAUSES).map(c=>`
       <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${c.id}')">✕</button></li>
     `).join('') || '<li class="empty">Пусто</li>';
 
-    $('newMachineCat').innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    $('newMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   }
 
-  function catName(id) { const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
+  function catName(id) { const c = CATS[id]; return c ? c.name : '—'; }
 
-  async function delCat(id) { if(confirm('Удалить?')) { CATS = CATS.filter(x=>x.id!==id); await set(ref(db,'cats'), CATS); renderBuilder(); } }
-  async function delMach(id) { if(confirm('Удалить?')) { MACHINES = MACHINES.filter(x=>x.id!==id); await set(ref(db,'machines'), MACHINES); renderBuilder(); } }
-  async function delRole(id) { if(confirm('Удалить?')) { ROLES = ROLES.filter(x=>x.id!==id); await set(ref(db,'roles'), ROLES); renderBuilder(); } }
-  async function delCause(id) { if(confirm('Удалить?')) { CAUSES = CAUSES.filter(x=>x.id!==id); await set(ref(db,'causes'), CAUSES); renderBuilder(); } }
+  async function delCat(id) { if(confirm('Удалить?')) { await remove(ref(db,'cats/' + id)); } }
+  async function delMach(id) { if(confirm('Удалить?')) { await remove(ref(db,'machines/' + id)); } }
+  async function delRole(id) { if(confirm('Удалить?')) { await remove(ref(db,'roles/' + id)); } }
+  async function delCause(id) { if(confirm('Удалить?')) { await remove(ref(db,'causes/' + id)); } }
 
   // ============================================================
   // СОБЫТИЯ
@@ -1168,7 +1186,7 @@
     const cat = $('loginCategory').value;
     const sel = $('loginRole');
     
-    if (ROLES.length === 0) {
+    if (Object.keys(ROLES).length === 0) {
       sel.innerHTML = '<option value="">— загрузка должностей... —</option>';
       sel.disabled = true;
       return;
@@ -1180,7 +1198,7 @@
       return; 
     }
     
-    const list = ROLES.filter(r=>r.cat===cat);
+    const list = Object.values(ROLES).filter(r=>r.cat===cat);
     sel.innerHTML = '<option value="">— выберите должность —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
   }
 
@@ -1206,8 +1224,8 @@
       $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
       $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
       
-      $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-      $('repCause').innerHTML = '<option value="">Все</option>' + CAUSES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+      $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+      $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
       
       if (!$('repDateFrom').value) {
         const d = new Date();
@@ -1234,7 +1252,7 @@
 
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
       
-      const roleObj = ROLES.find(r=>r.id===roleId);
+      const roleObj = ROLES[roleId];
       if (!roleObj) return showToast('Ошибка должности', true);
 
       if (roleObj.name === 'Главный инженер') {
@@ -1248,7 +1266,7 @@
     };
 
     async function finishLogin(data) {
-      let u = USERS.find(x=>x.phone===data.phone);
+      let u = Object.values(USERS).find(x=>x.phone===data.phone);
       if (u) {
         loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
       } else {
@@ -1327,8 +1345,9 @@
     $('addCatBtn').onclick = async () => { 
       const v = $('newCatName').value.trim(); 
       if (v) { 
-        const newCat = { id: newId('cat'), name: v };
-        await set(ref(db, 'cats/' + newCat.id), newCat);
+        const newCatId = newId('cat');
+        const newCat = { id: newCatId, name: v };
+        await set(ref(db, 'cats/' + newCatId), newCat);
         $('newCatName').value = ''; 
       } 
     };
@@ -1338,8 +1357,9 @@
       const model = $('newMachineModel').value.trim(); 
       const catId = $('newMachineCat').value;
       if (num && catId) { 
-        const newMach = { id: newId('mach'), num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
-        await set(ref(db, 'machines/' + newMach.id), newMach); 
+        const newMachId = newId('mach');
+        const newMach = { id: newMachId, num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
+        await set(ref(db, 'machines/' + newMachId), newMach); 
         $('newMachineNum').value = ''; 
         $('newMachineModel').value = ''; 
       }
@@ -1349,8 +1369,9 @@
       const v = $('newRoleName').value.trim(); 
       const cat = $('newRoleCat').value; 
       if (v) { 
-        const newRole = { id: newId('role'), name: v, cat };
-        await set(ref(db, 'roles/' + newRole.id), newRole);
+        const newRoleId = newId('role');
+        const newRole = { id: newRoleId, name: v, cat };
+        await set(ref(db, 'roles/' + newRoleId), newRole);
         $('newRoleName').value = ''; 
       } 
     };
@@ -1358,8 +1379,9 @@
     $('addCauseBtn').onclick = async () => { 
       const v = $('newCauseName').value.trim(); 
       if (v) { 
-        const newCause = { id: newId('cause'), name: v };
-        await set(ref(db, 'causes/' + newCause.id), newCause);
+        const newCauseId = newId('cause');
+        const newCause = { id: newCauseId, name: v };
+        await set(ref(db, 'causes/' + newCauseId), newCause);
         $('newCauseName').value = ''; 
       } 
     };
