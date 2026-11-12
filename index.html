@@ -519,9 +519,6 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-  // ============================================================
-  // FIREBASE INIT
-  // ============================================================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, push, set, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -538,12 +535,10 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Константы
   const ADMIN_CODE = 'admin2483';
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
-  // Глобальное состояние
   let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
   let monthlyStats = {}; 
   let eventLog = [];
@@ -560,10 +555,8 @@
   let currentLogType = 'total';
   let reportStatusFilter = '';
 
-  // DOM
   const $ = id => document.getElementById(id);
   
-  // Утилиты
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
   function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
@@ -601,31 +594,63 @@
   // ============================================================
   // FIREBASE: СИНХРОНИЗАЦИЯ
   // ============================================================
-  onValue(ref(db, 'cats'), snap => { CATS = snap.val() || []; refreshUISafe(); });
-  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || []; refreshUISafe(); });
-  onValue(ref(db, 'roles'), snap => { ROLES = snap.val() || []; refreshUISafe(); });
-  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || []; refreshUISafe(); });
+  let isDataReady = false;
+
+  onValue(ref(db, 'cats'), snap => { 
+    CATS = snap.val() || []; 
+    if(CATS.length === 0) {
+       // Базовые категории
+       CATS = [{id:'cat_1', name:'ЦА'}, {id:'cat_2', name:'ППУ'}, {id:'cat_3', name:'АК'}];
+       set(ref(db, 'cats'), CATS);
+    }
+    checkDataReady(); 
+  });
+  
+  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || []; checkDataReady(); });
+  onValue(ref(db, 'roles'), snap => { 
+    ROLES = snap.val() || []; 
+    if(ROLES.length === 0) {
+       ROLES = [{id:'r1', name:'Механик СПТ', cat:'SPT'}, {id:'r2', name:'Главный инженер', cat:'ITR'}];
+       set(ref(db, 'roles'), ROLES);
+    }
+    checkDataReady(); 
+  });
+  onValue(ref(db, 'causes'), snap => { 
+    CAUSES = snap.val() || []; 
+    if(CAUSES.length === 0) {
+       CAUSES = [{id:'c1', name:'ДВС'}, {id:'c2', name:'КПП'}, {id:'c3', name:'Гидравлика'}];
+       set(ref(db, 'causes'), CAUSES);
+    }
+    checkDataReady(); 
+  });
   onValue(ref(db, 'users'), snap => { 
     USERS = snap.val() || []; 
     if (loggedUser.name) {
       const u = USERS.find(x=>x.phone===loggedUser.phone);
       if (u) loggedUser.status = u.status;
     }
-    refreshUISafe(); 
+    checkDataReady(); 
   });
-  onValue(ref(db, 'shifts'), snap => { SHIFTS = snap.val() || {}; refreshUISafe(); });
-  onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; refreshUISafe(); });
-  onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; refreshUISafe(); });
+  onValue(ref(db, 'shifts'), snap => { SHIFTS = snap.val() || {}; checkDataReady(); });
+  onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
+  onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; checkDataReady(); });
 
-  function refreshUISafe() {
+  function checkDataReady() {
+    if (!isDataReady) {
+      isDataReady = true;
+      if (loggedUser.name) {
+        $('mainLoginBlock').classList.add('hidden');
+        $('mainWorkBlock').classList.remove('hidden');
+        $('tabMain').click();
+      }
+    }
     if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) {
       updateUserProfileBlock();
       renderMainGrid();
       updateClocks();
     }
-    if (!$('reportsView').classList.contains('hidden')) {
-      // Если открыт отчет, можно не перерисовывать, чтобы не сбивать фильтры
-    }
+    if (!$('reportsView').classList.contains('hidden')) {}
+    if (isAdminLoggedIn) renderAdmin();
   }
 
   // ============================================================
@@ -654,7 +679,6 @@
     $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
     
-    // Блокировка если не подтвержден
     if (loggedUser.status !== 'approved') {
       $('blockedBanner').classList.remove('hidden');
     } else {
@@ -763,7 +787,6 @@
     if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
       const elapsed = now - m.lastTime;
 
-      // Обновляем статистику в базе
       const statsRef = ref(db, `monthlyStats/${monthStr}`);
       const statsSnap = await get(statsRef);
       let stats = statsSnap.val() || { total: 0, off: 0, parts: 0, bv: 0 };
@@ -775,7 +798,6 @@
       
       await set(statsRef, stats);
 
-      // Пишем в журнал
       await push(ref(db, 'eventLog'), {
         month: monthStr,
         date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
@@ -1127,27 +1149,6 @@
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
     
-    // 1. Инициализация базовых данных (если пусто)
-    setTimeout(async () => {
-      if (CATS.length === 0) {
-        await set(ref(db, 'cats'), [
-          { id:'cat_1', name:'ЦА' }, { id:'cat_2', name:'ППУ' }, { id:'cat_3', name:'АК' }
-        ]);
-      }
-      if (ROLES.length === 0) {
-        await set(ref(db, 'roles'), [
-          { id:'r1', name:'Механик СПТ', cat:'SPT' },
-          { id:'r2', name:'Главный инженер', cat:'ITR' }
-        ]);
-      }
-      if (CAUSES.length === 0) {
-        await set(ref(db, 'causes'), [
-          { id:'c1', name:'ДВС' }, { id:'c2', name:'КПП' }, { id:'c3', name:'Гидравлика' }
-        ]);
-      }
-    }, 1000);
-
-    // 2. Вкладки
     $('tabMain').onclick = () => {
       $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active');
       $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden');
@@ -1177,7 +1178,6 @@
       else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
     };
 
-    // 3. Вход
     $('loginCategory').onchange = () => {
       const cat = $('loginCategory').value;
       const list = ROLES.filter(r=>r.cat===cat);
@@ -1234,19 +1234,6 @@
       $('blockedBanner').classList.add('hidden');
     };
 
-    // 4. Восстановление сессии
-    const savedUser = localStorage.getItem('spt_user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        loggedUser = user;
-        $('mainLoginBlock').classList.add('hidden');
-        $('mainWorkBlock').classList.remove('hidden');
-        $('tabMain').click();
-      } catch(e){}
-    }
-
-    // 5. Админка
     $('adminLoginBtn').onclick = () => {
       if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
       isAdminLoggedIn = true;
@@ -1288,7 +1275,6 @@
       }
     };
 
-    // 6. Конструктор
     $('addCatBtn').onclick = async () => { 
       const v = $('newCatName').value.trim(); 
       if (v) { 
@@ -1336,6 +1322,15 @@
         $('newCauseName').value = ''; 
       } 
     };
+
+    // Восстановление сессии
+    const savedUser = localStorage.getItem('spt_user');
+    if (savedUser) {
+      try {
+        loggedUser = JSON.parse(savedUser);
+        // Ждем загрузки данных (checkDataReady сам покажет экран)
+      } catch(e){}
+    }
   });
 </script>
 </body>
