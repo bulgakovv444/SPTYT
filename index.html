@@ -140,6 +140,8 @@
   .login-box h2 { margin-top: 0; color: #1e3a8a; }
   .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
   .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
+  
+  .login-box select:disabled { background: #f8fafc; color: #94a3b8; cursor: wait; }
 
   /* ===== МОДАЛКИ ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
@@ -261,8 +263,8 @@
         <option value="SPT">Специалист СПТ</option>
         <option value="ITR">ИТР ЦТКРС</option>
       </select>
-      <select id="loginRole">
-        <option value="">— сначала выберите категорию —</option>
+      <select id="loginRole" disabled>
+        <option value="">— загрузка должностей... —</option>
       </select>
       <button class="btn block" id="loginBtn">Войти</button>
     </div>
@@ -629,6 +631,7 @@
        ROLES = DEFAULT_ROLES.slice();
        set(ref(db, 'roles'), ROLES);
     }
+    updateRoleSelect();
     checkDataReady(); 
   });
   
@@ -1161,6 +1164,26 @@
   // ============================================================
   // СОБЫТИЯ
   // ============================================================
+  function updateRoleSelect() {
+    const cat = $('loginCategory').value;
+    const sel = $('loginRole');
+    
+    if (ROLES.length === 0) {
+      sel.innerHTML = '<option value="">— загрузка должностей... —</option>';
+      sel.disabled = true;
+      return;
+    }
+    
+    sel.disabled = false;
+    if (!cat) { 
+      sel.innerHTML = '<option value="">— сначала выберите категорию —</option>'; 
+      return; 
+    }
+    
+    const list = ROLES.filter(r=>r.cat===cat);
+    sel.innerHTML = '<option value="">— выберите должность —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     
     // Восстановление сессии
@@ -1201,11 +1224,7 @@
       else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
     };
 
-    $('loginCategory').onchange = () => {
-      const cat = $('loginCategory').value;
-      const list = ROLES.filter(r=>r.cat===cat);
-      $('loginRole').innerHTML = '<option value="">— выберите —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
-    };
+    $('loginCategory').onchange = updateRoleSelect;
 
     $('loginBtn').onclick = async () => {
       const name = $('loginName').value.trim();
