@@ -30,30 +30,31 @@
   .header-bar .user-info strong { color: #0f172a; }
   .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
 
-  /* Сетка карточек */
-  .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+  /* Контейнер для колонок (горизонтальный скролл, если не влезут) */
+  .grid-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; align-items: flex-start; }
   
-  .cat-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.08); border: 1px solid #cbd5e1; display: flex; flex-direction: column; overflow: hidden; }
+  /* Колонка категории */
+  .cat-column { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,.08); min-width: 260px; flex: 1 0 260px; display: flex; flex-direction: column; }
   .cat-header { background: #f8fafc; color: #1e40af; font-weight: 800; font-size: 15px; text-align: center; padding: 10px; border-bottom: 2px solid #cbd5e1; }
   
-  .machine-row { display: flex; flex-direction: column; border-bottom: 1px solid #e2e8f0; transition: background 0.2s; }
+  /* Строка машины */
+  .machine-row { display: flex; flex-direction: column; border-bottom: 1px solid #e2e8f0; padding: 8px; }
   .machine-row:last-child { border-bottom: none; }
+  .machine-row.st-line { background: #dcfce7; } /* Зеленый */
+  .machine-row.st-off  { background: #fef08a; } /* Желтый */
+  .machine-row.st-parts{ background: #fecaca; } /* Красный */
+
+  .row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .row-num { font-weight: 800; color: #94a3b8; font-size: 13px; width: 16px; }
+  .row-info { flex: 1; font-weight: 700; font-size: 14px; color: #1e293b; }
+  .row-info .reason { display: block; font-size: 11px; font-weight: 600; color: #b91c1c; margin-top: 2px; }
   
-  /* Строка с инфо */
-  .row-top { display: flex; align-items: center; padding: 8px 10px; gap: 8px; }
-  .row-num { font-weight: 800; color: #94a3b8; width: 18px; text-align: right; font-size: 13px; }
-  .row-info { flex: 1; font-weight: 600; font-size: 13px; color: #1e293b; }
-  .row-info .reason { display: block; font-size: 11px; font-weight: 500; color: #b91c1c; margin-top: 2px; }
-  
-  /* Кнопки статусов */
-  .row-actions { display: flex; gap: 4px; padding: 0 10px 10px 36px; }
-  .btn-st { flex: 1; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b; border-radius: 4px; padding: 4px 0; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
-  .btn-st:hover { background: #e2e8f0; }
-  
-  /* Активные статусы */
-  .btn-st.act-line { background: #dcfce7; color: #065f46; border-color: #10b981; }
-  .btn-st.act-off { background: #fef08a; color: #854d0e; border-color: #f59e0b; }
-  .btn-st.act-parts { background: #fecaca; color: #991b1b; border-color: #ef4444; }
+  /* Селект статуса */
+  .status-select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; outline: none; background: #fff; width: 100px; flex-shrink: 0; }
+  .status-select:focus { border-color: #2563eb; }
+  .status-select.st-line { border-color: #10b981; color: #065f46; }
+  .status-select.st-off { border-color: #f59e0b; color: #854d0e; }
+  .status-select.st-parts { border-color: #ef4444; color: #991b1b; }
 
   /* Общие стили */
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
@@ -90,6 +91,15 @@
   .report-table .hours-ok { color: #059669; font-weight: 700; }
   .report-table .hours-low { color: #dc2626; font-weight: 700; }
 
+  .stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .stat { background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); min-width: 110px; }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .stat.green .num { color: #10b981; }
+  .stat.orange .num { color: #f59e0b; }
+  .stat.red .num { color: #dc2626; }
+  .stat.blue .num { color: #2563eb; }
+
   .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
   .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
   .builder-card.cats { border-top-color: #10b981; }
@@ -99,6 +109,7 @@
   .builder-list { list-style: none; margin-bottom: 12px; max-height: 360px; overflow-y: auto; }
   .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; font-size: 13px; gap: 8px; border: 1px solid #e2e8f0; }
   .builder-list li .name { flex: 1; font-weight: 600; }
+  .builder-list li .sub { font-size: 11px; color: #94a3b8; }
   .builder-add-row { display: flex; gap: 6px; margin-top: 6px; }
   .builder-add-row input, .builder-add-row select { margin-bottom: 0; }
   .builder-add-row .btn { white-space: nowrap; }
@@ -171,7 +182,7 @@
         <button class="btn gray small" id="logoutBtn">Выйти</button>
       </div>
 
-      <div class="grid-container" id="mainGrid"></div>
+      <div class="grid-scroll" id="mainGrid"></div>
     </div>
   </div>
 
@@ -357,7 +368,7 @@ const DEFAULT_ROLES = [
 ];
 const CAT_LABELS = { SPT:'Специалист СПТ', ITR:'ИТР ЦТКРС' };
 
-const DB_KEY = 'spt_db_v3'; // Обновил версию базы
+const DB_KEY = 'spt_db_v4'; // Обновил версию базы
 
 let CATS = [], MACHINES = [], USERS = [], SHIFTS = [], HISTORY = [], ROLES = [];
 let loggedUser = { name:'', phone:'', cat:'', catLabel:'', role:'', roleName:'', status:'pending' };
@@ -579,20 +590,19 @@ function updateUIState(){
   }
 }
 
-// ===== ГЛАВНАЯ (СЕТКА КАРТОЧЕК) =====
+// ===== ГЛАВНАЯ (СЕТКА СЕЛЕКТОВ) =====
 function renderMainGrid(){
   if (!loggedUser.name) return;
   const today = todayStr();
   const shift = shiftOfNow();
 
-  // Собираем текущие статусы
   const activeByMachine = {};
   SHIFTS.filter(s=>s.date===today && s.shift===shift).forEach(s=>{ activeByMachine[s.machineId] = s; });
   
   const machineStatus = {};
   MACHINES.forEach(m=>{
     const s = activeByMachine[m.id];
-    let st = 'none', c = '', d = '';
+    let st = '', c = '', d = '';
     if (s) {
       const ev = (s.events||[]).slice().sort((a,b)=>a.time-b.time);
       if (ev.length) { const last = ev[ev.length-1]; st = last.status; c = last.cause||''; d = last.detail||''; }
@@ -600,32 +610,25 @@ function renderMainGrid(){
     machineStatus[m.id] = { st, cause: c, detail: d };
   });
 
-  // Генерируем HTML
   let html = '';
   CATS.forEach(cat => {
     const machines = MACHINES.filter(m=>m.catId===cat.id).sort((a,b)=>(a.order||0)-(b.order||0));
     
-    html += `<div class="cat-card">
-      <div class="cat-header">${esc(cat.name)}</div>
-      <div style="padding: 8px;">`;
+    html += `<div class="cat-column">
+      <div class="cat-header">${esc(cat.name)}</div>`;
 
     if (!machines.length) {
       html += `<p class="empty">Нет машин</p>`;
     } else {
       machines.forEach((m, idx) => {
         const stat = machineStatus[m.id];
-        let rowClass = '';
-        let reasonHtml = '';
+        let rowClass = stat.st === 'line' ? 'st-line' : stat.st === 'off' ? 'st-off' : stat.st === 'parts' ? 'st-parts' : '';
         
-        if (stat.st === 'line') rowClass = 'st-line';
-        else if (stat.st === 'off') {
-          rowClass = 'st-off';
-          reasonHtml = `<span class="reason">Сход: ${esc(stat.cause||'')} ${stat.detail ? '('+esc(stat.detail)+')' : ''}</span>`;
-        }
-        else if (stat.st === 'parts') {
-          rowClass = 'st-parts';
-          reasonHtml = `<span class="reason">Запчасти: ${esc(stat.cause||'')}</span>`;
-        }
+        let selClass = stat.st === 'line' ? 'st-line' : stat.st === 'off' ? 'st-off' : stat.st === 'parts' ? 'st-parts' : '';
+        
+        let reasonHtml = '';
+        if (stat.st === 'off') reasonHtml = `<span class="reason">Сход: ${esc(stat.cause||'')} ${stat.detail ? '('+esc(stat.detail)+')' : ''}</span>`;
+        else if (stat.st === 'parts') reasonHtml = `<span class="reason">Запчасти: ${esc(stat.cause||'')}</span>`;
 
         html += `<div class="machine-row ${rowClass}">
           <div class="row-top">
@@ -634,22 +637,71 @@ function renderMainGrid(){
               ${esc(m.num)} ${esc(m.model || '')}
               ${reasonHtml}
             </div>
-          </div>
-          <div class="row-actions">
-            <button class="btn-st ${stat.st==='line'?'act-line':''}" onclick="setMachineLine('${m.id}')">🟢 На линии</button>
-            <button class="btn-st ${stat.st==='off'?'act-off':''}" onclick="openCauseModal('${m.id}', 'off')">🟡 Сход</button>
-            <button class="btn-st ${stat.st==='parts'?'act-parts':''}" onclick="openCauseModal('${m.id}', 'parts')">🔴 Запчасти</button>
+            <select class="status-select ${selClass}" onchange="changeMachineStatus('${m.id}', this.value)">
+              <option value="" ${!stat.st ? 'selected' : ''} disabled>—</option>
+              <option value="line" ${stat.st==='line' ? 'selected' : ''}>🟢 На линии</option>
+              <option value="off" ${stat.st==='off' ? 'selected' : ''}>🟡 Сход</option>
+              <option value="parts" ${stat.st==='parts' ? 'selected' : ''}>🔴 Запчасти</option>
+            </select>
           </div>
         </div>`;
       });
     }
-    html += `</div></div>`;
+    html += `</div>`;
   });
 
   $('mainGrid').innerHTML = html;
 }
 
-// ===== ДЕЙСТВИЯ С МАШИНОЙ =====
+// ===== ИЗМЕНЕНИЕ СТАТУСА ЧЕРЕЗ СЕЛЕКТ =====
+window.changeMachineStatus = function(machineId, newStatus){
+  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+  
+  const today = todayStr(); 
+  const nowShift = shiftOfNow();
+  
+  // Если выбрали "Сход" или "Запчасти" - открываем модалку для ввода причины
+  if (newStatus === 'off' || newStatus === 'parts') {
+    selectedMachineForCause = { machineId, status: newStatus };
+    selectedCause = '';
+    $('causeModalTitle').textContent = newStatus==='off' ? 'Сход с линии' : 'Ожидание запчастей';
+    $('causeModalSub').textContent = newStatus==='off' ? 'Укажите причину схода.' : 'Укажите, что ждём.';
+    
+    $('causePills').innerHTML = CAUSES.map(c=>`<div class="cause-pill" data-cause="${esc(c)}">${esc(c)}</div>`).join('');
+    $('causePills').querySelectorAll('.cause-pill').forEach(p=>{
+      p.addEventListener('click', ()=>{
+        $('causePills').querySelectorAll('.cause-pill').forEach(x=>x.classList.remove('active'));
+        if (selectedCause === p.dataset.cause) { selectedCause = ''; }
+        else { selectedCause = p.dataset.cause; p.classList.add('active'); }
+      });
+    });
+    $('causeDetail').value = '';
+    $('causeModal').classList.remove('hidden');
+    
+    // Сбрасываем селект обратно, пока не выберут причину
+    renderMainGrid();
+    return;
+  }
+
+  // Если выбрали "На линии" - применяем сразу
+  if (newStatus === 'line') {
+    const shift = ensureShift(machineId, today, nowShift);
+    const events = (shift.events||[]).slice().sort((a,b)=>a.time-b.time);
+    const last = events[events.length-1];
+    if (last && (last.status==='off' || last.status==='parts')) {
+      const offMs = Date.now() - last.time;
+      shift.totalOffMs = (shift.totalOffMs||0) + offMs;
+      shift.totalOffByCause = { ...(shift.totalOffByCause||{}) };
+      const key = last.cause || 'Не указана';
+      shift.totalOffByCause[key] = (shift.totalOffByCause[key]||0) + offMs;
+      saveDB();
+    }
+    appendShiftEvent(shift.id, { status:'line', time: Date.now(), by: loggedUser.name });
+    playDing(); showToast('Машина на линии');
+    renderMainGrid();
+  }
+};
+
 function ensureShift(machineId, date, shift){
   let found = SHIFTS.find(s=>s.machineId===machineId && s.date===date && s.shift===shift);
   if (found) return found;
@@ -674,45 +726,7 @@ function appendShiftEvent(shiftId, ev){
   saveDB();
 }
 
-// Глобальные функции для вызова из HTML (onclick)
-window.setMachineLine = function(machineId){
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  const today = todayStr(); const nowShift = shiftOfNow();
-  const shift = ensureShift(machineId, today, nowShift);
-  const events = (shift.events||[]).slice().sort((a,b)=>a.time-b.time);
-  const last = events[events.length-1];
-  if (last && (last.status==='off' || last.status==='parts')) {
-    const offMs = Date.now() - last.time;
-    shift.totalOffMs = (shift.totalOffMs||0) + offMs;
-    shift.totalOffByCause = { ...(shift.totalOffByCause||{}) };
-    const key = last.cause || 'Не указана';
-    shift.totalOffByCause[key] = (shift.totalOffByCause[key]||0) + offMs;
-    saveDB();
-  }
-  appendShiftEvent(shift.id, { status:'line', time: Date.now(), by: loggedUser.name });
-  playDing(); showToast('Машина на линии');
-  renderMainGrid();
-};
-
-window.openCauseModal = function(machineId, status){
-  selectedMachineForCause = { machineId, status };
-  selectedCause = '';
-  $('causeModalTitle').textContent = status==='off' ? 'Сход с линии' : 'Ожидание запчастей';
-  $('causeModalSub').textContent = status==='off' ? 'Укажите причину схода.' : 'Укажите, что ждём.';
-  $('causePills').innerHTML = CAUSES.map(c=>`<div class="cause-pill" data-cause="${esc(c)}">${esc(c)}</div>`).join('');
-  $('causePills').querySelectorAll('.cause-pill').forEach(p=>{
-    p.addEventListener('click', ()=>{
-      $('causePills').querySelectorAll('.cause-pill').forEach(x=>x.classList.remove('active'));
-      if (selectedCause === p.dataset.cause) { selectedCause = ''; }
-      else { selectedCause = p.dataset.cause; p.classList.add('active'); }
-    });
-  });
-  $('causeDetail').value = '';
-  $('causeModal').classList.remove('hidden');
-};
-
 function setMachineStatus(machineId, status, cause, detail){
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
   const today = todayStr(); const nowShift = shiftOfNow();
   const shift = ensureShift(machineId, today, nowShift);
   appendShiftEvent(shift.id, { status, cause: cause||'', detail: detail||'', time: Date.now(), by: loggedUser.name });
