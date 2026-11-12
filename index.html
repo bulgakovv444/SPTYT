@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СПТ — Управление техникой (Firebase)</title>
+<title>СПТ — Управление техникой</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; }
@@ -383,7 +383,7 @@
       <div id="adminBuilderBlock" class="hidden">
         <div class="builder-grid">
           <div class="builder-card cats">
-            <h3>🟢 Категории</h3>
+            <h3>🟢 Категории техники</h3>
             <ul class="builder-list" id="builderCatsList"></ul>
             <div class="builder-add-row">
               <input type="text" id="newCatName" placeholder="ЦА, ППУ..." autocomplete="off">
@@ -539,6 +539,17 @@
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
+  const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ', 'Опер.'];
+  const DEFAULT_CAUSES = ['ДВС', 'КПП', 'Гидравлика', 'ШМР', 'Ходовая', 'Тормозная'];
+  const DEFAULT_ROLES = [
+    { id:'r1', name:'Зам. нач. автоколонны', cat:'SPT' },
+    { id:'r2', name:'Механик СПТ', cat:'SPT' },
+    { id:'r3', name:'Мастер РММ', cat:'SPT' },
+    { id:'r4', name:'Исполнительный директор', cat:'ITR' },
+    { id:'r5', name:'Главный инженер', cat:'ITR' },
+    { id:'r6', name:'Начальник цеха', cat:'ITR' }
+  ];
+
   // Данные
   let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [];
   let monthlyStats = {}; 
@@ -559,7 +570,6 @@
   let reportStatusFilter = '';
   let isDataReady = false;
 
-  // DOM
   const $ = id => document.getElementById(id);
   
   // Утилиты
@@ -603,29 +613,32 @@
   onValue(ref(db, 'cats'), snap => { 
     CATS = snap.val() || []; 
     if(CATS.length === 0) {
-       CATS = [{id:'cat_1', name:'ЦА'}, {id:'cat_2', name:'ППУ'}, {id:'cat_3', name:'АК'}];
+       CATS = DEFAULT_CATS.map((name, i) => ({ id: 'cat_'+i, name }));
        set(ref(db, 'cats'), CATS);
     }
     checkDataReady(); 
   });
   
   onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || []; checkDataReady(); });
+  
   onValue(ref(db, 'roles'), snap => { 
     ROLES = snap.val() || []; 
     if(ROLES.length === 0) {
-       ROLES = [{id:'r1', name:'Механик СПТ', cat:'SPT'}, {id:'r2', name:'Главный инженер', cat:'ITR'}];
+       ROLES = DEFAULT_ROLES.slice();
        set(ref(db, 'roles'), ROLES);
     }
     checkDataReady(); 
   });
+  
   onValue(ref(db, 'causes'), snap => { 
     CAUSES = snap.val() || []; 
     if(CAUSES.length === 0) {
-       CAUSES = [{id:'c1', name:'ДВС'}, {id:'c2', name:'КПП'}, {id:'c3', name:'Гидравлика'}];
+       CAUSES = DEFAULT_CAUSES.map((name, i) => ({ id: 'cause_'+i, name }));
        set(ref(db, 'causes'), CAUSES);
     }
     checkDataReady(); 
   });
+  
   onValue(ref(db, 'users'), snap => { 
     USERS = snap.val() || []; 
     if (loggedUser.name) {
@@ -634,6 +647,7 @@
     }
     checkDataReady(); 
   });
+  
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; checkDataReady(); });
 
@@ -680,6 +694,7 @@
     $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
     
+    // Блокировка если не подтвержден
     if (loggedUser.status !== 'approved') {
       $('blockedBanner').classList.remove('hidden');
     } else {
@@ -819,7 +834,6 @@
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
 
-    // Обновляем именно эту машину в базе
     await update(ref(db, 'machines/' + machineId), m);
   }
 
