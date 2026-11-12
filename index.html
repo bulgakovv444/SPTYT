@@ -20,53 +20,56 @@
 
   /* ===== ШАПКА ===== */
   .top-bar {
-    margin: 0 auto 15px auto; background: #fff;
-    padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
-    display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;
-    border-left: 5px solid #2563eb;
+    background: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+    border-left: 5px solid #2563eb; margin-bottom: 15px;
   }
   
-  .header-left { display: flex; flex-direction: column; gap: 15px; }
-  
-  /* Блок с профилем пользователя */
+  /* Левая часть: Профиль */
+  .header-left { display: flex; align-items: center; gap: 15px; }
+
   .user-profile {
     display: flex; align-items: center; gap: 15px; background: #f8fafc;
-    padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: fit-content;
+    padding: 10px 20px; border-radius: 10px; border: 1px solid #e2e8f0; min-width: 320px;
   }
   .user-avatar {
-    width: 45px; height: 45px; background: #2563eb; color: #fff;
+    width: 48px; height: 48px; background: #2563eb; color: #fff;
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 800;
+    font-size: 20px; font-weight: 800; flex-shrink: 0;
   }
   .user-info { display: flex; flex-direction: column; }
-  .user-name { font-size: 16px; font-weight: 800; color: #1e293b; }
-  .user-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .user-name { font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; }
+  .user-meta { font-size: 12px; color: #64748b; margin-top: 4px; }
   .user-meta strong { color: #1e293b; }
-  
   .user-badge-role {
-    background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px;
-    font-size: 11px; font-weight: 700; margin-top: 4px; width: fit-content;
+    background: #e0e7ff; color: #3730a3; padding: 3px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content;
   }
 
-  /* Бейджи статистики */
+  /* Правая часть: Статистика, Часы, Выйти */
+  .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+
   .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
   .stat-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 14px; border-radius: 8px; font-weight: 800;
-    font-size: 14px; border: 2px solid transparent;
-    cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 8px; font-weight: 800;
+    font-size: 15px; border: 2px solid transparent;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
   }
-  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-  .stat-badge .icon { font-size: 16px; }
-  .stat-badge .val { font-family: monospace; font-size: 15px; }
-  .stat-badge .lbl { font-size: 11px; opacity: 0.8; font-weight: 600; }
-  
-  .stat-badge.total { background: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
+  .stat-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.15); }
+  .stat-badge .icon { font-size: 18px; }
+  .stat-badge .val { font-family: monospace; font-size: 16px; }
+  .stat-badge .lbl { font-size: 12px; opacity: 0.9; }
+
+  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
   .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
 
-  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; font-family: monospace; border: 1px solid #cbd5e1; }
+  .clock-block {
+    font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9;
+    padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; white-space: nowrap;
+  }
   .clock-block span { color: #2563eb; }
 
   /* ===== СЕТКА МАШИН ===== */
@@ -259,17 +262,17 @@
     <div id="mainWorkBlock" class="hidden">
       <div class="top-bar">
         <div class="header-left">
-          
-          <!-- БЛОК С ПОЛНОЙ ИНФОРМАЦИЕЙ О ПОЛЬЗОВАТЕЛЕ -->
           <div class="user-profile">
             <div class="user-avatar" id="userAvatar">?</div>
             <div class="user-info">
               <div class="user-name" id="userFullName">—</div>
-              <div class="user-meta">Телефон: <strong id="userPhone">—</strong> · Служба: <strong id="userService">—</strong></div>
+              <div class="user-meta">Тел: <strong id="userPhone">—</strong> · Служба: <strong id="userService">—</strong></div>
               <div class="user-badge-role" id="userRoleBadge">—</div>
             </div>
           </div>
+        </div>
 
+        <div class="header-right">
           <div class="global-stats">
             <div class="stat-badge total" onclick="showLogModal('total')">
               <span class="icon">📊</span><span class="val" id="statTotal">0 ч 0 м</span><span class="lbl">Всего</span>
@@ -284,12 +287,11 @@
               <span class="icon">🛑</span><span class="val" id="statBv">0 ч 0 м</span><span class="lbl">БВ</span>
             </div>
           </div>
-        </div>
 
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
           <div class="clock-block" id="clock">
             Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span>
           </div>
+
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
       </div>
@@ -522,7 +524,7 @@ const DEFAULT_ROLES = [
   { id:'r6', name:'Начальник цеха', cat:'ITR' }
 ];
 
-const DB_KEY = 'spt_db_final_v6'; // Обновил версию базы (сброс старых тестовых аккаунтов)
+const DB_KEY = 'spt_db_final_v7'; // Версия базы обновлена (сброс старых тестовых аккаунтов)
 const USER_KEY = 'spt_logged_user';
 
 let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
@@ -620,7 +622,7 @@ function restoreUserSession() {
     const user = JSON.parse(saved);
     const u = USERS.find(x=>x.phone === user.phone);
     
-    // Подтягиваем актуальные данные из базы, если пользователь найден
+    // Подтягиваем актуальные данные из базы
     if (u) {
       loggedUser = { ...user, status: u.status, roleName: u.roleName, catLabel: u.catLabel };
     } else {
@@ -630,7 +632,6 @@ function restoreUserSession() {
     $('mainLoginBlock').classList.add('hidden');
     $('mainWorkBlock').classList.remove('hidden');
     
-    // Заполняем информацию о пользователе
     updateUserProfileBlock();
     renderMainGrid();
     
@@ -666,23 +667,13 @@ function finishLogin(data) {
   showToast('Добро пожаловать!');
 }
 
-// Функция обновления шапки с данными о пользователе
+// Функция заполнения шапки данными пользователя
 function updateUserProfileBlock() {
   if (!loggedUser.name) return;
-  
-  // Аватар (первая буква имени)
   $('userAvatar').textContent = loggedUser.name.charAt(0).toUpperCase();
-  
-  // Имя
   $('userFullName').textContent = loggedUser.name;
-  
-  // Телефон
   $('userPhone').textContent = loggedUser.phone || '—';
-  
-  // Служба
   $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
-  
-  // Должность
   $('userRoleBadge').textContent = loggedUser.roleName || '—';
 }
 
@@ -796,7 +787,6 @@ function renderMainGrid(){
 
 // ===== СТАТУСЫ =====
 function setStatus(machineId, status, causeText = '') {
-  // Убрал проверку статуса, чтобы все могли нажимать кнопки
   const m = MACHINES.find(x=>x.id===machineId);
   if (!m) return;
 
