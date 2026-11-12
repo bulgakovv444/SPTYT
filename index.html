@@ -541,7 +541,7 @@
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
-  // Теперь данные храним в виде объектов (словарей), а не массивов
+  // Теперь данные храним в виде объектов (словарей)
   const DEFAULT_CATS = {
     'cat_1': { id: 'cat_1', name: 'ЦА' },
     'cat_2': { id: 'cat_2', name: 'АЦН' },
@@ -572,7 +572,7 @@
     'r8': { id: 'r8', name: 'Зам. Исполнительного директора', cat: 'ITR' }
   };
 
-  // Глобальные переменные (теперь это объекты, а не массивы)
+  // Глобальные переменные
   let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {};
   let monthlyStats = {}; 
   let eventLog = {};
@@ -1127,6 +1127,33 @@
     if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
   }
 
+  // ФУНКЦИИ, ВЫЗЫВАЕМЫЕ ИЗ HTML (через window)
+  window.userAction = function(uid, act) {
+    pendingUserAction = { uid, act };
+    $('usersCodeInput').value = '';
+    $('usersCodeModal').classList.remove('hidden');
+    $('usersCodeInput').focus();
+  };
+
+  window.delCat = async function(id) { if(confirm('Удалить?')) { await remove(ref(db,'cats/' + id)); } };
+  window.delMach = async function(id) { if(confirm('Удалить?')) { await remove(ref(db,'machines/' + id)); } };
+  window.delRole = async function(id) { if(confirm('Удалить?')) { await remove(ref(db,'roles/' + id)); } };
+  window.delCause = async function(id) { if(confirm('Удалить?')) { await remove(ref(db,'causes/' + id)); } };
+
+  window.openEditDriverModal = openEditDriverModal;
+  window.saveNewDrivers = saveNewDrivers;
+  window.openAddMachineModal = openAddMachineModal;
+  window.addNewMachine = addNewMachine;
+  window.setStatus = setStatus;
+  window.openCauseModal = openCauseModal;
+  window.applyCause = applyCause;
+  window.showLogModal = showLogModal;
+  window.renderLogTable = renderLogTable;
+  window.buildReport = buildReport;
+  window.exportExcel = exportExcel;
+  window.setReportStatus = setReportStatus;
+  window.closeModal = closeModal;
+
   function renderUsers() {
     const sorted = Object.values(USERS).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
@@ -1144,12 +1171,6 @@
         </div>
       </div>`;
     }).join('');
-  }
-
-  function userAction(uid, act) {
-    pendingUserAction = { uid, act };
-    $('usersCodeInput').value = '';
-    $('usersCodeModal').classList.remove('hidden');
   }
 
   function renderBuilder() {
@@ -1173,11 +1194,6 @@
   }
 
   function catName(id) { const c = CATS[id]; return c ? c.name : '—'; }
-
-  async function delCat(id) { if(confirm('Удалить?')) { await remove(ref(db,'cats/' + id)); } }
-  async function delMach(id) { if(confirm('Удалить?')) { await remove(ref(db,'machines/' + id)); } }
-  async function delRole(id) { if(confirm('Удалить?')) { await remove(ref(db,'roles/' + id)); } }
-  async function delCause(id) { if(confirm('Удалить?')) { await remove(ref(db,'causes/' + id)); } }
 
   // ============================================================
   // СОБЫТИЯ
@@ -1209,7 +1225,6 @@
     if (savedUser) {
       try {
         loggedUser = JSON.parse(savedUser);
-        // checkDataReady сам покажет экран
       } catch(e){}
     }
 
@@ -1313,23 +1328,30 @@
     $('confirmUsersCodeBtn').onclick = async () => {
       if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
       if (!pendingUserAction) return;
+      
       const { uid, act } = pendingUserAction;
+      
+      closeModal('usersCodeModal');
       
       try {
         if (act === 'approve') {
           await update(ref(db, 'users/' + uid), { status: 'approved' });
+          showToast('Пользователь одобрен');
         } else if (act === 'reject') {
           await update(ref(db, 'users/' + uid), { status: 'rejected' });
+          showToast('Пользователь отклонен');
         } else if (act === 'delete') {
-          await remove(ref(db, 'users/' + uid));
+          if (confirm('Удалить аккаунт?')) {
+             await remove(ref(db, 'users/' + uid));
+             showToast('Пользователь удален');
+          }
         }
-        showToast('Готово');
       } catch(e) {
-        showToast('Ошибка: ' + e.message, true);
+        console.error(e);
+        showToast('Ошибка сети: ' + e.message, true);
       }
 
-      closeModal('usersCodeModal');
-      renderUsers();
+      pendingUserAction = null;
     };
 
     $('confirmChiefEngineerRegBtn').onclick = async () => {
