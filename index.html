@@ -11,6 +11,13 @@
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
+  /* ===== ВКЛАДКИ ===== */
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
+  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
+  .tab-btn.active { background: #2563eb; color: #fff; }
+  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
+
   /* ===== ШАПКА И СТАТИСТИКА ===== */
   .top-bar {
     margin: 0 auto 15px auto; background: #fff;
@@ -42,7 +49,7 @@
   .clock-block span { color: #2563eb; }
 
   /* ===== СЕТКА МАШИН ===== */
-  .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 15px; align-items: start; }
+  .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 15px; align-items: start; }
   .col { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,.05); overflow: hidden; display: flex; flex-direction: column; }
   .col-header { background: #f8fafc; color: #1e3a8a; font-weight: 800; font-size: 16px; text-align: center; padding: 10px; border-bottom: 2px solid #cbd5e1; }
   .col-body { max-height: 600px; overflow-y: auto; }
@@ -54,7 +61,7 @@
   .row-num { font-weight: 800; color: #94a3b8; font-size: 13px; width: 14px; text-align: right; }
   .row-name { font-weight: 700; font-size: 13px; color: #1e293b; }
 
-  /* 4 кнопки */
+  /* Кнопки */
   .row-actions { display: flex; gap: 3px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .btn-st { border: 1px solid #cbd5e1; background: #fff; color: #64748b; border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .15s; }
   .btn-st:hover { background: #f1f5f9; }
@@ -84,12 +91,6 @@
   .footer-btn:hover { background: #d1fae5; }
 
   /* ===== ОБЩИЕ ЭЛЕМЕНТЫ ===== */
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
-  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
-  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
-  .tab-btn.active { background: #2563eb; color: #fff; }
-  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
-
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
   textarea { resize: vertical; min-height: 60px; }
@@ -120,7 +121,7 @@
   .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
   .modal-overlay.hidden { display: none !important; }
   .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 450px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
-  .modal.wide { max-width: 800px; }
+  .modal.wide { max-width: 850px; }
   .modal h3 { font-size: 16px; margin-bottom: 6px; }
   .modal p { font-size: 13px; color: #64748b; margin-bottom: 12px; }
   .modal label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; margin-top: 10px; }
@@ -158,6 +159,42 @@
   .moderation-user.approved { border-left-color: #10b981; }
   .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
 
+  /* ===== ОТЧЕТ ===== */
+  .report-filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .report-filters .filter-group { flex: 1; min-width: 140px; }
+  .date-group { display: flex; gap: 5px; align-items: center; }
+  .date-group input { padding: 8px 5px; text-align: center; }
+  .date-group span { font-weight: 700; color: #64748b; }
+  
+  .status-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
+  .status-filter-btn { border: 2px solid #cbd5e1; background: #fff; color: #64748b; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+  .status-filter-btn:hover { background: #f1f5f9; }
+  .status-filter-btn.active-all { border-color: #2563eb; background: #eff6ff; color: #1e40af; }
+  .status-filter-btn.active-line { border-color: #10b981; background: #dcfce7; color: #166534; }
+  .status-filter-btn.active-off { border-color: #eab308; background: #fef08a; color: #854d0e; }
+  .status-filter-btn.active-parts { border-color: #ef4444; background: #fee2e2; color: #991b1b; }
+  .status-filter-btn.active-bv { border-color: #64748b; background: #e2e8f0; color: #475569; }
+
+  .report-stats { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+  .report-stat-card { background: #fff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); flex: 1; min-width: 130px; border-left: 5px solid #2563eb; }
+  .report-stat-card.green { border-left-color: #10b981; }
+  .report-stat-card.red { border-left-color: #dc2626; }
+  .report-stat-card.gray { border-left-color: #64748b; }
+  .report-stat-card.yellow { border-left-color: #eab308; }
+  .report-stat-card .num { font-size: 28px; font-weight: 800; color: #1e293b; }
+  .report-stat-card .lbl { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 600; }
+
+  .report-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 13px; }
+  .report-table th { background: #f8fafc; padding: 12px 15px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
+  .report-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+  .report-table tr:last-child td { border-bottom: none; }
+  .report-table tr:hover { background: #f8fafc; }
+  .status-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .status-badge.line { background: #dcfce7; color: #166534; }
+  .status-badge.off { background: #fef08a; color: #854d0e; }
+  .status-badge.parts { background: #fee2e2; color: #991b1b; }
+  .status-badge.bv { background: #e2e8f0; color: #475569; }
+
   .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
   .toast.error { background: #ef4444; }
   .toast.show { opacity: 1; transform: translateY(0); }
@@ -176,6 +213,7 @@
 
   <div class="tabs">
     <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
+    <button class="tab-btn" id="tabReports">📊 Отчёты</button>
     <button class="tab-btn" id="tabAdmin">🔐 Панель управления</button>
   </div>
 
@@ -230,12 +268,55 @@
     </div>
   </div>
 
+  <!-- ===== ОТЧЕТЫ ===== -->
+  <div id="reportsView" class="hidden">
+    <h1>📊 Отчёт по технике СПТ</h1>
+    
+    <div class="card">
+      <div class="report-filters">
+        <div class="filter-group" style="flex: 1.5;">
+          <label class="fld">Период</label>
+          <div class="date-group">
+            <input type="date" id="repDateFrom">
+            <span>—</span>
+            <input type="date" id="repDateTo">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="fld">Категория</label>
+          <select id="repCat"><option value="">Все</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="fld">Причина</label>
+          <select id="repCause"><option value="">Все</option></select>
+        </div>
+        <button class="btn" onclick="buildReport()">Сформировать</button>
+        <button class="btn green" onclick="exportExcel()">⬇ В Excel</button>
+      </div>
+
+      <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">Фильтр по статусу:</div>
+      <div class="status-filter-row" id="reportStatusFilters">
+        <button class="status-filter-btn active-all" data-status="" onclick="setReportStatus('')">Все</button>
+        <button class="status-filter-btn" data-status="line" onclick="setReportStatus('line')">🟢 На линии</button>
+        <button class="status-filter-btn" data-status="off" onclick="setReportStatus('off')">🟡 Сход</button>
+        <button class="status-filter-btn" data-status="parts" onclick="setReportStatus('parts')">🔴 Ож. ремонта</button>
+        <button class="status-filter-btn" data-status="bv" onclick="setReportStatus('bv')">⚪ БВ</button>
+      </div>
+    </div>
+
+    <div class="report-stats" id="reportStatsRow"></div>
+
+    <div id="reportContent">
+      <p class="empty">Выберите период и нажмите «Сформировать»</p>
+    </div>
+  </div>
+
   <!-- ===== АДМИН ===== -->
   <div id="adminView" class="hidden">
     <div id="adminLoginBlock" class="login-box">
       <h2>Панель Главного инженера</h2>
-      <p>Введите код доступа.</p>
-      <input type="password" id="adminCodeInput" placeholder="Код (admin2483)" autocomplete="off">
+      <p>Введите секретный код доступа.</p>
+      <input type="password" id="adminCodeInput" placeholder="Код доступа" autocomplete="off">
       <button class="btn block red" id="adminLoginBtn">Войти</button>
     </div>
     
@@ -336,9 +417,11 @@
 
 <div class="modal-overlay hidden" id="editDriverModal">
   <div class="modal">
-    <h3>Смена водителя</h3>
-    <label>ФИО Водителя</label>
-    <input type="text" id="editDriverName" placeholder="Иванов И.И." autocomplete="off">
+    <h3>Смена водителей</h3>
+    <label>Водитель 1 смены</label>
+    <input type="text" id="editDriver1" placeholder="Иванов И.И." autocomplete="off">
+    <label style="margin-top:10px;">Водитель 2 смены (необязательно)</label>
+    <input type="text" id="editDriver2" placeholder="Петров П.П." autocomplete="off">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button>
       <button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button>
@@ -353,8 +436,10 @@
     <input type="text" id="addNum" placeholder="А123ВС186">
     <label style="margin-top:10px;">Модель</label>
     <input type="text" id="addModel" placeholder="Урал">
-    <label style="margin-top:10px;">Водитель (ФИО)</label>
-    <input type="text" id="addDriver" placeholder="Иванов И.И.">
+    <label style="margin-top:10px;">Водитель 1 см</label>
+    <input type="text" id="addDriver1" placeholder="Иванов И.И.">
+    <label style="margin-top:10px;">Водитель 2 см</label>
+    <input type="text" id="addDriver2" placeholder="Петров П.П.">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button>
       <button class="btn-modal green" onclick="addNewMachine()">Добавить</button>
@@ -365,7 +450,7 @@
 <div class="modal-overlay hidden" id="usersCodeModal">
   <div class="modal">
     <h3>Подтверждение действия</h3>
-    <p>Введите код (1104)</p>
+    <p>Введите код Главного инженера.</p>
     <input type="password" id="usersCodeInput">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('usersCodeModal')">Отмена</button>
@@ -377,7 +462,7 @@
 <div class="modal-overlay hidden" id="chiefEngineerRegModal">
   <div class="modal">
     <h3>Регистрация Главного инженера</h3>
-    <p>Введите код (2483)</p>
+    <p>Введите код Главного инженера.</p>
     <input type="password" id="chiefEngineerRegCode">
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('chiefEngineerRegModal')">Отмена</button>
@@ -407,7 +492,7 @@ const DEFAULT_ROLES = [
   { id:'r6', name:'Начальник цеха', cat:'ITR' }
 ];
 
-const DB_KEY = 'spt_db_final_v1';
+const DB_KEY = 'spt_db_final_v2';
 
 let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
 let monthlyStats = {}; 
@@ -484,11 +569,10 @@ function initDB(){
   if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
   if (!CAUSES.length) CAUSES = DEFAULT_CAUSES.map((n,i)=>({id:'cause_'+i, name:n}));
   
-  // Если машин нет, создадим дефолтные для теста
   if (!MACHINES.length) {
     MACHINES = [
-      { id:'m1', num:'А174ВА186', model:'Урал', catId: CATS[0].id, driver: 'Иванов И.И.', lastStatus: 'line', lastTime: 0 },
-      { id:'m2', num:'В222ЕЕ186', model:'Урал', catId: CATS[0].id, driver: 'Смирнов А.А.', lastStatus: 'line', lastTime: 0 }
+      { id:'m1', num:'А174ВА186', model:'Урал', catId: CATS[0].id, driver1: 'Иванов И.И.', driver2: 'Петров П.П.', lastStatus: 'line', lastTime: 0, lastCause: '', author: '' },
+      { id:'m2', num:'В222ЕЕ186', model:'Урал', catId: CATS[0].id, driver1: 'Смирнов А.А.', driver2: '', lastStatus: 'line', lastTime: 0, lastCause: '', author: '' }
     ];
   }
   saveDB();
@@ -530,12 +614,16 @@ function renderMainGrid(){
         const cause = m.lastCause || '';
         const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
         
-        // Низ строки
         let bottomHtml = '';
         if (st !== 'bv') {
-          bottomHtml += `<span class="driver-badge" data-driver="${esc(m.driver||'')}">
+          const { isShift1 } = getShiftInfo();
+          const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+          const label = isShift1 ? '1 см' : '2 см';
+          const displayText = activeDriver ? `${label}: ${activeDriver}` : `${label}: Нет`;
+
+          bottomHtml += `<span class="driver-badge" data-d1="${esc(m.driver1||'')}" data-d2="${esc(m.driver2||'')}">
             <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить">✏️</button>
-            <span class="driver-text">${esc(m.driver || 'Нет')}</span>
+            <span class="driver-text">${esc(displayText)}</span>
           </span>`;
         } else {
           bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
@@ -548,7 +636,6 @@ function renderMainGrid(){
 
         bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
 
-        // Кнопки
         let btnsHtml = `
           <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')">На линии</button>
           <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
@@ -567,7 +654,6 @@ function renderMainGrid(){
           <div class="row-bottom">${bottomHtml}</div>
         </div>`;
 
-        // Таймер
         if ((st === 'off' || st === 'parts') && m.lastTime) {
           setTimeout(() => {
             const timerSpan = $('timer-' + m.id);
@@ -602,7 +688,6 @@ function setStatus(machineId, status, causeText = '') {
   const now = Date.now();
   const monthStr = new Date().toISOString().slice(0, 7);
 
-  // Если закрываем простой
   if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
     const elapsed = now - m.lastTime;
 
@@ -618,7 +703,7 @@ function setStatus(machineId, status, causeText = '') {
       date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
       time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
       machine: `${m.num} ${m.model}`,
-      driver: m.driver || '',
+      driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2,
       status: m.lastStatus,
       cause: m.lastCause || '—',
       duration: elapsed,
@@ -680,7 +765,8 @@ function openEditDriverModal(machineId) {
   editingRowId = machineId;
   const m = MACHINES.find(x=>x.id===machineId);
   if (!m) return;
-  $('editDriverName').value = m.driver || '';
+  $('editDriver1').value = m.driver1 || '';
+  $('editDriver2').value = m.driver2 || '';
   $('editDriverModal').classList.remove('hidden');
 }
 
@@ -688,7 +774,8 @@ function saveNewDrivers() {
   if (!editingRowId) return;
   const m = MACHINES.find(x=>x.id===editingRowId);
   if (!m) return;
-  m.driver = $('editDriverName').value.trim();
+  m.driver1 = $('editDriver1').value.trim();
+  m.driver2 = $('editDriver2').value.trim();
   saveDB();
   closeModal('editDriverModal');
   renderMainGrid();
@@ -699,7 +786,8 @@ function openAddMachineModal(catId) {
   currentCatForAdd = catId;
   $('addNum').value = '';
   $('addModel').value = '';
-  $('addDriver').value = '';
+  $('addDriver1').value = '';
+  $('addDriver2').value = '';
   $('addMachineModal').classList.remove('hidden');
 }
 
@@ -712,7 +800,8 @@ function addNewMachine() {
     id: newId('mach'),
     num, model,
     catId: currentCatForAdd,
-    driver: $('addDriver').value.trim(),
+    driver1: $('addDriver1').value.trim(),
+    driver2: $('addDriver2').value.trim(),
     lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
   });
   
@@ -772,6 +861,111 @@ function renderLogTable() {
   });
   html += '</tbody></table>';
   $('logModalContent').innerHTML = html;
+}
+
+// ===== ОТЧЕТЫ =====
+let reportStatusFilter = '';
+
+function setReportStatus(status) {
+  reportStatusFilter = status;
+  document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
+  const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
+  if (activeBtn) {
+    if (status === '') activeBtn.classList.add('active-all');
+    else if (status === 'line') activeBtn.classList.add('active-line');
+    else if (status === 'off') activeBtn.classList.add('active-off');
+    else if (status === 'parts') activeBtn.classList.add('active-parts');
+    else if (status === 'bv') activeBtn.classList.add('active-bv');
+  }
+  buildReport();
+}
+
+function buildReport() {
+  const dateFrom = $('repDateFrom').value;
+  const dateTo = $('repDateTo').value;
+  const filterCause = $('repCause').value;
+  const filterCat = $('repCat').value;
+
+  let filtered = eventLog;
+  
+  if (dateFrom) {
+    const parts = dateFrom.split('-');
+    const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+    filtered = filtered.filter(r => r.date >= dStr);
+  }
+  if (dateTo) {
+    const parts = dateTo.split('-');
+    const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+    filtered = filtered.filter(r => r.date <= dStr);
+  }
+  
+  if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
+  if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
+  if (filterCat) filtered = filtered.filter(r => {
+    const m = MACHINES.find(x => `${x.num} ${x.model}` === r.machine);
+    return m && m.catId === filterCat;
+  });
+
+  let totalLine = 0, totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
+  filtered.forEach(r => {
+    if (r.status === 'off') { totalOff++; totalOffMs += r.duration; }
+    if (r.status === 'parts') { totalParts++; totalOffMs += r.duration; }
+    if (r.status === 'bv') { totalBV++; totalOffMs += r.duration; }
+  });
+
+  const statsHtml = `
+    <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
+    <div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div>
+    <div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div>
+    <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
+    <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>
+  `;
+  $('reportStatsRow').innerHTML = statsHtml;
+
+  if (!filtered.length) {
+    $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`;
+    return;
+  }
+
+  filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
+
+  let rowsHtml = filtered.map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td><strong>${esc(r.machine)}</strong></td>
+      <td>${esc(r.driver || '—')}</td>
+      <td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td>
+      <td>${r.time}</td>
+      <td style="font-family:monospace;font-weight:600;">${formatMs(r.duration)}</td>
+      <td>${esc(r.cause)}</td>
+    </tr>
+  `).join('');
+
+  $('reportContent').innerHTML = `
+    <table class="report-table">
+      <thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+}
+
+function exportExcel() {
+  const table = document.querySelector('.report-table');
+  if (!table) return showToast('Сначала сформируйте отчёт', true);
+
+  let csv = '\uFEFF';
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    const cols = row.querySelectorAll('th, td');
+    const rowData = Array.from(cols).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';');
+    csv += rowData + '\r\n';
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 // ===== АДМИН =====
@@ -839,18 +1033,35 @@ document.addEventListener('DOMContentLoaded', () => {
   initDB();
   updateClocks();
   setInterval(updateClocks, 1000);
+  setInterval(renderMainGrid, 60000); // Автообновление каждую минуту для смены водителей
 
   // Вкладки
   $('tabMain').onclick = () => {
-    $('tabMain').classList.add('active'); $('tabAdmin').classList.remove('active');
-    $('mainView').classList.remove('hidden'); $('adminView').classList.add('hidden');
+    $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active');
+    $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden');
     if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); }
     else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); }
   };
 
+  $('tabReports').onclick = () => {
+    $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
+    $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
+    
+    // Заполняем фильтры
+    $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    $('repCause').innerHTML = '<option value="">Все</option>' + CAUSES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    
+    if (!$('repDateFrom').value) {
+      const d = new Date();
+      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      $('repDateFrom').value = firstDay.toISOString().slice(0,10);
+      $('repDateTo').value = d.toISOString().slice(0,10);
+    }
+  };
+
   $('tabAdmin').onclick = () => {
-    $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active');
-    $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden');
+    $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active');
+    $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden');
     if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
     else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
   };
@@ -952,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('addCatBtn').onclick = () => { const v = $('newCatName').value.trim(); if (v) { CATS.push({ id: newId('cat'), name: v }); saveDB(); renderBuilder(); $('newCatName').value = ''; } };
   $('addMachineBtn').onclick = () => {
     const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value;
-    if (num && catId) { MACHINES.push({ id: newId('mach'), num, model, catId, driver: '', lastStatus: 'line', lastTime: 0 }); saveDB(); renderBuilder(); $('newMachineNum').value = ''; $('newMachineModel').value = ''; }
+    if (num && catId) { MACHINES.push({ id: newId('mach'), num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 }); saveDB(); renderBuilder(); $('newMachineNum').value = ''; $('newMachineModel').value = ''; }
   };
   $('addRoleBtn').onclick = () => { const v = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (v) { ROLES.push({ id: newId('role'), name: v, cat }); saveDB(); renderBuilder(); $('newRoleName').value = ''; } };
   $('addCauseBtn').onclick = () => { const v = $('newCauseName').value.trim(); if (v) { CAUSES.push({ id: newId('cause'), name: v }); saveDB(); renderBuilder(); $('newCauseName').value = ''; } };
