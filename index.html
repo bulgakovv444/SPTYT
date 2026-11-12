@@ -1161,17 +1161,68 @@
     $('moderationList').innerHTML = sorted.map(u=>{
       const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
       const statusText = u.status==='approved'?'✅ Подтвержден' : u.status==='rejected'?'⛔ Отклонён' : '⏳ На проверке';
+      
+      // Если имя пустое или "0", пишем "Без имени"
+      const displayName = (!u.name || u.name === '0') ? 'Без имени' : u.name;
+      const displayPhone = (!u.phone || u.phone === '0') ? '—' : u.phone;
+
       return `<div class="moderation-user ${cls}">
-        <div><strong>${esc(u.name)}</strong> (${esc(u.phone)})<br>
-        <span style="font-size:12px;color:#64748b;">${esc(u.catLabel)} · ${esc(u.roleName)} · ${statusText}</span></div>
+        <div><strong>${esc(displayName)}</strong> (${esc(displayPhone)})<br>
+        <span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div>
         <div style="display:flex;gap:6px;">
           ${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u.id}','approve')">Одобрить</button>`:''}
           ${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u.id}','reject')">Отклонить</button>`:''}
-          <button class="btn gray small" onclick="userAction('${u.id}','delete')">Удалить</button>
+          <button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u.id}','delete')">Удалить</button>
         </div>
       </div>`;
     }).join('');
   }
+
+  // Обработчик кнопки подтверждения действия с пользователем
+  $('confirmUsersCodeBtn').onclick = async () => {
+    if ($('usersCodeInput').value !== USERS_CODE) {
+      showToast('Неверный код', true);
+      $('usersCodeInput').value = '';
+      $('usersCodeInput').focus();
+      return;
+    }
+    
+    if (!pendingUserAction) {
+      showToast('Нет действия', true);
+      closeModal('usersCodeModal');
+      return;
+    }
+
+    const { uid, act } = pendingUserAction;
+    
+    // Блокируем кнопку, чтобы не нажали дважды
+    $('confirmUsersCodeBtn').disabled = true;
+    $('confirmUsersCodeBtn').textContent = '...';
+
+    try {
+      if (act === 'approve') {
+        await update(ref(db, 'users/' + uid), { status: 'approved' });
+        showToast('Пользователь одобрен');
+      } 
+      else if (act === 'reject') {
+        await update(ref(db, 'users/' + uid), { status: 'rejected' });
+        showToast('Пользователь отклонен');
+      } 
+      else if (act === 'delete') {
+        // Убрали confirm, удаляем сразу
+        await remove(ref(db, 'users/' + uid));
+        showToast('Пользователь удален');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Ошибка: ' + e.message, true);
+    } finally {
+      $('confirmUsersCodeBtn').disabled = false;
+      $('confirmUsersCodeBtn').textContent = 'Подтвердить';
+      closeModal('usersCodeModal');
+      pendingUserAction = null;
+    }
+  };
 
   function renderBuilder() {
     $('builderCatsList').innerHTML = Object.values(CATS).map(c=>`
