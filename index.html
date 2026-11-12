@@ -539,9 +539,12 @@
   const USERS_CODE = '1104';
   const CHIEF_ENGINEER_CODE = '2483';
 
-  let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
+  // Данные
+  let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [];
   let monthlyStats = {}; 
   let eventLog = [];
+  
+  // Состояние
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false;
   let currentRowId = null;
@@ -554,9 +557,12 @@
   const activeTimers = {};
   let currentLogType = 'total';
   let reportStatusFilter = '';
+  let isDataReady = false;
 
+  // DOM
   const $ = id => document.getElementById(id);
   
+  // Утилиты
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
   function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
@@ -592,14 +598,11 @@
   function closeModal(id) { $(id).classList.add('hidden'); }
 
   // ============================================================
-  // FIREBASE: СИНХРОНИЗАЦИЯ
+  // СИНХРОНИЗАЦИЯ FIREBASE
   // ============================================================
-  let isDataReady = false;
-
   onValue(ref(db, 'cats'), snap => { 
     CATS = snap.val() || []; 
     if(CATS.length === 0) {
-       // Базовые категории
        CATS = [{id:'cat_1', name:'ЦА'}, {id:'cat_2', name:'ППУ'}, {id:'cat_3', name:'АК'}];
        set(ref(db, 'cats'), CATS);
     }
@@ -631,7 +634,6 @@
     }
     checkDataReady(); 
   });
-  onValue(ref(db, 'shifts'), snap => { SHIFTS = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; checkDataReady(); });
 
@@ -649,12 +651,11 @@
       renderMainGrid();
       updateClocks();
     }
-    if (!$('reportsView').classList.contains('hidden')) {}
     if (isAdminLoggedIn) renderAdmin();
   }
 
   // ============================================================
-  // ЛОГИКА
+  // ГЛАВНАЯ
   // ============================================================
   function updateClocks() {
     const { shiftName, timeStr } = getShiftInfo();
@@ -818,7 +819,8 @@
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
 
-    await set(ref(db, 'machines'), MACHINES);
+    // Обновляем именно эту машину в базе
+    await update(ref(db, 'machines/' + machineId), m);
   }
 
   function openCauseModal(machineId, status) {
@@ -861,7 +863,7 @@
   }
 
   // ============================================================
-  // ВОДИТЕЛИ
+  // ВОДИТЕЛИ И ДОБАВЛЕНИЕ
   // ============================================================
   function openEditDriverModal(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
@@ -879,13 +881,10 @@
     if (!m) return;
     m.driver1 = $('editDriver1').value.trim();
     m.driver2 = $('editDriver2').value.trim();
-    await set(ref(db, 'machines'), MACHINES);
+    await update(ref(db, 'machines/' + editingRowId), m);
     closeModal('editDriverModal');
   }
 
-  // ============================================================
-  // ДОБАВЛЕНИЕ МАШИНЫ
-  // ============================================================
   function openAddMachineModal(catId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentCatForAdd = catId;
@@ -901,8 +900,9 @@
     const model = $('addModel').value.trim();
     if (!num) return showToast('Введите номер', true);
 
+    const newIdVal = newId('mach');
     const newMachine = {
-      id: newId('mach'),
+      id: newIdVal,
       num, model,
       catId: currentCatForAdd,
       driver1: $('addDriver1').value.trim(),
@@ -910,8 +910,7 @@
       lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
     };
     
-    MACHINES.push(newMachine);
-    await set(ref(db, 'machines'), MACHINES);
+    await set(ref(db, 'machines/' + newIdVal), newMachine);
     closeModal('addMachineModal');
   }
 
@@ -1145,10 +1144,19 @@
   async function delCause(id) { if(confirm('Удалить?')) { CAUSES = CAUSES.filter(x=>x.id!==id); await set(ref(db,'causes'), CAUSES); renderBuilder(); } }
 
   // ============================================================
-  // СОБЫТИЯ И АВТОРИЗАЦИЯ
+  // СОБЫТИЯ
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
     
+    // Восстановление сессии
+    const savedUser = localStorage.getItem('spt_user');
+    if (savedUser) {
+      try {
+        loggedUser = JSON.parse(savedUser);
+        // checkDataReady сам покажет экран
+      } catch(e){}
+    }
+
     $('tabMain').onclick = () => {
       $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active');
       $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden');
@@ -1211,9 +1219,9 @@
         loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
       } else {
         loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
-        const newUser = { id: newId('u'), ...loggedUser, createdAt: Date.now() };
-        USERS.push(newUser);
-        await set(ref(db, 'users'), USERS);
+        const newUid = newId('u');
+        const newUser = { id: newUid, ...loggedUser, createdAt: Date.now() };
+        await set(ref(db, 'users/' + newUid), newUser);
       }
 
       localStorage.setItem('spt_user', JSON.stringify(loggedUser));
@@ -1254,16 +1262,22 @@
       if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
       if (!pendingUserAction) return;
       const { uid, act } = pendingUserAction;
-      const idx = USERS.findIndex(u=>u.id===uid);
-      if (idx > -1) {
-        if (act === 'approve') USERS[idx].status = 'approved';
-        if (act === 'reject') USERS[idx].status = 'rejected';
-        if (act === 'delete') USERS.splice(idx, 1);
-        await set(ref(db, 'users'), USERS);
+      
+      try {
+        if (act === 'approve') {
+          await update(ref(db, 'users/' + uid), { status: 'approved' });
+        } else if (act === 'reject') {
+          await update(ref(db, 'users/' + uid), { status: 'rejected' });
+        } else if (act === 'delete') {
+          await remove(ref(db, 'users/' + uid));
+        }
+        showToast('Готово');
+      } catch(e) {
+        showToast('Ошибка: ' + e.message, true);
       }
+
       closeModal('usersCodeModal');
       renderUsers();
-      showToast('Готово');
     };
 
     $('confirmChiefEngineerRegBtn').onclick = async () => {
@@ -1275,13 +1289,12 @@
       }
     };
 
+    // Добавления в конструкторе
     $('addCatBtn').onclick = async () => { 
       const v = $('newCatName').value.trim(); 
       if (v) { 
         const newCat = { id: newId('cat'), name: v };
-        CATS.push(newCat); 
-        await set(ref(db,'cats'), CATS); 
-        renderBuilder(); 
+        await set(ref(db, 'cats/' + newCat.id), newCat);
         $('newCatName').value = ''; 
       } 
     };
@@ -1292,9 +1305,7 @@
       const catId = $('newMachineCat').value;
       if (num && catId) { 
         const newMach = { id: newId('mach'), num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
-        MACHINES.push(newMach); 
-        await set(ref(db,'machines'), MACHINES); 
-        renderBuilder(); 
+        await set(ref(db, 'machines/' + newMach.id), newMach); 
         $('newMachineNum').value = ''; 
         $('newMachineModel').value = ''; 
       }
@@ -1305,9 +1316,7 @@
       const cat = $('newRoleCat').value; 
       if (v) { 
         const newRole = { id: newId('role'), name: v, cat };
-        ROLES.push(newRole); 
-        await set(ref(db,'roles'), ROLES); 
-        renderBuilder(); 
+        await set(ref(db, 'roles/' + newRole.id), newRole);
         $('newRoleName').value = ''; 
       } 
     };
@@ -1316,21 +1325,10 @@
       const v = $('newCauseName').value.trim(); 
       if (v) { 
         const newCause = { id: newId('cause'), name: v };
-        CAUSES.push(newCause); 
-        await set(ref(db,'causes'), CAUSES); 
-        renderBuilder(); 
+        await set(ref(db, 'causes/' + newCause.id), newCause);
         $('newCauseName').value = ''; 
       } 
     };
-
-    // Восстановление сессии
-    const savedUser = localStorage.getItem('spt_user');
-    if (savedUser) {
-      try {
-        loggedUser = JSON.parse(savedUser);
-        // Ждем загрузки данных (checkDataReady сам покажет экран)
-      } catch(e){}
-    }
   });
 </script>
 </body>
