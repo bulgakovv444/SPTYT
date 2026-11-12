@@ -547,7 +547,9 @@
     { id:'r3', name:'Мастер РММ', cat:'SPT' },
     { id:'r4', name:'Исполнительный директор', cat:'ITR' },
     { id:'r5', name:'Главный инженер', cat:'ITR' },
-    { id:'r6', name:'Начальник цеха', cat:'ITR' }
+    { id:'r6', name:'Начальник цеха', cat:'ITR' },
+    { id:'r7', name:'Ведущий инженер', cat:'ITR' },
+    { id:'r8', name:'Зам. Исполнительного директора', cat:'ITR' }
   ];
 
   // Данные
@@ -694,7 +696,6 @@
     $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
     
-    // Блокировка если не подтвержден
     if (loggedUser.status !== 'approved') {
       $('blockedBanner').classList.remove('hidden');
     } else {
