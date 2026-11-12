@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СПТ — Управление техникой</title>
+<title>СПТ — Управление техникой (Firebase)</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; }
@@ -92,7 +92,6 @@
   .btn-st.active-parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .btn-st.active-bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
   
-  /* Заблокированные кнопки */
   .btn-st:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
   /* Низ строки */
@@ -229,7 +228,6 @@
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
   
-  /* Баннер для неавторизованных */
   .blocked-banner {
     background: #fee2e2; border: 2px solid #ef4444; color: #991b1b;
     padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px;
@@ -306,7 +304,6 @@
         </div>
       </div>
       
-      <!-- Баннер блокировки для неподтвержденных -->
       <div id="blockedBanner" class="blocked-banner hidden">
         <h2>⛔ Доступ заблокирован</h2>
         <p>Ваш аккаунт находится на проверке у Главного инженера. Действия будут доступны только после подтверждения.</p>
@@ -521,783 +518,825 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-// ============================================================
-// БАЗА ДАННЫХ (localStorage)
-// ============================================================
-const ADMIN_CODE = 'admin2483';
-const USERS_CODE = '1104';
-const CHIEF_ENGINEER_CODE = '2483';
+<script type="module">
+  // ============================================================
+  // FIREBASE INIT
+  // ============================================================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, push, set, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-const DEFAULT_CATS = ['ЦА', 'АЦН', 'АК', 'С/Т', 'С/С', 'ППУ', 'Опер.'];
-const DEFAULT_CAUSES = ['ДВС', 'КПП', 'Гидравлика', 'ШМР', 'Ходовая', 'Тормозная'];
-const DEFAULT_ROLES = [
-  { id:'r1', name:'Зам. нач. автоколонны', cat:'SPT' },
-  { id:'r2', name:'Механик СПТ', cat:'SPT' },
-  { id:'r3', name:'Мастер РММ', cat:'SPT' },
-  { id:'r4', name:'Исполнительный директор', cat:'ITR' },
-  { id:'r5', name:'Главный инженер', cat:'ITR' },
-  { id:'r6', name:'Начальник цеха', cat:'ITR' }
-];
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqaqhWkewbJNdtTHFTiGny2KwNqTrtDB0",
+    authDomain: "spt-teguss.firebaseapp.com",
+    databaseURL: "https://spt-teguss-default-rtdb.firebaseio.com",
+    projectId: "spt-teguss",
+    storageBucket: "spt-teguss.firebasestorage.app",
+    messagingSenderId: "224355555969",
+    appId: "1:224355555969:web:b46b82af0c661134e24b80"
+  };
 
-const DB_KEY = 'spt_db_final_v8'; // Версия базы обновлена (сброс старых тестовых аккаунтов)
-const USER_KEY = 'spt_logged_user';
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
-let monthlyStats = {}; 
-let eventLog = [];
-let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
-let isAdminLoggedIn = false;
-let currentRowId = null;
-let currentStatusType = null;
-let editingRowId = null;
-let currentCatForAdd = null;
-let pendingUserAction = null;
-let pendingChiefEngineerReg = null;
-let currentReportRows = []; 
+  // Константы
+  const ADMIN_CODE = 'admin2483';
+  const USERS_CODE = '1104';
+  const CHIEF_ENGINEER_CODE = '2483';
 
-const activeTimers = {};
-let currentLogType = 'total';
-let reportStatusFilter = '';
-
-// ===== УТИЛИТЫ =====
-const $ = id => document.getElementById(id);
-function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
-function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
-
-function formatMs(ms) {
-  const totalMins = Math.floor(ms / 60000);
-  const h = Math.floor(totalMins / 60);
-  const m = totalMins % 60;
-  return `${h} ч ${m} м`;
-}
-
-function formatTimer(ms) {
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return `⏱ ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function getShiftInfo() {
-  const now = new Date();
-  const h = now.getHours();
-  const isShift1 = (h >= 8 && h < 20);
-  return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: now.toLocaleTimeString('ru-RU') };
-}
-
-function getMonthName(monthStr) {
-  const [y, m] = monthStr.split('-');
-  const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-  return `${months[parseInt(m) - 1]} ${y}`;
-}
-
-function showToast(msg, isErr){
-  const t = $('toast'); t.textContent = msg;
-  t.classList.toggle('error', !!isErr); t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3200);
-}
-
-// ===== БАЗА =====
-function saveDB(){
-  localStorage.setItem(DB_KEY, JSON.stringify({ 
-    cats: CATS, machines: MACHINES, users: USERS, roles: ROLES, 
-    causes: CAUSES, monthlyStats, eventLog, shifts: SHIFTS 
-  }));
-}
-
-function initDB(){
-  const raw = localStorage.getItem(DB_KEY);
-  if (raw) {
-    const d = JSON.parse(raw);
-    CATS = d.cats || []; MACHINES = d.machines || []; USERS = d.users || [];
-    ROLES = d.roles || []; CAUSES = d.causes || []; SHIFTS = d.shifts || [];
-    monthlyStats = d.monthlyStats || {}; eventLog = d.eventLog || [];
-  }
-  if (!CATS.length) CATS = DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
-  if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
-  if (!CAUSES.length) CAUSES = DEFAULT_CAUSES.map((n,i)=>({id:'cause_'+i, name:n}));
+  // Глобальное состояние
+  let CATS = [], MACHINES = [], USERS = [], ROLES = [], CAUSES = [], SHIFTS = [];
+  let monthlyStats = {}; 
+  let eventLog = [];
+  let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+  let isAdminLoggedIn = false;
+  let currentRowId = null;
+  let currentStatusType = null;
+  let editingRowId = null;
+  let currentCatForAdd = null;
+  let pendingUserAction = null;
+  let pendingChiefEngineerReg = null;
   
-  if (!MACHINES.length) {
-    MACHINES = [
-      { id:'m1', num:'А174ВА186', model:'Урал', catId: CATS[0].id, driver1: 'Иванов И.И.', driver2: 'Петров П.П.', lastStatus: 'line', lastTime: 0, lastCause: '', author: '' },
-      { id:'m2', num:'В222ЕЕ186', model:'Урал', catId: CATS[0].id, driver1: 'Смирнов А.А.', driver2: '', lastStatus: 'line', lastTime: 0, lastCause: '', author: '' }
-    ];
+  const activeTimers = {};
+  let currentLogType = 'total';
+  let reportStatusFilter = '';
+
+  // DOM
+  const $ = id => document.getElementById(id);
+  
+  // Утилиты
+  function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
+  function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+  function formatMs(ms) {
+    const totalMins = Math.floor(ms / 60000);
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
+    return `${h} ч ${m} м`;
   }
-  saveDB();
-}
+  function formatTimer(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `⏱ ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function getShiftInfo() {
+    const now = new Date();
+    const h = now.getHours();
+    const isShift1 = (h >= 8 && h < 20);
+    return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: now.toLocaleTimeString('ru-RU') };
+  }
+  function getMonthName(monthStr) {
+    const [y, m] = monthStr.split('-');
+    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    return `${months[parseInt(m) - 1]} ${y}`;
+  }
+  function showToast(msg, isErr){
+    const t = $('toast'); t.textContent = msg;
+    t.classList.toggle('error', !!isErr); t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3200);
+  }
+  function closeModal(id) { $(id).classList.add('hidden'); }
 
-// ===== СЕССИЯ ПОЛЬЗОВАТЕЛЯ =====
-function restoreUserSession() {
-  const saved = localStorage.getItem(USER_KEY);
-  if (!saved) return false;
-
-  try {
-    const user = JSON.parse(saved);
-    const u = USERS.find(x=>x.phone === user.phone);
-    
-    // Подтягиваем актуальные данные из базы
-    if (u) {
-      loggedUser = { ...user, status: u.status, roleName: u.roleName, catLabel: u.catLabel };
-    } else {
-      loggedUser = user;
+  // ============================================================
+  // FIREBASE: СИНХРОНИЗАЦИЯ
+  // ============================================================
+  onValue(ref(db, 'cats'), snap => { CATS = snap.val() || []; refreshUISafe(); });
+  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || []; refreshUISafe(); });
+  onValue(ref(db, 'roles'), snap => { ROLES = snap.val() || []; refreshUISafe(); });
+  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || []; refreshUISafe(); });
+  onValue(ref(db, 'users'), snap => { 
+    USERS = snap.val() || []; 
+    if (loggedUser.name) {
+      const u = USERS.find(x=>x.phone===loggedUser.phone);
+      if (u) loggedUser.status = u.status;
     }
+    refreshUISafe(); 
+  });
+  onValue(ref(db, 'shifts'), snap => { SHIFTS = snap.val() || {}; refreshUISafe(); });
+  onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; refreshUISafe(); });
+  onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || []; refreshUISafe(); });
 
-    $('mainLoginBlock').classList.add('hidden');
-    $('mainWorkBlock').classList.remove('hidden');
-    
-    updateUserProfileBlock();
-    renderMainGrid();
-    
-    if (loggedUser.status === 'pending') {
-      $('globalPendingAlert').classList.remove('hidden');
-    } else if (loggedUser.status === 'rejected') {
-      $('globalPendingAlert').classList.remove('hidden');
-      $('globalPendingText').textContent = 'Ваш аккаунт отклонён или удалён.';
+  function refreshUISafe() {
+    if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) {
+      updateUserProfileBlock();
+      renderMainGrid();
+      updateClocks();
     }
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-
-function finishLogin(data) {
-  let u = USERS.find(x=>x.phone===data.phone);
-  if (u) {
-    loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
-  } else {
-    loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
-    USERS.push({ id: newId('u'), ...loggedUser, createdAt: Date.now() });
-    saveDB();
+    if (!$('reportsView').classList.contains('hidden')) {
+      // Если открыт отчет, можно не перерисовывать, чтобы не сбивать фильтры
+    }
   }
 
-  localStorage.setItem(USER_KEY, JSON.stringify(loggedUser));
-
-  $('mainLoginBlock').classList.add('hidden');
-  $('mainWorkBlock').classList.remove('hidden');
-  
-  updateUserProfileBlock();
-  renderMainGrid();
-  showToast('Добро пожаловать!');
-}
-
-function updateUserProfileBlock() {
-  if (!loggedUser.name) return;
-  $('userAvatar').textContent = loggedUser.name.charAt(0).toUpperCase();
-  $('userFullName').textContent = loggedUser.name;
-  $('userPhone').textContent = loggedUser.phone || '—';
-  $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
-  $('userRoleBadge').textContent = loggedUser.roleName || '—';
-}
-
-function logoutUser() {
-  localStorage.removeItem(USER_KEY);
-  loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
-  $('mainLoginBlock').classList.remove('hidden'); 
-  $('mainWorkBlock').classList.add('hidden');
-  $('globalPendingAlert').classList.add('hidden');
-  $('blockedBanner').classList.add('hidden');
-}
-
-// ===== РЕНДЕР ГЛАВНОЙ =====
-function updateClocks() {
-  const { shiftName, timeStr } = getShiftInfo();
-  if ($('shiftName')) $('shiftName').textContent = shiftName;
-  if ($('timeText')) $('timeText').textContent = timeStr;
-  
-  const curMonth = getCurrentMonthStr();
-  const stats = monthlyStats[curMonth] || { total: 0, off: 0, parts: 0, bv: 0 };
-  
-  if ($('statTotal')) $('statTotal').textContent = formatMs(stats.total);
-  if ($('statOff')) $('statOff').textContent = formatMs(stats.off);
-  if ($('statParts')) $('statParts').textContent = formatMs(stats.parts);
-  if ($('statBv')) $('statBv').textContent = formatMs(stats.bv);
-}
-
-function renderMainGrid(){
-  for (let key in activeTimers) clearInterval(activeTimers[key]);
-  for (let key in activeTimers) delete activeTimers[key];
-
-  if (!loggedUser.name) return;
-
-  // Проверка статуса: если не подтвержден, блокируем весь интерфейс
-  const isApproved = loggedUser.status === 'approved';
-  const isPending = loggedUser.status === 'pending';
-  
-  // Показываем баннер блокировки, если не подтвержден
-  if (!isApproved) {
-    $('blockedBanner').classList.remove('hidden');
-  } else {
-    $('blockedBanner').classList.add('hidden');
+  // ============================================================
+  // ЛОГИКА
+  // ============================================================
+  function updateClocks() {
+    const { shiftName, timeStr } = getShiftInfo();
+    if ($('shiftName')) $('shiftName').textContent = shiftName;
+    if ($('timeText')) $('timeText').textContent = timeStr;
+    
+    const curMonth = getCurrentMonthStr();
+    const stats = monthlyStats[curMonth] || { total: 0, off: 0, parts: 0, bv: 0 };
+    
+    if ($('statTotal')) $('statTotal').textContent = formatMs(stats.total);
+    if ($('statOff')) $('statOff').textContent = formatMs(stats.off);
+    if ($('statParts')) $('statParts').textContent = formatMs(stats.parts);
+    if ($('statBv')) $('statBv').textContent = formatMs(stats.bv);
   }
+  setInterval(updateClocks, 1000);
 
-  let html = '';
-  CATS.forEach(cat => {
-    const catMachines = MACHINES.filter(m=>m.catId===cat.id);
-    html += `<div class="col">
-      <div class="col-header">${esc(cat.name)}</div>
-      <div class="col-body" id="rows-container-${cat.id}">`;
-
-    if (!catMachines.length) {
-      html += `<p class="empty">Нет машин</p>`;
+  function updateUserProfileBlock() {
+    if (!loggedUser.name) return;
+    $('userAvatar').textContent = loggedUser.name.charAt(0).toUpperCase();
+    $('userFullName').textContent = loggedUser.name;
+    $('userPhone').textContent = loggedUser.phone || '—';
+    $('userService').textContent = loggedUser.catLabel || (loggedUser.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС');
+    $('userRoleBadge').textContent = loggedUser.roleName || '—';
+    
+    // Блокировка если не подтвержден
+    if (loggedUser.status !== 'approved') {
+      $('blockedBanner').classList.remove('hidden');
     } else {
-      catMachines.forEach((m, idx) => {
-        const st = m.lastStatus || 'line';
-        const cause = m.lastCause || '';
-        const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
-        
-        let bottomHtml = '';
-        if (st !== 'bv') {
-          const { isShift1 } = getShiftInfo();
-          const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-          const label = isShift1 ? '1 см' : '2 см';
-          const displayText = activeDriver ? `${label}: ${activeDriver}` : `${label}: Нет`;
+      $('blockedBanner').classList.add('hidden');
+    }
+  }
 
-          bottomHtml += `<span class="driver-badge" data-d1="${esc(m.driver1||'')}" data-d2="${esc(m.driver2||'')}">
-            <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить" ${!isApproved ? 'disabled' : ''}>✏️</button>
-            <span class="driver-text">${esc(displayText)}</span>
-          </span>`;
-        } else {
-          bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
-        }
+  function renderMainGrid(){
+    for (let key in activeTimers) clearInterval(activeTimers[key]);
+    for (let key in activeTimers) delete activeTimers[key];
 
-        if ((st === 'off' || st === 'parts') && cause) {
-          bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span>`;
-          bottomHtml += `<span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
-        }
+    if (!loggedUser.name) return;
+    const isApproved = loggedUser.status === 'approved';
 
-        bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
+    let html = '';
+    CATS.forEach(cat => {
+      const catMachines = MACHINES.filter(m=>m.catId===cat.id);
+      html += `<div class="col">
+        <div class="col-header">${esc(cat.name)}</div>
+        <div class="col-body" id="rows-container-${cat.id}">`;
 
-        let btnsHtml = `
-          <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')" ${!isApproved ? 'disabled' : ''}>На линии</button>
-          <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')" ${!isApproved ? 'disabled' : ''}>Сход</button>
-          <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')" ${!isApproved ? 'disabled' : ''}>Ож. ремонта</button>
-          <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')" ${!isApproved ? 'disabled' : ''}>БВ</button>
-        `;
+      if (!catMachines.length) {
+        html += `<p class="empty">Нет машин</p>`;
+      } else {
+        catMachines.forEach((m, idx) => {
+          const st = m.lastStatus || 'line';
+          const cause = m.lastCause || '';
+          const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
+          
+          let bottomHtml = '';
+          if (st !== 'bv') {
+            const { isShift1 } = getShiftInfo();
+            const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+            const label = isShift1 ? '1 см' : '2 см';
+            const displayText = activeDriver ? `${label}: ${activeDriver}` : `${label}: Нет`;
 
-        html += `<div class="row ${rowClass}" id="row-${m.id}">
-          <div class="row-top">
-            <div class="row-left">
-              <span class="row-num">${idx + 1}</span>
-              <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
+            bottomHtml += `<span class="driver-badge">
+              <button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')" title="Сменить" ${!isApproved ? 'disabled' : ''}>✏️</button>
+              <span class="driver-text">${esc(displayText)}</span>
+            </span>`;
+          } else {
+            bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          }
+
+          if ((st === 'off' || st === 'parts') && cause) {
+            bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span>`;
+            bottomHtml += `<span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
+          }
+
+          bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
+
+          let btnsHtml = `
+            <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')" ${!isApproved ? 'disabled' : ''}>На линии</button>
+            <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')" ${!isApproved ? 'disabled' : ''}>Сход</button>
+            <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')" ${!isApproved ? 'disabled' : ''}>Ож. ремонта</button>
+            <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')" ${!isApproved ? 'disabled' : ''}>БВ</button>
+          `;
+
+          html += `<div class="row ${rowClass}" id="row-${m.id}">
+            <div class="row-top">
+              <div class="row-left">
+                <span class="row-num">${idx + 1}</span>
+                <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
+              </div>
+              <div class="row-actions">${btnsHtml}</div>
             </div>
-            <div class="row-actions">${btnsHtml}</div>
-          </div>
-          <div class="row-bottom">${bottomHtml}</div>
-        </div>`;
+            <div class="row-bottom">${bottomHtml}</div>
+          </div>`;
 
-        if ((st === 'off' || st === 'parts') && m.lastTime) {
-          setTimeout(() => {
-            const timerSpan = $('timer-' + m.id);
-            if (timerSpan) {
-              activeTimers[m.id] = setInterval(() => {
+          if ((st === 'off' || st === 'parts') && m.lastTime) {
+            setTimeout(() => {
+              const timerSpan = $('timer-' + m.id);
+              if (timerSpan) {
+                activeTimers[m.id] = setInterval(() => {
+                  timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
+                }, 1000);
                 timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
-              }, 1000);
-              timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
-            }
-          }, 50);
-        }
+              }
+            }, 50);
+          }
+        });
+      }
+      html += `</div>
+        <div class="col-footer">
+          <button class="footer-btn" onclick="openAddMachineModal('${cat.id}')" ${!isApproved ? 'disabled' : ''}>+ Добавить машину</button>
+        </div>
+      </div>`;
+    });
+
+    $('mainGrid').innerHTML = html;
+    updateClocks();
+  }
+
+  // ============================================================
+  // СТАТУСЫ
+  // ============================================================
+  async function setStatus(machineId, status, causeText = '') {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    
+    const m = MACHINES.find(x=>x.id===machineId);
+    if (!m) return;
+
+    const now = Date.now();
+    const monthStr = new Date().toISOString().slice(0, 7);
+
+    if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
+      const elapsed = now - m.lastTime;
+
+      // Обновляем статистику в базе
+      const statsRef = ref(db, `monthlyStats/${monthStr}`);
+      const statsSnap = await get(statsRef);
+      let stats = statsSnap.val() || { total: 0, off: 0, parts: 0, bv: 0 };
+      
+      stats.total += elapsed;
+      if (m.lastStatus === 'off') stats.off += elapsed;
+      if (m.lastStatus === 'parts') stats.parts += elapsed;
+      if (m.lastStatus === 'bv') stats.bv += elapsed;
+      
+      await set(statsRef, stats);
+
+      // Пишем в журнал
+      await push(ref(db, 'eventLog'), {
+        month: monthStr,
+        date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
+        time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
+        machine: `${m.num} ${m.model}`,
+        driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2,
+        status: m.lastStatus,
+        cause: m.lastCause || '—',
+        duration: elapsed,
+        author: m.author || 'Неизвестно'
       });
     }
-    html += `</div>
-      <div class="col-footer">
-        <button class="footer-btn" onclick="openAddMachineModal('${cat.id}')" ${!isApproved ? 'disabled' : ''}>+ Добавить машину</button>
-      </div>
-    </div>`;
-  });
 
-  $('mainGrid').innerHTML = html;
-  updateClocks();
-}
-
-// ===== СТАТУСЫ =====
-function setStatus(machineId, status, causeText = '') {
-  // Проверка: нельзя нажимать, если не подтвержден
-  if (loggedUser.status !== 'approved') {
-    return showToast('Ваш аккаунт не подтвержден. Ожидайте.', true);
-  }
-  
-  const m = MACHINES.find(x=>x.id===machineId);
-  if (!m) return;
-
-  const now = Date.now();
-  const monthStr = new Date().toISOString().slice(0, 7);
-
-  if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
-    const elapsed = now - m.lastTime;
-
-    if (!monthlyStats[monthStr]) monthlyStats[monthStr] = { total: 0, off: 0, parts: 0, bv: 0 };
+    m.lastStatus = status;
+    m.lastCause = causeText;
+    m.lastTime = status === 'line' ? 0 : now;
     
-    monthlyStats[monthStr].total += elapsed;
-    if (m.lastStatus === 'off') monthlyStats[monthStr].off += elapsed;
-    if (m.lastStatus === 'parts') monthlyStats[monthStr].parts += elapsed;
-    if (m.lastStatus === 'bv') monthlyStats[monthStr].bv += elapsed;
+    const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
+    m.author = labels[status] + loggedUser.name;
 
-    eventLog.push({
-      month: monthStr,
-      date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
-      time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
-      machine: `${m.num} ${m.model}`,
-      driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2,
-      status: m.lastStatus,
-      cause: m.lastCause || '—',
-      duration: elapsed,
-      author: m.author || 'Неизвестно'
-    });
+    await set(ref(db, 'machines'), MACHINES);
   }
 
-  m.lastStatus = status;
-  m.lastCause = causeText;
-  m.lastTime = status === 'line' ? 0 : now;
-  
-  const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
-  m.author = labels[status] + loggedUser.name;
+  function openCauseModal(machineId, status) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentRowId = machineId;
+    currentStatusType = status;
 
-  saveDB();
-  renderMainGrid();
-}
-
-function openCauseModal(machineId, status) {
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  
-  currentRowId = machineId;
-  currentStatusType = status;
-
-  const title = $('causeModalTitle');
-  const sub = $('causeModalSub');
-  const select = $('causeSelect');
-  const confirmBtn = $('confirmCauseBtn');
-  
-  if (status === 'off') {
-    title.textContent = 'Сход с линии';
-    sub.textContent = 'Укажите причину схода.';
-    select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-    confirmBtn.className = 'btn-modal yellow';
-  } else {
-    title.textContent = 'Ожидание ремонта';
-    sub.textContent = 'Укажите, что ждем.';
-    select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-    confirmBtn.className = 'btn-modal red';
-  }
-
-  $('causeDetail').value = '';
-  $('causeModal').classList.remove('hidden');
-}
-
-function applyCause() {
-  if (!currentRowId) return;
-  const cause = $('causeSelect').value;
-  const detail = $('causeDetail').value.trim();
-  if (!cause && !detail) return showToast('Выберите причину', true);
-
-  let causeText = cause;
-  if (detail) causeText += ` (${detail})`;
-
-  setStatus(currentRowId, currentStatusType, causeText);
-  closeModal('causeModal');
-}
-
-// ===== ВОДИТЕЛИ =====
-function openEditDriverModal(machineId) {
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  
-  editingRowId = machineId;
-  const m = MACHINES.find(x=>x.id===machineId);
-  if (!m) return;
-  $('editDriver1').value = m.driver1 || '';
-  $('editDriver2').value = m.driver2 || '';
-  $('editDriverModal').classList.remove('hidden');
-}
-
-function saveNewDrivers() {
-  if (!editingRowId) return;
-  const m = MACHINES.find(x=>x.id===editingRowId);
-  if (!m) return;
-  m.driver1 = $('editDriver1').value.trim();
-  m.driver2 = $('editDriver2').value.trim();
-  saveDB();
-  closeModal('editDriverModal');
-  renderMainGrid();
-}
-
-// ===== ДОБАВЛЕНИЕ МАШИНЫ =====
-function openAddMachineModal(catId) {
-  if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-  
-  currentCatForAdd = catId;
-  $('addNum').value = '';
-  $('addModel').value = '';
-  $('addDriver1').value = '';
-  $('addDriver2').value = '';
-  $('addMachineModal').classList.remove('hidden');
-}
-
-function addNewMachine() {
-  const num = $('addNum').value.trim();
-  const model = $('addModel').value.trim();
-  if (!num) return showToast('Введите номер', true);
-
-  MACHINES.push({
-    id: newId('mach'),
-    num, model,
-    catId: currentCatForAdd,
-    driver1: $('addDriver1').value.trim(),
-    driver2: $('addDriver2').value.trim(),
-    lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
-  });
-  
-  saveDB();
-  closeModal('addMachineModal');
-  renderMainGrid();
-}
-
-// ===== ЖУРНАЛ =====
-let logModalMachineFilter = null;
-
-function showLogModal(type, machineName = null) {
-  currentLogType = type;
-  logModalMachineFilter = machineName;
-
-  const uniqueMonths = [...new Set(eventLog.map(e => e.month))].sort().reverse();
-  const curMonth = getCurrentMonthStr();
-  if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
-
-  const select = $('logMonthSelect');
-  select.innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-  
-  $('logModal').classList.remove('hidden');
-  renderLogTable();
-}
-
-function renderLogTable() {
-  const month = $('logMonthSelect').value;
-  const type = currentLogType;
-  
-  let filtered = eventLog.filter(e => e.month === month);
-  
-  if (logModalMachineFilter) {
-    filtered = filtered.filter(e => e.machine === logModalMachineFilter);
-    $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`;
-  } else {
-    let title = '';
-    if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
-    else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
-    else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
-    else { title = 'Все события'; }
-    $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
-  }
-  
-  let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0);
-  $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
-
-  if (!filtered.length) {
-    $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>';
-    return;
-  }
-
-  let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
-  
-  filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).forEach(e => {
-    html += `
-      <tr>
-        <td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td>
-        <td><strong>${esc(e.machine)}</strong></td>
-        <td>${esc(e.driver || '—')}</td>
-        <td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td>
-        <td style="font-family:monospace;font-weight:600;">${formatMs(e.duration)}</td>
-        <td style="font-size:11px;color:#64748b;">${esc(e.author)}</td>
-      </tr>
-    `;
-  });
-  html += '</tbody></table>';
-  $('logModalContent').innerHTML = html;
-}
-
-// ===== ОТЧЕТЫ =====
-function setReportStatus(status) {
-  reportStatusFilter = status;
-  document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
-  const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
-  if (activeBtn) {
-    if (status === '') activeBtn.classList.add('active-all');
-    else if (status === 'line') activeBtn.classList.add('active-line');
-    else if (status === 'off') activeBtn.classList.add('active-off');
-    else if (status === 'parts') activeBtn.classList.add('active-parts');
-    else if (status === 'bv') activeBtn.classList.add('active-bv');
-  }
-  buildReport();
-}
-
-function buildReport() {
-  const dateFrom = $('repDateFrom').value;
-  const dateTo = $('repDateTo').value;
-  const filterCause = $('repCause').value;
-  const filterCat = $('repCat').value;
-
-  let filtered = eventLog;
-  
-  if (dateFrom) {
-    const parts = dateFrom.split('-');
-    const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
-    filtered = filtered.filter(r => r.date >= dStr);
-  }
-  if (dateTo) {
-    const parts = dateTo.split('-');
-    const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
-    filtered = filtered.filter(r => r.date <= dStr);
-  }
-  
-  if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
-  if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
-  if (filterCat) filtered = filtered.filter(r => {
-    const m = MACHINES.find(x => `${x.num} ${x.model}` === r.machine);
-    return m && m.catId === filterCat;
-  });
-
-  let totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
-  filtered.forEach(r => {
-    if (r.status === 'off') { totalOff++; totalOffMs += r.duration; }
-    if (r.status === 'parts') { totalParts++; totalOffMs += r.duration; }
-    if (r.status === 'bv') { totalBV++; totalOffMs += r.duration; }
-  });
-
-  const statsHtml = `
-    <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
-    <div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div>
-    <div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div>
-    <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
-    <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>
-  `;
-  $('reportStatsRow').innerHTML = statsHtml;
-
-  if (!filtered.length) {
-    $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`;
-    return;
-  }
-
-  filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
-
-  let rowsHtml = filtered.map(r => `
-    <tr onclick="showLogModal('', '${r.machine}')" title="Показать историю этой машины">
-      <td>${r.date}</td>
-      <td><strong>${esc(r.machine)}</strong></td>
-      <td>${esc(r.driver || '—')}</td>
-      <td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td>
-      <td>${r.time}</td>
-      <td style="font-family:monospace;font-weight:600;">${formatMs(r.duration)}</td>
-      <td>${esc(r.cause)}</td>
-    </tr>
-  `).join('');
-
-  $('reportContent').innerHTML = `
-    <table class="report-table">
-      <thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-  `;
-}
-
-function exportExcel() {
-  const table = document.querySelector('.report-table');
-  if (!table) return showToast('Сначала сформируйте отчёт', true);
-
-  let csv = '\uFEFF';
-  const rows = table.querySelectorAll('tr');
-  rows.forEach(row => {
-    const cols = row.querySelectorAll('th, td');
-    const rowData = Array.from(cols).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';');
-    csv += rowData + '\r\n';
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-
-// ===== АДМИН =====
-function renderAdmin() {
-  if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers();
-  if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
-}
-
-function renderUsers() {
-  const sorted = USERS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
-  
-  $('moderationList').innerHTML = sorted.map(u=>{
-    const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
-    const statusText = u.status==='approved'?'✅ Подтвержден' : u.status==='rejected'?'⛔ Отклонён' : '⏳ На проверке';
-    return `<div class="moderation-user ${cls}">
-      <div><strong>${esc(u.name)}</strong> (${esc(u.phone)})<br>
-      <span style="font-size:12px;color:#64748b;">${esc(u.catLabel)} · ${esc(u.roleName)} · ${statusText}</span></div>
-      <div style="display:flex;gap:6px;">
-        ${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u.id}','approve')">Одобрить</button>`:''}
-        ${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u.id}','reject')">Отклонить</button>`:''}
-        <button class="btn gray small" onclick="userAction('${u.id}','delete')">Удалить</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function userAction(uid, act) {
-  pendingUserAction = { uid, act };
-  $('usersCodeInput').value = '';
-  $('usersCodeModal').classList.remove('hidden');
-}
-
-function renderBuilder() {
-  $('builderCatsList').innerHTML = CATS.map(c=>`
-    <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${c.id}')">✕</button></li>
-  `).join('') || '<li class="empty">Пусто</li>';
-
-  $('builderMachinesList').innerHTML = MACHINES.map(m=>`
-    <li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${m.id}')">✕</button></li>
-  `).join('') || '<li class="empty">Пусто</li>';
-
-  $('builderRolesList').innerHTML = ROLES.map(r=>`
-    <li><span>${esc(r.name)} <small>${r.cat}</small></span><button class="btn red small" onclick="delRole('${r.id}')">✕</button></li>
-  `).join('') || '<li class="empty">Пусто</li>';
-
-  $('builderCausesList').innerHTML = CAUSES.map(c=>`
-    <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${c.id}')">✕</button></li>
-  `).join('') || '<li class="empty">Пусто</li>';
-
-  $('newMachineCat').innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-}
-
-function catName(id) { const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
-
-function delCat(id) { if(confirm('Удалить?')) { CATS = CATS.filter(x=>x.id!==id); saveDB(); renderBuilder(); } }
-function delMach(id) { if(confirm('Удалить?')) { MACHINES = MACHINES.filter(x=>x.id!==id); saveDB(); renderBuilder(); renderMainGrid(); } }
-function delRole(id) { if(confirm('Удалить?')) { ROLES = ROLES.filter(x=>x.id!==id); saveDB(); renderBuilder(); } }
-function delCause(id) { if(confirm('Удалить?')) { CAUSES = CAUSES.filter(x=>x.id!==id); saveDB(); renderBuilder(); } }
-
-// ===== СОБЫТИЯ =====
-function closeModal(id) { $(id).classList.add('hidden'); }
-
-document.addEventListener('DOMContentLoaded', () => {
-  initDB();
-  updateClocks();
-  setInterval(updateClocks, 1000);
-  setInterval(renderMainGrid, 60000);
-
-  const sessionRestored = restoreUserSession();
-
-  $('tabMain').onclick = () => {
-    $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active');
-    $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden');
-    if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); }
-    else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); }
-  };
-
-  $('tabReports').onclick = () => {
-    $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
-    $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
+    const title = $('causeModalTitle');
+    const sub = $('causeModalSub');
+    const select = $('causeSelect');
+    const confirmBtn = $('confirmCauseBtn');
     
-    $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-    $('repCause').innerHTML = '<option value="">Все</option>' + CAUSES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
-    
-    if (!$('repDateFrom').value) {
-      const d = new Date();
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
-      $('repDateFrom').value = firstDay.toISOString().slice(0,10);
-      $('repDateTo').value = d.toISOString().slice(0,10);
+    if (status === 'off') {
+      title.textContent = 'Сход с линии';
+      sub.textContent = 'Укажите причину схода.';
+      select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      confirmBtn.className = 'btn-modal yellow';
+    } else {
+      title.textContent = 'Ожидание ремонта';
+      sub.textContent = 'Укажите, что ждем.';
+      select.innerHTML = CAUSES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      confirmBtn.className = 'btn-modal red';
     }
-  };
 
-  $('tabAdmin').onclick = () => {
-    $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active');
-    $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden');
-    if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
-    else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
-  };
-
-  if (sessionRestored) {
-    $('tabMain').click();
+    $('causeDetail').value = '';
+    $('causeModal').classList.remove('hidden');
   }
 
-  $('loginCategory').onchange = () => {
-    const cat = $('loginCategory').value;
-    const list = ROLES.filter(r=>r.cat===cat);
-    $('loginRole').innerHTML = '<option value="">— выберите —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
-  };
+  function applyCause() {
+    if (!currentRowId) return;
+    const cause = $('causeSelect').value;
+    const detail = $('causeDetail').value.trim();
+    if (!cause && !detail) return showToast('Выберите причину', true);
 
-  $('loginBtn').onclick = () => {
-    const name = $('loginName').value.trim();
-    const phone = $('loginPhone').value.trim();
-    const cat = $('loginCategory').value;
-    const roleId = $('loginRole').value;
+    let causeText = cause;
+    if (detail) causeText += ` (${detail})`;
 
-    if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
+    setStatus(currentRowId, currentStatusType, causeText);
+    closeModal('causeModal');
+  }
+
+  // ============================================================
+  // ВОДИТЕЛИ
+  // ============================================================
+  function openEditDriverModal(machineId) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    editingRowId = machineId;
+    const m = MACHINES.find(x=>x.id===machineId);
+    if (!m) return;
+    $('editDriver1').value = m.driver1 || '';
+    $('editDriver2').value = m.driver2 || '';
+    $('editDriverModal').classList.remove('hidden');
+  }
+
+  async function saveNewDrivers() {
+    if (!editingRowId) return;
+    const m = MACHINES.find(x=>x.id===editingRowId);
+    if (!m) return;
+    m.driver1 = $('editDriver1').value.trim();
+    m.driver2 = $('editDriver2').value.trim();
+    await set(ref(db, 'machines'), MACHINES);
+    closeModal('editDriverModal');
+  }
+
+  // ============================================================
+  // ДОБАВЛЕНИЕ МАШИНЫ
+  // ============================================================
+  function openAddMachineModal(catId) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentCatForAdd = catId;
+    $('addNum').value = '';
+    $('addModel').value = '';
+    $('addDriver1').value = '';
+    $('addDriver2').value = '';
+    $('addMachineModal').classList.remove('hidden');
+  }
+
+  async function addNewMachine() {
+    const num = $('addNum').value.trim();
+    const model = $('addModel').value.trim();
+    if (!num) return showToast('Введите номер', true);
+
+    const newMachine = {
+      id: newId('mach'),
+      num, model,
+      catId: currentCatForAdd,
+      driver1: $('addDriver1').value.trim(),
+      driver2: $('addDriver2').value.trim(),
+      lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name
+    };
     
-    const roleObj = ROLES.find(r=>r.id===roleId);
-    if (!roleObj) return showToast('Ошибка должности', true);
+    MACHINES.push(newMachine);
+    await set(ref(db, 'machines'), MACHINES);
+    closeModal('addMachineModal');
+  }
 
-    if (roleObj.name === 'Главный инженер') {
-      pendingChiefEngineerReg = { name, phone, cat, roleId, roleName: roleObj.name };
-      $('chiefEngineerRegCode').value = '';
-      $('chiefEngineerRegModal').classList.remove('hidden');
+  // ============================================================
+  // ЖУРНАЛ
+  // ============================================================
+  let logModalMachineFilter = null;
+
+  function showLogModal(type, machineName = null) {
+    currentLogType = type;
+    logModalMachineFilter = machineName;
+
+    const uniqueMonths = [...new Set(eventLog.map(e => e.month))].sort().reverse();
+    const curMonth = getCurrentMonthStr();
+    if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
+
+    const select = $('logMonthSelect');
+    select.innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
+    
+    $('logModal').classList.remove('hidden');
+    renderLogTable();
+  }
+
+  function renderLogTable() {
+    const month = $('logMonthSelect').value;
+    const type = currentLogType;
+    
+    let filtered = eventLog.filter(e => e.month === month);
+    
+    if (logModalMachineFilter) {
+      filtered = filtered.filter(e => e.machine === logModalMachineFilter);
+      $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`;
+    } else {
+      let title = '';
+      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+      else { title = 'Все события'; }
+      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+    }
+    
+    let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0);
+    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+
+    if (!filtered.length) {
+      $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>';
       return;
     }
 
-    finishLogin({ name, phone, cat, roleId, roleName: roleObj.name });
-  };
+    let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
+    
+    filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).forEach(e => {
+      html += `
+        <tr>
+          <td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td>
+          <td><strong>${esc(e.machine)}</strong></td>
+          <td>${esc(e.driver || '—')}</td>
+          <td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td>
+          <td style="font-family:monospace;font-weight:600;">${formatMs(e.duration)}</td>
+          <td style="font-size:11px;color:#64748b;">${esc(e.author)}</td>
+        </tr>
+      `;
+    });
+    html += '</tbody></table>';
+    $('logModalContent').innerHTML = html;
+  }
 
-  $('logoutBtn').onclick = logoutUser;
-
-  $('adminLoginBtn').onclick = () => {
-    if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
-    isAdminLoggedIn = true;
-    $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden');
-    renderAdmin();
-  };
-
-  $('logoutAdminBtn').onclick = () => {
-    isAdminLoggedIn = false;
-    $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden');
-    $('adminCodeInput').value = '';
-  };
-
-  $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
-  $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
-
-  $('confirmUsersCodeBtn').onclick = () => {
-    if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
-    if (!pendingUserAction) return;
-    const { uid, act } = pendingUserAction;
-    const idx = USERS.findIndex(u=>u.id===uid);
-    if (idx > -1) {
-      if (act === 'approve') USERS[idx].status = 'approved';
-      if (act === 'reject') USERS[idx].status = 'rejected';
-      if (act === 'delete') USERS.splice(idx, 1);
-      saveDB();
+  // ============================================================
+  // ОТЧЕТЫ
+  // ============================================================
+  function setReportStatus(status) {
+    reportStatusFilter = status;
+    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
+    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
+    if (activeBtn) {
+      if (status === '') activeBtn.classList.add('active-all');
+      else if (status === 'line') activeBtn.classList.add('active-line');
+      else if (status === 'off') activeBtn.classList.add('active-off');
+      else if (status === 'parts') activeBtn.classList.add('active-parts');
+      else if (status === 'bv') activeBtn.classList.add('active-bv');
     }
-    closeModal('usersCodeModal');
-    renderUsers();
-    showToast('Готово');
-  };
+    buildReport();
+  }
 
-  $('confirmChiefEngineerRegBtn').onclick = () => {
-    if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) return showToast('Неверный код', true);
-    closeModal('chiefEngineerRegModal');
-    if (pendingChiefEngineerReg) {
-      finishLogin(pendingChiefEngineerReg);
-      pendingChiefEngineerReg = null;
+  function buildReport() {
+    const dateFrom = $('repDateFrom').value;
+    const dateTo = $('repDateTo').value;
+    const filterCause = $('repCause').value;
+    const filterCat = $('repCat').value;
+
+    let filtered = eventLog;
+    
+    if (dateFrom) {
+      const parts = dateFrom.split('-');
+      const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      filtered = filtered.filter(r => r.date >= dStr);
     }
-  };
+    if (dateTo) {
+      const parts = dateTo.split('-');
+      const dStr = `${parts[2]}.${parts[1]}.${parts[0]}`;
+      filtered = filtered.filter(r => r.date <= dStr);
+    }
+    
+    if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
+    if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
+    if (filterCat) filtered = filtered.filter(r => {
+      const m = MACHINES.find(x => `${x.num} ${x.model}` === r.machine);
+      return m && m.catId === filterCat;
+    });
 
-  $('addCatBtn').onclick = () => { const v = $('newCatName').value.trim(); if (v) { CATS.push({ id: newId('cat'), name: v }); saveDB(); renderBuilder(); $('newCatName').value = ''; } };
-  $('addMachineBtn').onclick = () => {
-    const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value;
-    if (num && catId) { MACHINES.push({ id: newId('mach'), num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 }); saveDB(); renderBuilder(); $('newMachineNum').value = ''; $('newMachineModel').value = ''; }
-  };
-  $('addRoleBtn').onclick = () => { const v = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (v) { ROLES.push({ id: newId('role'), name: v, cat }); saveDB(); renderBuilder(); $('newRoleName').value = ''; } };
-  $('addCauseBtn').onclick = () => { const v = $('newCauseName').value.trim(); if (v) { CAUSES.push({ id: newId('cause'), name: v }); saveDB(); renderBuilder(); $('newCauseName').value = ''; } };
-});
+    let totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
+    filtered.forEach(r => {
+      if (r.status === 'off') { totalOff++; totalOffMs += r.duration; }
+      if (r.status === 'parts') { totalParts++; totalOffMs += r.duration; }
+      if (r.status === 'bv') { totalBV++; totalOffMs += r.duration; }
+    });
+
+    const statsHtml = `
+      <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
+      <div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div>
+      <div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div>
+      <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
+      <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>
+    `;
+    $('reportStatsRow').innerHTML = statsHtml;
+
+    if (!filtered.length) {
+      $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`;
+      return;
+    }
+
+    filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
+
+    let rowsHtml = filtered.map(r => `
+      <tr onclick="showLogModal('', '${r.machine}')" title="Показать историю этой машины">
+        <td>${r.date}</td>
+        <td><strong>${esc(r.machine)}</strong></td>
+        <td>${esc(r.driver || '—')}</td>
+        <td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td>
+        <td>${r.time}</td>
+        <td style="font-family:monospace;font-weight:600;">${formatMs(r.duration)}</td>
+        <td>${esc(r.cause)}</td>
+      </tr>
+    `).join('');
+
+    $('reportContent').innerHTML = `
+      <table class="report-table">
+        <thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    `;
+  }
+
+  function exportExcel() {
+    const table = document.querySelector('.report-table');
+    if (!table) return showToast('Сначала сформируйте отчёт', true);
+
+    let csv = '\uFEFF';
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+      const cols = row.querySelectorAll('th, td');
+      const rowData = Array.from(cols).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';');
+      csv += rowData + '\r\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  // ============================================================
+  // АДМИН
+  // ============================================================
+  function renderAdmin() {
+    if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers();
+    if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder();
+  }
+
+  function renderUsers() {
+    const sorted = USERS.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
+    
+    $('moderationList').innerHTML = sorted.map(u=>{
+      const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
+      const statusText = u.status==='approved'?'✅ Подтвержден' : u.status==='rejected'?'⛔ Отклонён' : '⏳ На проверке';
+      return `<div class="moderation-user ${cls}">
+        <div><strong>${esc(u.name)}</strong> (${esc(u.phone)})<br>
+        <span style="font-size:12px;color:#64748b;">${esc(u.catLabel)} · ${esc(u.roleName)} · ${statusText}</span></div>
+        <div style="display:flex;gap:6px;">
+          ${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u.id}','approve')">Одобрить</button>`:''}
+          ${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u.id}','reject')">Отклонить</button>`:''}
+          <button class="btn gray small" onclick="userAction('${u.id}','delete')">Удалить</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function userAction(uid, act) {
+    pendingUserAction = { uid, act };
+    $('usersCodeInput').value = '';
+    $('usersCodeModal').classList.remove('hidden');
+  }
+
+  function renderBuilder() {
+    $('builderCatsList').innerHTML = CATS.map(c=>`
+      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${c.id}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    $('builderMachinesList').innerHTML = MACHINES.map(m=>`
+      <li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${m.id}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    $('builderRolesList').innerHTML = ROLES.map(r=>`
+      <li><span>${esc(r.name)} <small>${r.cat}</small></span><button class="btn red small" onclick="delRole('${r.id}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    $('builderCausesList').innerHTML = CAUSES.map(c=>`
+      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${c.id}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    $('newMachineCat').innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  function catName(id) { const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
+
+  async function delCat(id) { if(confirm('Удалить?')) { CATS = CATS.filter(x=>x.id!==id); await set(ref(db,'cats'), CATS); renderBuilder(); } }
+  async function delMach(id) { if(confirm('Удалить?')) { MACHINES = MACHINES.filter(x=>x.id!==id); await set(ref(db,'machines'), MACHINES); renderBuilder(); } }
+  async function delRole(id) { if(confirm('Удалить?')) { ROLES = ROLES.filter(x=>x.id!==id); await set(ref(db,'roles'), ROLES); renderBuilder(); } }
+  async function delCause(id) { if(confirm('Удалить?')) { CAUSES = CAUSES.filter(x=>x.id!==id); await set(ref(db,'causes'), CAUSES); renderBuilder(); } }
+
+  // ============================================================
+  // СОБЫТИЯ И АВТОРИЗАЦИЯ
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Инициализация базовых данных (если пусто)
+    setTimeout(async () => {
+      if (CATS.length === 0) {
+        await set(ref(db, 'cats'), [
+          { id:'cat_1', name:'ЦА' }, { id:'cat_2', name:'ППУ' }, { id:'cat_3', name:'АК' }
+        ]);
+      }
+      if (ROLES.length === 0) {
+        await set(ref(db, 'roles'), [
+          { id:'r1', name:'Механик СПТ', cat:'SPT' },
+          { id:'r2', name:'Главный инженер', cat:'ITR' }
+        ]);
+      }
+      if (CAUSES.length === 0) {
+        await set(ref(db, 'causes'), [
+          { id:'c1', name:'ДВС' }, { id:'c2', name:'КПП' }, { id:'c3', name:'Гидравлика' }
+        ]);
+      }
+    }, 1000);
+
+    // 2. Вкладки
+    $('tabMain').onclick = () => {
+      $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active');
+      $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden');
+      if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); }
+      else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); }
+    };
+
+    $('tabReports').onclick = () => {
+      $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active');
+      $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden');
+      
+      $('repCat').innerHTML = '<option value="">Все</option>' + CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+      $('repCause').innerHTML = '<option value="">Все</option>' + CAUSES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+      
+      if (!$('repDateFrom').value) {
+        const d = new Date();
+        const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+        $('repDateFrom').value = firstDay.toISOString().slice(0,10);
+        $('repDateTo').value = d.toISOString().slice(0,10);
+      }
+    };
+
+    $('tabAdmin').onclick = () => {
+      $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active');
+      $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden');
+      if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); }
+      else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); }
+    };
+
+    // 3. Вход
+    $('loginCategory').onchange = () => {
+      const cat = $('loginCategory').value;
+      const list = ROLES.filter(r=>r.cat===cat);
+      $('loginRole').innerHTML = '<option value="">— выберите —</option>' + list.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+    };
+
+    $('loginBtn').onclick = async () => {
+      const name = $('loginName').value.trim();
+      const phone = $('loginPhone').value.trim();
+      const cat = $('loginCategory').value;
+      const roleId = $('loginRole').value;
+
+      if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
+      
+      const roleObj = ROLES.find(r=>r.id===roleId);
+      if (!roleObj) return showToast('Ошибка должности', true);
+
+      if (roleObj.name === 'Главный инженер') {
+        pendingChiefEngineerReg = { name, phone, cat, roleId, roleName: roleObj.name };
+        $('chiefEngineerRegCode').value = '';
+        $('chiefEngineerRegModal').classList.remove('hidden');
+        return;
+      }
+
+      await finishLogin({ name, phone, cat, roleId, roleName: roleObj.name });
+    };
+
+    async function finishLogin(data) {
+      let u = USERS.find(x=>x.phone===data.phone);
+      if (u) {
+        loggedUser = { ...data, catLabel: u.catLabel, status: u.status };
+      } else {
+        loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status: 'pending' };
+        const newUser = { id: newId('u'), ...loggedUser, createdAt: Date.now() };
+        USERS.push(newUser);
+        await set(ref(db, 'users'), USERS);
+      }
+
+      localStorage.setItem('spt_user', JSON.stringify(loggedUser));
+
+      $('mainLoginBlock').classList.add('hidden');
+      $('mainWorkBlock').classList.remove('hidden');
+      updateUserProfileBlock();
+      renderMainGrid();
+      showToast('Добро пожаловать!');
+    }
+
+    $('logoutBtn').onclick = () => {
+      localStorage.removeItem('spt_user');
+      loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+      $('mainLoginBlock').classList.remove('hidden'); 
+      $('mainWorkBlock').classList.add('hidden');
+      $('globalPendingAlert').classList.add('hidden');
+      $('blockedBanner').classList.add('hidden');
+    };
+
+    // 4. Восстановление сессии
+    const savedUser = localStorage.getItem('spt_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        loggedUser = user;
+        $('mainLoginBlock').classList.add('hidden');
+        $('mainWorkBlock').classList.remove('hidden');
+        $('tabMain').click();
+      } catch(e){}
+    }
+
+    // 5. Админка
+    $('adminLoginBtn').onclick = () => {
+      if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
+      isAdminLoggedIn = true;
+      $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden');
+      renderAdmin();
+    };
+
+    $('logoutAdminBtn').onclick = () => {
+      isAdminLoggedIn = false;
+      $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden');
+      $('adminCodeInput').value = '';
+    };
+
+    $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
+    $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
+
+    $('confirmUsersCodeBtn').onclick = async () => {
+      if ($('usersCodeInput').value !== USERS_CODE) return showToast('Неверный код', true);
+      if (!pendingUserAction) return;
+      const { uid, act } = pendingUserAction;
+      const idx = USERS.findIndex(u=>u.id===uid);
+      if (idx > -1) {
+        if (act === 'approve') USERS[idx].status = 'approved';
+        if (act === 'reject') USERS[idx].status = 'rejected';
+        if (act === 'delete') USERS.splice(idx, 1);
+        await set(ref(db, 'users'), USERS);
+      }
+      closeModal('usersCodeModal');
+      renderUsers();
+      showToast('Готово');
+    };
+
+    $('confirmChiefEngineerRegBtn').onclick = async () => {
+      if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) return showToast('Неверный код', true);
+      closeModal('chiefEngineerRegModal');
+      if (pendingChiefEngineerReg) {
+        await finishLogin(pendingChiefEngineerReg);
+        pendingChiefEngineerReg = null;
+      }
+    };
+
+    // 6. Конструктор
+    $('addCatBtn').onclick = async () => { 
+      const v = $('newCatName').value.trim(); 
+      if (v) { 
+        const newCat = { id: newId('cat'), name: v };
+        CATS.push(newCat); 
+        await set(ref(db,'cats'), CATS); 
+        renderBuilder(); 
+        $('newCatName').value = ''; 
+      } 
+    };
+    
+    $('addMachineBtn').onclick = async () => {
+      const num = $('newMachineNum').value.trim(); 
+      const model = $('newMachineModel').value.trim(); 
+      const catId = $('newMachineCat').value;
+      if (num && catId) { 
+        const newMach = { id: newId('mach'), num, model, catId, driver1: '', driver2: '', lastStatus: 'line', lastTime: 0 };
+        MACHINES.push(newMach); 
+        await set(ref(db,'machines'), MACHINES); 
+        renderBuilder(); 
+        $('newMachineNum').value = ''; 
+        $('newMachineModel').value = ''; 
+      }
+    };
+    
+    $('addRoleBtn').onclick = async () => { 
+      const v = $('newRoleName').value.trim(); 
+      const cat = $('newRoleCat').value; 
+      if (v) { 
+        const newRole = { id: newId('role'), name: v, cat };
+        ROLES.push(newRole); 
+        await set(ref(db,'roles'), ROLES); 
+        renderBuilder(); 
+        $('newRoleName').value = ''; 
+      } 
+    };
+    
+    $('addCauseBtn').onclick = async () => { 
+      const v = $('newCauseName').value.trim(); 
+      if (v) { 
+        const newCause = { id: newId('cause'), name: v };
+        CAUSES.push(newCause); 
+        await set(ref(db,'causes'), CAUSES); 
+        renderBuilder(); 
+        $('newCauseName').value = ''; 
+      } 
+    };
+  });
 </script>
 </body>
 </html>
