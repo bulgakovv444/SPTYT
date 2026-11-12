@@ -1176,7 +1176,28 @@
         </div>
       </div>`;
     }).join('');
+
+    // Добавляем кнопку очистки битых аккаунтов
+    $('moderationList').innerHTML += `
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="btn red small" onclick="window.cleanBrokenUsers()">🧹 Очистить битые аккаунты</button>
+      </div>
+    `;
   }
+
+  // Добавляем глобальную функцию для очистки
+  window.cleanBrokenUsers = async function() {
+    if (!confirm('Удалить всех пользователей с пустым именем или телефоном?')) return;
+    
+    let count = 0;
+    for (const [id, u] of Object.entries(USERS)) {
+      if (!u.name || !u.phone || u.name === '0' || u.phone === '0') {
+        await remove(ref(db, 'users/' + id));
+        count++;
+      }
+    }
+    showToast(`Удалено битых аккаунтов: ${count}`);
+  };
 
   // Обработчик кнопки подтверждения действия с пользователем
   $('confirmUsersCodeBtn').onclick = async () => {
