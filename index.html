@@ -647,7 +647,6 @@
   // ============================================================
   function renderAdmin() { if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers(); if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder(); }
   
-  // ИСПРАВЛЕННЫЕ ФУНКЦИИ УДАЛЕНИЯ (по реальному ключу _key)
   window.delCat = async function(key) { if(confirm('Удалить эту категорию? Все машины в ней останутся в базе, но пропадут с экрана.')) await remove(ref(db,'cats/' + key)); };
   window.delMach = async function(key) { if(confirm('Удалить эту машину?')) await remove(ref(db,'machines/' + key)); };
   window.delRole = async function(key) { if(confirm('Удалить эту должность? Пользователи с ней не смогут войти.')) await remove(ref(db,'roles/' + key)); };
@@ -698,32 +697,15 @@
     } catch (e) { showToast('Ошибка: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = 'Подтвердить'; closeModal('usersCodeModal'); pendingUserAction = null; try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {} }
   }
 
-  // ИСПРАВЛЕННЫЙ РЕНДЕР КОНСТРУКТОРА (передает реальный ключ _key)
   function renderBuilder() {
-    // Категории
-    $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`
-      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>
-    `).join('') || '<li class="empty">Пусто</li>';
-
-    // Машины
-    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`
-      <li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${key}')">✕</button></li>
-    `).join('') || '<li class="empty">Пусто</li>';
-
-    // Должности (с защитой Главного инженера от удаления)
+    $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`<li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
     $('builderRolesList').innerHTML = Object.entries(ROLES).map(([key, r])=>{
       const isChief = r.name === CHIEF_ROLE_NAME;
-      const delBtn = isChief 
-        ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` 
-        : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
+      const delBtn = isChief ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
       return `<li><span>${esc(r.name)} <small>${r.cat}</small></span>${delBtn}</li>`;
     }).join('') || '<li class="empty">Пусто</li>';
-
-    // Причины
-    $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([key, c])=>`
-      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${key}')">✕</button></li>
-    `).join('') || '<li class="empty">Пусто</li>';
-
+    $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
     $('newMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   }
   function catName(id) { const c = Object.values(CATS).find(x => x.id === id); return c ? c.name : '—'; }
@@ -748,21 +730,71 @@
     $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
     $('loginCategory').onchange = updateRoleSelect;
 
+    // ============ ЖЕСТКАЯ ПРОВЕРКА УНИКАЛЬНОСТИ НОМЕРА И СЛУЖБЫ ============
     $('loginBtn').onclick = async () => {
-      const name = $('loginName').value.trim(); const phone = $('loginPhone').value.trim(); const cat = $('loginCategory').value;
-      const roleSelect = $('loginRole'); const roleId = roleSelect.value;
+      const name = $('loginName').value.trim();
+      const phone = $('loginPhone').value.trim();
+      const cat = $('loginCategory').value;
+      const roleSelect = $('loginRole');
+      const roleId = roleSelect.value;
+
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
 
       let roleObj = ROLES[roleId];
-      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList); }
-      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = { id: roleId, name: roleNameInList, cat: cat }; }
-
-      if (roleObj.name === CHIEF_ROLE_NAME) {
-        const existing = findExistingChief();
-        if (existing) { const [, u] = existing; if (normPhone(u.phone) !== normPhone(phone)) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true); }
-        pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name };
-        $('chiefEngineerRegCode').value = ''; $('chiefEngineerRegModal').classList.remove('hidden'); return;
+      if (!roleObj) {
+        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
+        roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList);
       }
+      if (!roleObj) {
+        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
+        roleObj = { id: roleId, name: roleNameInList, cat: cat };
+      }
+
+      // ПРОВЕРКА 1: Существует ли уже пользователь с таким телефоном?
+      const norm = normPhone(phone);
+      const existingEntry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
+
+      if (existingEntry) {
+        const [key, u] = existingEntry;
+        // ПРОВЕРКА 2: Совпадает ли выбранная служба (категория) с той, что в базе?
+        if (u.cat !== cat) {
+          return showToast(`Этот номер уже привязан к службе "${u.catLabel}". Вход в другую службу запрещён.`, true);
+        }
+        // ПРОВЕРКА 3: Совпадает ли выбранная должность с той, что в базе?
+        if (u.roleId !== roleObj.id) {
+          return showToast(`Этот номер уже привязан к должности "${u.roleName}". Смена должности запрещена.`, true);
+        }
+        // (Опционально) Если хотите запретить смену имени под тем же номером, раскомментируйте:
+        // if (u.name !== name) return showToast('Этот номер уже зарегистрирован на другое имя.', true);
+
+        // Если это Главный инженер, проверяем, что он один
+        if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') {
+           // он уже ГИ, все ок, пускаем
+        } else if (roleObj.name === CHIEF_ROLE_NAME) {
+           const otherChief = findExistingChief(key);
+           if (otherChief) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
+        }
+      } else {
+        // Если пользователя нет, но выбрана должность ГИ — проверяем, нет ли уже другого ГИ
+        if (roleObj.name === CHIEF_ROLE_NAME) {
+          const existing = findExistingChief();
+          if (existing) {
+            const [, u] = existing;
+            if (normPhone(u.phone) !== normPhone(phone)) {
+              return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
+            }
+          }
+        }
+      }
+
+      // Запуск входа
+      if (roleObj.name === CHIEF_ROLE_NAME) {
+        pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name };
+        $('chiefEngineerRegCode').value = '';
+        $('chiefEngineerRegModal').classList.remove('hidden');
+        return;
+      }
+
       await finishLogin({ name, phone, cat, roleId: roleObj.id, roleName: roleObj.name });
     };
 
@@ -773,8 +805,30 @@
         const [key, u] = entry;
         if (u.status === 'rejected') return showToast('Ваш аккаунт отклонён Главным инженером', true);
         const newStatus = autoApprove ? 'approved' : (u.status || 'pending');
-        loggedUser = { ...data, catLabel: u.catLabel || data.catLabel, status: newStatus };
-        try { await update(ref(db, 'users/' + key), { id: key, name: u.name || data.name, phone: u.phone || data.phone, cat: u.cat || data.cat, roleId: u.roleId || data.roleId, roleName: u.roleName || data.roleName, catLabel: u.catLabel || (data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС'), status: newStatus }); } catch(e) { console.error(e); }
+        
+        // ВСЕГДА БЕРЕМ ДАННЫЕ ИЗ БАЗЫ (если они там есть), а не из введенных
+        loggedUser = { 
+          ...data, 
+          name: u.name || data.name, // имя из базы
+          cat: u.cat || data.cat, // служба из базы
+          catLabel: u.catLabel || data.catLabel, 
+          roleId: u.roleId || data.roleId, 
+          roleName: u.roleName || data.roleName, 
+          status: newStatus 
+        };
+        
+        try { 
+          await update(ref(db, 'users/' + key), { 
+            id: key, 
+            name: loggedUser.name, 
+            phone: u.phone || data.phone, 
+            cat: loggedUser.cat, 
+            roleId: loggedUser.roleId, 
+            roleName: loggedUser.roleName, 
+            catLabel: loggedUser.catLabel, 
+            status: newStatus 
+          }); 
+        } catch(e) { console.error(e); }
       } else {
         const newUid = newId('u'); const status = autoApprove ? 'approved' : 'pending';
         loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status };
