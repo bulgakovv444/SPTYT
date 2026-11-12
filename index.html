@@ -143,10 +143,16 @@
 
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
+
+  .db-warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
 </style>
 </head>
 <body>
 <div class="container">
+
+  <div class="db-warn">
+    ⚙️ <b>Локальный режим.</b> Данные хранятся в этом браузере (localStorage). Не синхронизируется между устройствами. Для настройки и отладки — ок, позже вернём базу.
+  </div>
 
   <div id="globalPendingAlert" class="pending-alert hidden">
     <span>⏳</span> <span id="globalPendingText">Ваш аккаунт на проверке у Главного инженера. Ожидайте подтверждения.</span>
@@ -241,6 +247,7 @@
         <button class="sub-tab-btn active" id="adminTabUsers">👥 Пользователи</button>
         <button class="sub-tab-btn" id="adminTabBuilder">🛠 Конструктор</button>
         <button class="sub-tab-btn" id="adminTabHistory">📋 История статусов</button>
+        <button class="sub-tab-btn" id="adminTabDanger">⚠ Сброс данных</button>
       </div>
       <div id="adminUsersBlock">
         <div class="card" style="border-left:4px solid #f59e0b;">
@@ -301,6 +308,21 @@
           <div id="histContent"></div>
         </div>
       </div>
+      <div id="adminDangerBlock" class="hidden">
+        <div class="card" style="border-left:4px solid #dc2626;">
+          <h2>⚠ Сброс локальных данных</h2>
+          <p class="hint">Действия необратимы. Используйте для чистой настройки.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn red small" id="resetUsersBtn">Удалить всех пользователей</button>
+            <button class="btn red small" id="resetMachinesBtn">Удалить все машины</button>
+            <button class="btn red small" id="resetCatsBtn">Удалить все категории</button>
+            <button class="btn red small" id="resetRolesBtn">Удалить все должности</button>
+            <button class="btn red small" id="resetShiftsBtn">Удалить все смены</button>
+            <button class="btn red small" id="resetHistoryBtn">Удалить всю историю</button>
+            <button class="btn red" id="resetAllBtn" style="background:#991b1b;">ПОЛНЫЙ СБРОС ВСЕГО</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -349,22 +371,11 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, push, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAwf-lh-y9HFedWzv769A6ZdPP5ZGkCeJ4",
-  authDomain: "zayavki-ust-tegus.firebaseapp.com",
-  databaseURL: "https://zayavki-ust-tegus-default-rtdb.firebaseio.com",
-  projectId: "zayavki-ust-tegus",
-  storageBucket: "zayavki-ust-tegus.firebasestorage.app",
-  messagingSenderId: "200423554198",
-  appId: "1:200423554198:web:43623211f6f035a74916b7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+<script>
+// ============================================================
+// ЛОКАЛЬНАЯ ВЕРСИЯ (БЕЗ FIREBASE)
+// Все данные — в localStorage под ключом spt_db_v1
+// ============================================================
 
 // ===== КОДЫ =====
 const ADMIN_CODE = 'admin2483';
@@ -388,6 +399,8 @@ const DEFAULT_ROLES = [
 ];
 const CAT_LABELS = { SPT:'Специалист СПТ', ITR:'ИТР ЦТКРС' };
 
+const DB_KEY = 'spt_db_v1';
+
 // ===== СОСТОЯНИЕ =====
 let CATS = [], MACHINES = [], USERS = [], SHIFTS = [], HISTORY = [], ROLES = [];
 let loggedUser = { name:'', phone:'', cat:'', catLabel:'', role:'', roleName:'', status:'pending' };
@@ -395,11 +408,9 @@ let isAdminLoggedIn = false;
 let selectedMachineForCause = null;
 let selectedCause = '';
 let currentCatView = '';
-let knownHistoryIds = null;
 let audioCtx = null;
 let pendingChiefEngineerReg = null;
 let pendingUserAction = null;
-let dataReady = { cats:false, machines:false, roles:false, users:false };
 
 // ===== УТИЛИТЫ =====
 const $ = id => document.getElementById(id);
@@ -410,7 +421,35 @@ function todayStr(){ return new Date().toISOString().slice(0,10); }
 function shiftOfNow(){ const h = new Date().getHours(); return (h>=8 && h<20) ? 1 : 2; }
 function catName(id){ const c = CATS.find(x=>x.id===id); return c ? c.name : '—'; }
 function machineLabel(m){ return m ? `${m.num}${m.model ? ' ('+m.model+')' : ''}` : '—'; }
-function toArr(v){ if (!v) return []; if (Array.isArray(v)) return v.filter(Boolean); return Object.values(v).filter(Boolean); }
+function newId(prefix){ return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
+
+// ===== БАЗА (localStorage) =====
+function loadDB(){
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e){ console.warn('DB load error', e); return null; }
+}
+function saveDB(){
+  const data = { cats:CATS, machines:MACHINES, users:USERS, shifts:SHIFTS, history:HISTORY, roles:ROLES };
+  localStorage.setItem(DB_KEY, JSON.stringify(data));
+}
+function initDB(){
+  const data = loadDB();
+  if (data) {
+    CATS = data.cats || [];
+    MACHINES = data.machines || [];
+    USERS = data.users || [];
+    SHIFTS = data.shifts || [];
+    HISTORY = data.history || [];
+    ROLES = data.roles || [];
+  }
+  // Засеиваем дефолты, если пусто
+  if (!CATS.length) CATS = DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
+  if (!ROLES.length) ROLES = DEFAULT_ROLES.slice();
+  saveDB();
+}
 
 function showToast(msg, isErr){
   const t = $('toast');
@@ -487,7 +526,7 @@ function renderRoleOptions(){
   if (!cat) { sel.innerHTML = '<option value="">— сначала выберите категорию —</option>'; return; }
   const list = ROLES.filter(r=>r.cat===cat);
   if (!list.length) {
-    sel.innerHTML = '<option value="">— должности не загружены. Проверьте Firebase —</option>';
+    sel.innerHTML = '<option value="">— нет должностей для этой категории —</option>';
     return;
   }
   sel.innerHTML = '<option value="">— выберите должность —</option>' +
@@ -496,7 +535,7 @@ function renderRoleOptions(){
 $('loginCategory').addEventListener('change', renderRoleOptions);
 
 // ===== РЕГИСТРАЦИЯ =====
-$('loginBtn').addEventListener('click', async ()=>{
+$('loginBtn').addEventListener('click', ()=>{
   const name = $('loginName').value.trim();
   const phone = $('loginPhone').value.trim();
   const cat = $('loginCategory').value;
@@ -507,7 +546,6 @@ $('loginBtn').addEventListener('click', async ()=>{
   if (!cat) return showToast('Выберите категорию', true);
   if (!roleId) return showToast('Выберите должность', true);
 
-  if (!ROLES.length) return showToast('Должности не загружены. Откройте панель и добавьте.', true);
   const roleObj = ROLES.find(r=>r.id===roleId);
   if (!roleObj) return showToast('Неизвестная должность', true);
   const roleName = roleObj.name;
@@ -528,19 +566,20 @@ $('loginBtn').addEventListener('click', async ()=>{
     return;
   }
 
-  await doRegisterUser({ name, phone, cat, roleId, roleName });
+  doRegisterUser({ name, phone, cat, roleId, roleName });
 });
 
-async function doRegisterUser({ name, phone, cat, roleId, roleName }){
+function doRegisterUser({ name, phone, cat, roleId, roleName }){
   const existing = USERS.find(u=>u.phone===phone);
   if (existing) {
     if (existing.status === 'rejected') return showToast('Аккаунт отклонён', true);
     loggedUser = { name, phone, cat, catLabel: CAT_LABELS[cat], role: roleId, roleName, status: existing.status };
   } else {
-    await push(ref(db,'spt/users'), {
-      name, phone, cat, catLabel: CAT_LABELS[cat], role: roleId, roleName,
-      status: 'pending', createdAt: Date.now()
+    USERS.push({
+      id: newId('u'), name, phone, cat, catLabel: CAT_LABELS[cat],
+      role: roleId, roleName, status: 'pending', createdAt: Date.now()
     });
+    saveDB();
     loggedUser = { name, phone, cat, catLabel: CAT_LABELS[cat], role: roleId, roleName, status: 'pending' };
     showToast('Регистрация отправлена. Ожидайте подтверждения.');
   }
@@ -550,12 +589,13 @@ async function doRegisterUser({ name, phone, cat, roleId, roleName }){
   $('loggedName').textContent = name;
   $('loggedRole').textContent = roleName + ' (' + (CAT_LABELS[cat]||cat) + ')';
   renderMain(); renderShiftInfo(); updateUIState();
+  if (isAdminLoggedIn) renderUsers();
 }
 
 $('cancelChiefEngineerReg').addEventListener('click', ()=>{
   $('chiefEngineerRegModal').classList.add('hidden'); pendingChiefEngineerReg = null;
 });
-$('confirmChiefEngineerReg').addEventListener('click', async ()=>{
+$('confirmChiefEngineerReg').addEventListener('click', ()=>{
   if (!pendingChiefEngineerReg) return;
   if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) {
     showToast('Неверный код Главного инженера', true);
@@ -563,7 +603,7 @@ $('confirmChiefEngineerReg').addEventListener('click', async ()=>{
   }
   $('chiefEngineerRegModal').classList.add('hidden');
   const reg = pendingChiefEngineerReg; pendingChiefEngineerReg = null;
-  await doRegisterUser(reg);
+  doRegisterUser(reg);
 });
 
 $('logoutBtn').addEventListener('click', ()=>{
@@ -579,7 +619,11 @@ function restoreUser(){
   try {
     loggedUser = JSON.parse(s);
     const u = USERS.find(x=>x.phone===loggedUser.phone);
-    if (u) loggedUser.status = u.status;
+    if (u) {
+      loggedUser.status = u.status;
+      if (u.name) loggedUser.name = u.name;
+      if (u.roleName) loggedUser.roleName = u.roleName;
+    }
     if (loggedUser.name) {
       $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
       $('loggedName').textContent = loggedUser.name;
@@ -672,7 +716,7 @@ $('backFromMachines').addEventListener('click', ()=>{
 
 function renderMachinesList(catId){
   const machines = MACHINES.filter(m=>m.catId===catId).sort((a,b)=>(a.order||0)-(b.order||0));
-  if (!machines.length) { $('machinesList').innerHTML = '<p class="empty">Машин в этой категории нет.</p>'; return; }
+  if (!machines.length) { $('machinesList').innerHTML = '<p class="empty">Машин в этой категории нет. Добавьте в Конструкторе.</p>'; return; }
   const today = todayStr(); const nowShift = shiftOfNow();
   const activeByMachine = {};
   SHIFTS.filter(s=>s.date===today && s.shift===nowShift).forEach(s=>{ activeByMachine[s.machineId] = s; });
@@ -711,55 +755,58 @@ function renderMachinesList(catId){
 }
 
 // ===== СМЕНЫ =====
-async function ensureShift(machineId, date, shift){
-  const found = SHIFTS.find(s=>s.machineId===machineId && s.date===date && s.shift===shift);
+function ensureShift(machineId, date, shift){
+  let found = SHIFTS.find(s=>s.machineId===machineId && s.date===date && s.shift===shift);
   if (found) return found;
   const data = {
-    machineId, date, shift,
+    id: newId('sh'), machineId, date, shift,
     startLine: Date.now(), endLine: null,
     events: [], totalOffMs: 0, totalOffByCause: {}
   };
-  const refNew = push(ref(db,'spt/shifts'));
-  await set(refNew, data);
-  return { id: refNew.key, ...data };
+  SHIFTS.push(data);
+  saveDB();
+  return data;
 }
 
-async function appendShiftEvent(shiftId, ev){
+function appendShiftEvent(shiftId, ev){
   const sh = SHIFTS.find(s=>s.id===shiftId);
   if (!sh) return;
-  const events = (sh.events||[]).concat([ev]);
-  await update(ref(db,'spt/shifts/'+shiftId), { events });
-  await push(ref(db,'spt/history'), {
+  sh.events = (sh.events||[]).concat([ev]);
+  HISTORY.push({
+    id: newId('h'),
     machineId: sh.machineId, date: sh.date, shift: sh.shift,
     action: ev.status, cause: ev.cause||'', detail: ev.detail||'', time: ev.time
   });
+  saveDB();
 }
 
-async function setMachineLine(machineId){
+function setMachineLine(machineId){
   if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
   const today = todayStr(); const nowShift = shiftOfNow();
-  const shift = await ensureShift(machineId, today, nowShift);
+  const shift = ensureShift(machineId, today, nowShift);
   const events = (shift.events||[]).slice().sort((a,b)=>a.time-b.time);
   const last = events[events.length-1];
   if (last && (last.status==='off' || last.status==='parts')) {
     const offMs = Date.now() - last.time;
-    const totalOffMs = (shift.totalOffMs||0) + offMs;
-    const byCause = { ...(shift.totalOffByCause||{}) };
+    shift.totalOffMs = (shift.totalOffMs||0) + offMs;
+    shift.totalOffByCause = { ...(shift.totalOffByCause||{}) };
     const key = last.cause || 'Не указана';
-    byCause[key] = (byCause[key]||0) + offMs;
-    await update(ref(db,'spt/shifts/'+shift.id), { totalOffMs, totalOffByCause: byCause });
+    shift.totalOffByCause[key] = (shift.totalOffByCause[key]||0) + offMs;
+    saveDB();
   }
-  await appendShiftEvent(shift.id, { status:'line', time: Date.now(), by: loggedUser.name });
+  appendShiftEvent(shift.id, { status:'line', time: Date.now(), by: loggedUser.name });
+  playDing();
   showToast('Машина на линии');
   if (currentCatView) renderMachinesList(currentCatView);
   renderMain();
 }
 
-async function setMachineStatus(machineId, status, cause, detail){
+function setMachineStatus(machineId, status, cause, detail){
   if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
   const today = todayStr(); const nowShift = shiftOfNow();
-  const shift = await ensureShift(machineId, today, nowShift);
-  await appendShiftEvent(shift.id, { status, cause: cause||'', detail: detail||'', time: Date.now(), by: loggedUser.name });
+  const shift = ensureShift(machineId, today, nowShift);
+  appendShiftEvent(shift.id, { status, cause: cause||'', detail: detail||'', time: Date.now(), by: loggedUser.name });
+  playDing();
   showToast(status==='off' ? 'Сход зафиксирован' : 'Ожидание запчастей зафиксировано');
   if (currentCatView) renderMachinesList(currentCatView);
   renderMain();
@@ -785,13 +832,13 @@ function openCauseModal(machineId, status){
   $('causeModal').classList.remove('hidden');
 }
 $('cancelCause').addEventListener('click', ()=>{ $('causeModal').classList.add('hidden'); selectedMachineForCause=null; });
-$('confirmCause').addEventListener('click', async ()=>{
+$('confirmCause').addEventListener('click', ()=>{
   if (!selectedMachineForCause) return;
   const detail = $('causeDetail').value.trim();
   if (!selectedCause && !detail) return showToast('Укажите причину', true);
   const { machineId, status } = selectedMachineForCause;
   $('causeModal').classList.add('hidden');
-  await setMachineStatus(machineId, status, selectedCause, detail);
+  setMachineStatus(machineId, status, selectedCause, detail);
   selectedMachineForCause = null; selectedCause = '';
 });
 
@@ -968,15 +1015,17 @@ $('logoutAdminBtn').addEventListener('click', ()=>{
 });
 
 function setAdminTab(name){
-  ['adminTabUsers','adminTabBuilder','adminTabHistory'].forEach(t=>$(t).classList.remove('active'));
-  ['adminUsersBlock','adminBuilderBlock','adminHistoryBlock'].forEach(b=>$(b).classList.add('hidden'));
+  ['adminTabUsers','adminTabBuilder','adminTabHistory','adminTabDanger'].forEach(t=>$(t).classList.remove('active'));
+  ['adminUsersBlock','adminBuilderBlock','adminHistoryBlock','adminDangerBlock'].forEach(b=>$(b).classList.add('hidden'));
   if (name==='users') { $('adminTabUsers').classList.add('active'); $('adminUsersBlock').classList.remove('hidden'); renderUsers(); }
   if (name==='builder') { $('adminTabBuilder').classList.add('active'); $('adminBuilderBlock').classList.remove('hidden'); renderBuilder(); }
   if (name==='history') { $('adminTabHistory').classList.add('active'); $('adminHistoryBlock').classList.remove('hidden'); renderHistoryAdmin(); }
+  if (name==='danger') { $('adminTabDanger').classList.add('active'); $('adminDangerBlock').classList.remove('hidden'); }
 }
 $('adminTabUsers').addEventListener('click', ()=>setAdminTab('users'));
 $('adminTabBuilder').addEventListener('click', ()=>setAdminTab('builder'));
 $('adminTabHistory').addEventListener('click', ()=>setAdminTab('history'));
+$('adminTabDanger').addEventListener('click', ()=>setAdminTab('danger'));
 
 function renderAdmin(){
   if (!isAdminLoggedIn) return;
@@ -990,10 +1039,12 @@ function renderUsers(){
   if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
   $('moderationList').innerHTML = sorted.map(u=>{
     const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
-    const statusText = u.status==='approved'?'✅ Подтвержден':u.status==='rejected'?'⛔ Отклонён':'⏳ На проверке';
+    const statusText = u.status==='approved'?'✅ Подтвержден'
+                     : u.status==='rejected'?'⛔ Отклонён'
+                     : '⏳ На проверке';
     return `<div class="moderation-user ${cls}">
-      <div><strong>${esc(u.name)}</strong> (${esc(u.phone)})<br>
-      <span style="font-size:12px;color:#6b7280;">${esc(u.catLabel||CAT_LABELS[u.cat]||'—')} · ${esc(u.roleName||u.role)} · ${statusText}</span></div>
+      <div><strong>${esc(u.name||'—')}</strong> (${esc(u.phone||'—')})<br>
+      <span style="font-size:12px;color:#6b7280;">${esc(u.catLabel||CAT_LABELS[u.cat]||'—')} · ${esc(u.roleName||u.role||'—')} · ${statusText}</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${u.status!=='approved'?`<button class="btn green small" data-uid="${esc(u.id)}" data-act="approve">Одобрить</button>`:''}
         ${u.status!=='rejected'?`<button class="btn red small" data-uid="${esc(u.id)}" data-act="reject">Отклонить</button>`:''}
@@ -1001,6 +1052,7 @@ function renderUsers(){
       </div>
     </div>`;
   }).join('');
+
   $('moderationList').querySelectorAll('[data-uid]').forEach(b=>{
     b.addEventListener('click', ()=>{
       pendingUserAction = { uid: b.dataset.uid, act: b.dataset.act };
@@ -1010,18 +1062,49 @@ function renderUsers(){
     });
   });
 }
-$('cancelUsersCode').addEventListener('click', ()=>{ $('usersCodeModal').classList.add('hidden'); pendingUserAction=null; });
-$('confirmUsersCode').addEventListener('click', async ()=>{
-  if ($('usersCodeInput').value !== USERS_CODE) { showToast('Неверный код', true); $('usersCodeInput').value=''; return; }
-  if (!pendingUserAction) return;
+
+$('cancelUsersCode').addEventListener('click', ()=>{
+  $('usersCodeModal').classList.add('hidden');
+  pendingUserAction = null;
+});
+
+$('confirmUsersCode').addEventListener('click', ()=>{
+  if (!pendingUserAction) {
+    showToast('Нет выбранного действия', true);
+    $('usersCodeModal').classList.add('hidden');
+    return;
+  }
+  if ($('usersCodeInput').value !== USERS_CODE) {
+    showToast('Неверный код', true);
+    $('usersCodeInput').value = '';
+    $('usersCodeInput').focus();
+    return;
+  }
   const { uid, act } = pendingUserAction;
-  $('usersCodeModal').classList.add('hidden'); pendingUserAction = null;
-  try {
-    if (act==='approve') await update(ref(db,'spt/users/'+uid), { status:'approved' });
-    if (act==='reject') await update(ref(db,'spt/users/'+uid), { status:'rejected' });
-    if (act==='delete') await remove(ref(db,'spt/users/'+uid));
-    showToast('Готово');
-  } catch(e) { showToast('Ошибка: ' + e.message, true); }
+  const idx = USERS.findIndex(u=>u.id===uid);
+  if (idx === -1) {
+    showToast('Пользователь не найден', true);
+    $('usersCodeModal').classList.add('hidden');
+    pendingUserAction = null;
+    return;
+  }
+  if (act === 'approve') USERS[idx].status = 'approved';
+  else if (act === 'reject') USERS[idx].status = 'rejected';
+  else if (act === 'delete') {
+    if (!confirm('Удалить аккаунт безвозвратно?')) return;
+    USERS.splice(idx, 1);
+  }
+  saveDB();
+  // Если редактируем сами себя — обновим статус
+  if (loggedUser.name && loggedUser.phone === USERS[idx]?.phone) {
+    const me = USERS.find(u=>u.phone===loggedUser.phone);
+    if (me) loggedUser.status = me.status;
+    updateUIState();
+  }
+  $('usersCodeModal').classList.add('hidden');
+  pendingUserAction = null;
+  showToast('Готово');
+  renderUsers();
 });
 
 // ===== КОНСТРУКТОР =====
@@ -1030,10 +1113,10 @@ function renderBuilder(){
     <li><span class="name">${esc(c.name)}</span>
     <button class="btn red small" data-del-cat="${esc(c.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
   $('builderCatsList').querySelectorAll('[data-del-cat]').forEach(b=>{
-    b.addEventListener('click', async ()=>{
-      if (!confirm('Удалить категорию?')) return;
+    b.addEventListener('click', ()=>{
+      if (!confirm('Удалить категорию? Машины этой категории останутся без категории.')) return;
       CATS = CATS.filter(c=>c.id!==b.dataset.delCat);
-      await set(ref(db,'spt/cats'), CATS);
+      saveDB();
       renderBuilder();
     });
   });
@@ -1043,10 +1126,10 @@ function renderBuilder(){
     <li><span class="name">${esc(m.num)} <span class="sub">${esc(m.model||'')} · ${esc(catName(m.catId))} · #${m.order||0}</span></span>
     <button class="btn red small" data-del-mach="${esc(m.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
   $('builderMachinesList').querySelectorAll('[data-del-mach]').forEach(b=>{
-    b.addEventListener('click', async ()=>{
+    b.addEventListener('click', ()=>{
       if (!confirm('Удалить машину?')) return;
       MACHINES = MACHINES.filter(m=>m.id!==b.dataset.delMach);
-      await set(ref(db,'spt/machines'), MACHINES);
+      saveDB();
       renderBuilder();
     });
   });
@@ -1057,47 +1140,48 @@ function renderBuilder(){
     <li><span class="name">${esc(r.name)} <span class="sub">${esc(CAT_LABELS[r.cat]||r.cat)}</span></span>
     <button class="btn red small" data-del-role="${esc(r.id)}">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
   $('builderRolesList').querySelectorAll('[data-del-role]').forEach(b=>{
-    b.addEventListener('click', async ()=>{
+    b.addEventListener('click', ()=>{
       if (!confirm('Удалить должность?')) return;
       ROLES = ROLES.filter(r=>r.id!==b.dataset.delRole);
-      await set(ref(db,'spt/roles'), ROLES);
+      saveDB();
       renderBuilder();
+      renderRoleOptions();
     });
   });
 }
 
-$('addCatBtn').addEventListener('click', async ()=>{
+$('addCatBtn').addEventListener('click', ()=>{
   const name = $('newCatName').value.trim();
   if (!name) return showToast('Введите название', true);
   if (CATS.find(c=>c.name.toLowerCase()===name.toLowerCase())) return showToast('Уже есть', true);
-  CATS.push({ id:'cat_'+Date.now(), name });
-  await set(ref(db,'spt/cats'), CATS);
+  CATS.push({ id: newId('cat'), name });
+  saveDB();
   $('newCatName').value = '';
   renderBuilder();
   showToast('Категория добавлена');
 });
 
-$('addMachineBtn').addEventListener('click', async ()=>{
+$('addMachineBtn').addEventListener('click', ()=>{
   const num = $('newMachineNum').value.trim();
   const model = $('newMachineModel').value.trim();
   const catId = $('newMachineCat').value;
   const order = parseInt($('newMachineOrder').value) || 0;
   if (!num) return showToast('Введите госномер', true);
   if (!catId) return showToast('Выберите категорию', true);
-  MACHINES.push({ id:'mach_'+Date.now(), num, model, catId, order });
-  await set(ref(db,'spt/machines'), MACHINES);
+  MACHINES.push({ id: newId('mach'), num, model, catId, order });
+  saveDB();
   $('newMachineNum').value = ''; $('newMachineModel').value = ''; $('newMachineOrder').value = '';
   renderBuilder();
   showToast('Машина добавлена');
 });
 
-$('addRoleBtn').addEventListener('click', async ()=>{
+$('addRoleBtn').addEventListener('click', ()=>{
   const name = $('newRoleName').value.trim();
   const cat = $('newRoleCat').value;
   if (!name) return showToast('Введите название', true);
   if (ROLES.find(r=>r.name.toLowerCase()===name.toLowerCase() && r.cat===cat)) return showToast('Уже есть', true);
-  ROLES.push({ id:'role_'+Date.now(), name, cat });
-  await set(ref(db,'spt/roles'), ROLES);
+  ROLES.push({ id: newId('role'), name, cat });
+  saveDB();
   $('newRoleName').value = '';
   renderBuilder();
   renderRoleOptions();
@@ -1129,86 +1213,38 @@ function renderHistoryAdmin(){
 }
 $('histRefreshBtn').addEventListener('click', renderHistoryAdmin);
 
-// ===== FIREBASE ONVALUE =====
-onValue(ref(db,'spt/cats'), snap=>{
-  const v = snap.val();
-  const arr = toArr(v);
-  CATS = arr.length ? arr : DEFAULT_CATS.map((n,i)=>({id:'cat_'+i, name:n}));
-  dataReady.cats = true;
-  refreshAll();
-});
-onValue(ref(db,'spt/machines'), snap=>{
-  MACHINES = toArr(snap.val());
-  dataReady.machines = true;
-  refreshAll();
-});
-onValue(ref(db,'spt/roles'), snap=>{
-  const arr = toArr(snap.val());
-  ROLES = arr.length ? arr : DEFAULT_ROLES.slice();
-  dataReady.roles = true;
-  renderRoleOptions();
-  refreshAll();
-});
-onValue(ref(db,'spt/users'), snap=>{
-  USERS = toArr(snap.val());
-  if (loggedUser.name) {
-    const u = USERS.find(x=>x.phone===loggedUser.phone);
-    if (u) {
-      loggedUser.status = u.status;
-      // обновим имя/должность если изменились
-      if (u.name) loggedUser.name = u.name;
-      if (u.roleName) loggedUser.roleName = u.roleName;
-      localStorage.setItem('spt_user', JSON.stringify(loggedUser));
-    }
-  }
-  dataReady.users = true;
-  updateUIState();
-  // перерисовываем админку сразу при обновлении пользователей
-  if (isAdminLoggedIn && !$('adminUsersBlock').classList.contains('hidden')) {
-    renderUsers();
-  }
-  refreshAll();
-});
-onValue(ref(db,'spt/shifts'), snap=>{
-  SHIFTS = snap.val() ? Object.entries(snap.val()).map(([id,d])=>({id,...d})) : [];
-  refreshAll();
-});
-onValue(ref(db,'spt/history'), snap=>{
-  const v = snap.val();
-  const prev = knownHistoryIds;
-  HISTORY = v ? Object.entries(v).map(([id,d])=>({id,...d})) : [];
-  if (prev === null) {
-    knownHistoryIds = {};
-    HISTORY.forEach(h=>knownHistoryIds[h.id]=true);
-  } else {
-    HISTORY.forEach(h=>{
-      if (!knownHistoryIds[h.id]) {
-        knownHistoryIds[h.id] = true;
-        if (loggedUser.name) {
-          playDing();
-          if ('Notification' in window && Notification.permission==='granted' && document.hidden) {
-            const m = MACHINES.find(x=>x.id===h.machineId);
-            try { new Notification('СПТ: смена статуса', { body: `${m?m.num:'—'} · ${h.action==='line'?'На линии':h.action==='off'?'Сход':'Запчасти'}${h.cause?' · '+h.cause:''}`, tag:'spt-'+h.id }); } catch(e){}
-          }
-        }
-      }
-    });
-  }
-  if (isAdminLoggedIn && !$('adminHistoryBlock').classList.contains('hidden')) renderHistoryAdmin();
-});
-
-function refreshAll(){
-  if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) renderMain();
-  if (currentCatView && !$('machinesView').classList.contains('hidden')) renderMachinesList(currentCatView);
-  if (isAdminLoggedIn) renderAdmin();
-  if (!$('reportsView').classList.contains('hidden')) renderReportsFilters();
+// ===== СБРОС =====
+function resetPart(key, label){
+  if (!confirm('Удалить ' + label + '? Необратимо.')) return;
+  if (key==='users') USERS = [];
+  else if (key==='machines') MACHINES = [];
+  else if (key==='cats') CATS = [];
+  else if (key==='roles') ROLES = [];
+  else if (key==='shifts') SHIFTS = [];
+  else if (key==='history') HISTORY = [];
+  saveDB();
+  showToast('Удалено: ' + label);
+  renderAdmin();
 }
+$('resetUsersBtn').addEventListener('click', ()=>resetPart('users','всех пользователей'));
+$('resetMachinesBtn').addEventListener('click', ()=>resetPart('machines','все машины'));
+$('resetCatsBtn').addEventListener('click', ()=>resetPart('cats','все категории'));
+$('resetRolesBtn').addEventListener('click', ()=>resetPart('roles','все должности'));
+$('resetShiftsBtn').addEventListener('click', ()=>resetPart('shifts','все смены'));
+$('resetHistoryBtn').addEventListener('click', ()=>resetPart('history','всю историю'));
+$('resetAllBtn').addEventListener('click', ()=>{
+  if (!confirm('ПОЛНЫЙ СБРОС ВСЕХ ДАННЫХ. Продолжить?')) return;
+  localStorage.removeItem(DB_KEY);
+  localStorage.removeItem('spt_user');
+  location.reload();
+});
 
 // ===== СТАРТ =====
+initDB();
 setInterval(renderShiftInfo, 30000);
 updateNotifyBtn();
-setTimeout(restoreUser, 800);
-setTimeout(()=>switchToTab('main'), 1000);
+restoreUser();
+switchToTab('main');
 </script>
 </body>
 </html>
