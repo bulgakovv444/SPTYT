@@ -200,12 +200,9 @@
   .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
   .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
   .pending-alert.hidden { display: none; }
-  
-  /* === СТИЛИ ДЛЯ БЛОКИРОВКИ === */
   .blocked-banner { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 40px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(239,68,68,.15); }
   .blocked-banner h2 { font-size: 24px; margin-bottom: 12px; color: #991b1b; }
   .blocked-banner p { font-size: 16px; margin-bottom: 16px; }
-  
   .danger-zone { margin-top: 20px; padding: 16px; border: 2px dashed #ef4444; border-radius: 10px; background: #fef2f2; text-align: center; }
   .danger-zone h3 { color: #991b1b; margin-bottom: 8px; font-size: 15px; }
   .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
@@ -264,7 +261,6 @@
         </div>
       </div>
 
-      <!-- Блок блокировки -->
       <div id="blockedBanner" class="blocked-banner hidden">
         <h2>⛔ Доступ заблокирован</h2>
         <p id="blockedReasonText">Ваш аккаунт находится на проверке у Главного инженера.</p>
@@ -421,7 +417,7 @@
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
   // ============================================================
-  // СИНХРОНИЗАЦИЯ И АВТОИСПРАВЛЕНИЕ БАЗЫ
+  // СИНХРОНИЗАЦИЯ
   // ============================================================
   onValue(ref(db, 'cats'), snap => { CATS = snap.val() || {}; if(Object.keys(CATS).length === 0) { CATS = DEFAULT_CATS; set(ref(db, 'cats'), CATS); } checkDataReady(); });
   onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || {}; checkDataReady(); });
@@ -436,80 +432,51 @@
         set(ref(db, 'roles/' + newRoleId), ROLES[newRoleId]);
       }
     });
-    Object.entries(ROLES).forEach(([key, r]) => {
-      if (!r) return;
-      if (!r.id || r.id !== key) update(ref(db, 'roles/' + key), { id: key });
-    });
+    Object.entries(ROLES).forEach(([key, r]) => { if (r && (!r.id || r.id !== key)) update(ref(db, 'roles/' + key), { id: key }); });
     updateRoleSelect();
     checkDataReady();
   });
 
   onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || {}; if(Object.keys(CAUSES).length === 0) { CAUSES = DEFAULT_CAUSES; set(ref(db, 'causes'), CAUSES); } checkDataReady(); });
   
-  // Обработка пользователей с реактивной блокировкой
   onValue(ref(db, 'users'), snap => {
     USERS = snap.val() || {};
     if (loggedUser.name && loggedUser.phone) {
       const norm = normPhone(loggedUser.phone);
       const entry = Object.entries(USERS).find(([k,u]) => u && normPhone(u.phone) === norm);
-      
       if (entry) {
         const [key, u] = entry;
         let currentStatus = u.status || 'pending';
-
-        // Если это Главный инженер — он всегда approved
         if (loggedUser.roleName === CHIEF_ROLE_NAME) {
           currentStatus = 'approved';
           if (u.status !== 'approved') update(ref(db, 'users/' + key), { status: 'approved' }).catch(()=>{});
         }
-        
         loggedUser.status = currentStatus;
         if (!u.id) update(ref(db, 'users/' + key), { id: key }).catch(()=>{});
       } else {
-        // Пользователя нет в базе (его удалили, пока он сидел)
         loggedUser.status = 'deleted';
       }
     }
     checkDataReady();
-    // Мгновенная реакция на смену статуса
     if (loggedUser.name) enforceBlockState();
   });
 
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || {}; checkDataReady(); });
 
-  // Защита от нажатий, если пользователь заблокирован
   function enforceBlockState() {
     const blockBanner = $('blockedBanner');
     const grid = $('mainGrid');
     const isBlocked = loggedUser.status !== 'approved';
-
     if (isBlocked) {
-      // 1. Показываем баннер
       blockBanner.classList.remove('hidden');
-      // 2. Скрываем сетку с кнопками (машинами)
       if (grid) grid.classList.add('hidden');
-      
-      // 3. Меняем текст в зависимости от причины
-      if (loggedUser.status === 'rejected') {
-        $('blockedReasonText').textContent = 'Ваш аккаунт отклонён Главным инженером.';
-        $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ отклонён';
-      } else if (loggedUser.status === 'deleted') {
-        $('blockedReasonText').textContent = 'Ваш аккаунт был удалён из системы.';
-        $('blockedBanner').querySelector('h2').textContent = '⛔ Аккаунт удалён';
-      } else {
-        $('blockedReasonText').textContent = 'Ваш аккаунт находится на проверке у Главного инженера.';
-        $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ заблокирован';
-      }
-      
-      // 4. Принудительно закрываем все модалки
+      if (loggedUser.status === 'rejected') { $('blockedReasonText').textContent = 'Ваш аккаунт отклонён Главным инженером.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ отклонён'; } 
+      else if (loggedUser.status === 'deleted') { $('blockedReasonText').textContent = 'Ваш аккаунт был удалён из системы.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Аккаунт удалён'; } 
+      else { $('blockedReasonText').textContent = 'Ваш аккаунт находится на проверке у Главного инженера.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ заблокирован'; }
       document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
-      
-      // 5. Останавливаем таймеры
       for (let key in activeTimers) clearInterval(activeTimers[key]);
-      
     } else {
-      // Если разблокировали (одобрили) — возвращаем всё обратно
       blockBanner.classList.add('hidden');
       if (grid) grid.classList.remove('hidden');
     }
@@ -520,9 +487,7 @@
       isDataReady = true;
       if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); }
     }
-    if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) {
-      updateUserProfileBlock(); renderMainGrid(); updateClocks();
-    }
+    if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) { updateUserProfileBlock(); renderMainGrid(); updateClocks(); }
     if (isAdminLoggedIn) renderAdmin();
   }
 
@@ -554,7 +519,7 @@
   function renderMainGrid(){
     for (let key in activeTimers) clearInterval(activeTimers[key]);
     for (let key in activeTimers) delete activeTimers[key];
-    if (!loggedUser.name || loggedUser.status !== 'approved') return; // Если заблокирован — не рендерим
+    if (!loggedUser.name || loggedUser.status !== 'approved') return;
 
     let html = '';
     Object.values(CATS).forEach(cat => {
@@ -627,15 +592,7 @@
     $('causeSelect').innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
   }
-
-  function applyCause() {
-    if (!currentRowId) return;
-    const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim();
-    if (!cause && !detail) return showToast('Выберите причину', true);
-    setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
-    closeModal('causeModal');
-  }
-
+  function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
   function openEditDriverModal(machineId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return; $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || ''; $('editDriverModal').classList.remove('hidden'); }
   async function saveNewDrivers() { if (!editingRowId) return; const m = MACHINES[editingRowId]; if (!m) return; m.driver1 = $('editDriver1').value.trim(); m.driver2 = $('editDriver2').value.trim(); await update(ref(db, 'machines/' + editingRowId), m); closeModal('editDriverModal'); }
   function openAddMachineModal(catId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); currentCatForAdd = catId; $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = ''; $('addMachineModal').classList.remove('hidden'); }
@@ -667,14 +624,7 @@
     $('logModalContent').innerHTML = html + '</tbody></table>';
   }
 
-  function setReportStatus(status) {
-    reportStatusFilter = status;
-    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
-    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
-    if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); }
-    buildReport();
-  }
-
+  function setReportStatus(status) { reportStatusFilter = status; document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn'); const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`); if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); } buildReport(); }
   function buildReport() {
     const dateFrom = $('repDateFrom').value, dateTo = $('repDateTo').value, filterCause = $('repCause').value, filterCat = $('repCat').value;
     let filtered = Object.values(eventLog);
@@ -690,22 +640,20 @@
     filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
     $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
   }
-
-  function exportExcel() {
-    const table = document.querySelector('.report-table'); if (!table) return showToast('Сначала сформируйте отчёт', true);
-    let csv = '\uFEFF'; table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }
+  function exportExcel() { const table = document.querySelector('.report-table'); if (!table) return showToast('Сначала сформируйте отчёт', true); let csv = '\uFEFF'; table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
   // ============================================================
   // АДМИН
   // ============================================================
   function renderAdmin() { if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers(); if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder(); }
+  
+  // ИСПРАВЛЕННЫЕ ФУНКЦИИ УДАЛЕНИЯ (по реальному ключу _key)
+  window.delCat = async function(key) { if(confirm('Удалить эту категорию? Все машины в ней останутся в базе, но пропадут с экрана.')) await remove(ref(db,'cats/' + key)); };
+  window.delMach = async function(key) { if(confirm('Удалить эту машину?')) await remove(ref(db,'machines/' + key)); };
+  window.delRole = async function(key) { if(confirm('Удалить эту должность? Пользователи с ней не смогут войти.')) await remove(ref(db,'roles/' + key)); };
+  window.delCause = async function(key) { if(confirm('Удалить эту причину?')) await remove(ref(db,'causes/' + key)); };
+
   window.userAction = function(uid, act) { pendingUserAction = { uid, act }; $('usersCodeInput').value = ''; $('usersCodeModal').classList.remove('hidden'); $('usersCodeInput').focus(); };
-  window.delCat = async function(id) { if(confirm('Удалить?')) await remove(ref(db,'cats/' + id)); };
-  window.delMach = async function(id) { if(confirm('Удалить?')) await remove(ref(db,'machines/' + id)); };
-  window.delRole = async function(id) { if(confirm('Удалить?')) await remove(ref(db,'roles/' + id)); };
-  window.delCause = async function(id) { if(confirm('Удалить?')) await remove(ref(db,'causes/' + id)); };
   window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
@@ -750,14 +698,35 @@
     } catch (e) { showToast('Ошибка: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = 'Подтвердить'; closeModal('usersCodeModal'); pendingUserAction = null; try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {} }
   }
 
+  // ИСПРАВЛЕННЫЙ РЕНДЕР КОНСТРУКТОРА (передает реальный ключ _key)
   function renderBuilder() {
-    $('builderCatsList').innerHTML = Object.values(CATS).map(c=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${c.id}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderMachinesList').innerHTML = Object.values(MACHINES).map(m=>`<li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${m.id}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderRolesList').innerHTML = Object.values(ROLES).map(r=>`<li><span>${esc(r.name)} <small>${r.cat}</small></span><button class="btn red small" onclick="delRole('${r.id}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderCausesList').innerHTML = Object.values(CAUSES).map(c=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${c.id}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
+    // Категории
+    $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`
+      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    // Машины
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`
+      <li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${key}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
+    // Должности (с защитой Главного инженера от удаления)
+    $('builderRolesList').innerHTML = Object.entries(ROLES).map(([key, r])=>{
+      const isChief = r.name === CHIEF_ROLE_NAME;
+      const delBtn = isChief 
+        ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` 
+        : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
+      return `<li><span>${esc(r.name)} <small>${r.cat}</small></span>${delBtn}</li>`;
+    }).join('') || '<li class="empty">Пусто</li>';
+
+    // Причины
+    $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([key, c])=>`
+      <li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${key}')">✕</button></li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
     $('newMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   }
-  function catName(id) { const c = CATS[id]; return c ? c.name : '—'; }
+  function catName(id) { const c = Object.values(CATS).find(x => x.id === id); return c ? c.name : '—'; }
 
   // ============================================================
   // СОБЫТИЯ
@@ -780,38 +749,20 @@
     $('loginCategory').onchange = updateRoleSelect;
 
     $('loginBtn').onclick = async () => {
-      const name = $('loginName').value.trim();
-      const phone = $('loginPhone').value.trim();
-      const cat = $('loginCategory').value;
-      const roleSelect = $('loginRole');
-      const roleId = roleSelect.value;
-
+      const name = $('loginName').value.trim(); const phone = $('loginPhone').value.trim(); const cat = $('loginCategory').value;
+      const roleSelect = $('loginRole'); const roleId = roleSelect.value;
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
 
       let roleObj = ROLES[roleId];
-      if (!roleObj) {
-        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
-        roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList);
-      }
-      if (!roleObj) {
-        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
-        roleObj = { id: roleId, name: roleNameInList, cat: cat };
-      }
+      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList); }
+      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = { id: roleId, name: roleNameInList, cat: cat }; }
 
       if (roleObj.name === CHIEF_ROLE_NAME) {
         const existing = findExistingChief();
-        if (existing) {
-          const [, u] = existing;
-          if (normPhone(u.phone) !== normPhone(phone)) {
-            return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
-          }
-        }
+        if (existing) { const [, u] = existing; if (normPhone(u.phone) !== normPhone(phone)) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true); }
         pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name };
-        $('chiefEngineerRegCode').value = '';
-        $('chiefEngineerRegModal').classList.remove('hidden');
-        return;
+        $('chiefEngineerRegCode').value = ''; $('chiefEngineerRegModal').classList.remove('hidden'); return;
       }
-
       await finishLogin({ name, phone, cat, roleId: roleObj.id, roleName: roleObj.name });
     };
 
@@ -820,9 +771,7 @@
       const entry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
       if (entry) {
         const [key, u] = entry;
-        // Если пользователь отклонен или удален — не пускаем
         if (u.status === 'rejected') return showToast('Ваш аккаунт отклонён Главным инженером', true);
-        
         const newStatus = autoApprove ? 'approved' : (u.status || 'pending');
         loggedUser = { ...data, catLabel: u.catLabel || data.catLabel, status: newStatus };
         try { await update(ref(db, 'users/' + key), { id: key, name: u.name || data.name, phone: u.phone || data.phone, cat: u.cat || data.cat, roleId: u.roleId || data.roleId, roleName: u.roleName || data.roleName, catLabel: u.catLabel || (data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС'), status: newStatus }); } catch(e) { console.error(e); }
