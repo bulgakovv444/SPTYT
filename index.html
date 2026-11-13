@@ -42,30 +42,33 @@
   }
   .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
   
-  .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* СТАТИСТИКА - 2 РЯДА */
+  .stats-container { display: flex; flex-direction: column; gap: 6px; }
+  .stats-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  
   .stat-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 18px; border-radius: 8px; font-weight: 800;
-    font-size: 15px; border: 2px solid transparent;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 6px; font-weight: 800;
+    font-size: 13px; border: 2px solid transparent;
     cursor: pointer; transition: all 0.15s; white-space: nowrap;
   }
-  .stat-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.15); }
-  .stat-badge .icon { font-size: 18px; }
-  .stat-badge .val { font-family: monospace; font-size: 16px; }
-  .stat-badge .lbl { font-size: 12px; opacity: 0.9; }
+  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .stat-badge .icon { font-size: 16px; }
+  .stat-badge .val { font-family: monospace; font-size: 14px; }
+  .stat-badge .lbl { font-size: 11px; opacity: 0.9; }
   
+  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
   .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
-  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
 
-  /* ПУЛЬСАЦИЯ ДЛЯ СХОДА В ШАПКЕ */
+  /* ПУЛЬСАЦИЯ ДЛЯ СХОДА */
   .stat-badge.off.animate-pulse {
     animation: pulse-yellow 1.5s infinite;
   }
   @keyframes pulse-yellow {
     0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); }
+    70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
     100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
   }
 
@@ -437,11 +440,21 @@
           </div>
         </div>
         <div class="header-right">
-          <div class="global-stats" id="globalStatsBlock">
-            <div class="stat-badge total"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
-            <div class="stat-badge off" id="badgeOffStat"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
-            <div class="stat-badge parts"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
-            <div class="stat-badge bv"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
+          <div class="stats-container" id="globalStatsBlock">
+            <!-- ВЕРХНИЙ РЯД: КОЛИЧЕСТВО -->
+            <div class="stats-row">
+              <div class="stat-badge total" title="Всего машин"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
+              <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
+              <div class="stat-badge parts" title="Машин в ремонте"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
+              <div class="stat-badge bv" title="Машин без водителя"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
+            </div>
+            <!-- НИЖНИЙ РЯД: ВРЕМЯ -->
+            <div class="stats-row">
+              <div class="stat-badge total" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge off" title="Время в сходе"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge parts" title="Время в ремонте"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge bv" title="Время в БВ"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+            </div>
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
           <button class="btn gray small" id="logoutBtn">Выйти</button>
@@ -653,17 +666,21 @@
     let changesMade = false;
 
     for (const [id, m] of Object.entries(MACHINES)) {
+      // Проверяем машины, которые не в Сходе и не в Ремонте
       if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         const hasDriver = activeDriver && activeDriver.trim() !== '';
         let needsUpdate = false;
 
+        // Если нет водителя и машина не в БВ — принудительно в БВ
         if (!hasDriver && m.lastStatus !== 'bv') {
           m.lastStatus = 'bv';
           m.author = 'БВ: ' + loggedUser.name;
           m.lastTime = Date.now();
           needsUpdate = true;
-        } else if (hasDriver && m.lastStatus === 'bv') {
+        } 
+        // Если есть водитель, а машина в БВ — ставим на линию
+        else if (hasDriver && m.lastStatus === 'bv') {
           m.lastStatus = 'line';
           m.author = 'На линии: ' + loggedUser.name;
           m.lastTime = 0;
@@ -777,10 +794,18 @@
       if (m.lastStatus === 'bv') countBv++;
     }
 
+    // Обновляем количество
     if ($('statTotalCount')) $('statTotalCount').textContent = countTotal;
     if ($('statOffCount')) $('statOffCount').textContent = countOff;
     if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
     if ($('statBvCount')) $('statBvCount').textContent = countBv;
+
+    // Обновляем накопленное время из monthlyStats
+    const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
+    if ($('statTotalTime')) $('statTotalTime').textContent = formatMs(stats.total);
+    if ($('statOffTime')) $('statOffTime').textContent = formatMs(stats.off);
+    if ($('statPartsTime')) $('statPartsTime').textContent = formatMs(stats.parts);
+    if ($('statBvTime')) $('statBvTime').textContent = formatMs(stats.bv);
 
     // Анимация для счетчика "Сход"
     const badgeOff = $('badgeOffStat');
@@ -846,7 +871,6 @@
           let bottomHtml = '';
           if (st !== 'bv') {
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-            // Убрали "1 см" и "2 см", оставили только ФИО
             bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? activeDriver : 'Нет')}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
           if ((st === 'off' || st === 'parts') && cause) {
