@@ -114,7 +114,7 @@
     flex-direction: column; 
     padding: 8px 10px; 
     border-bottom: 2px solid #000; 
-    gap: 6px; 
+    gap: 4px; 
     position: relative;
   }
   .row:last-child { border-bottom: none; }
@@ -176,39 +176,47 @@
   .btn-st.active-parts { background: #ef4444; color: #fff; border-color: #000; }
   .btn-st.active-bv { background: #475569; color: #fff; border-color: #000; }
 
-  /* УВЕЛИЧЕННЫЙ НИЗ (ВОДИТЕЛИ) */
-  .row-bottom { 
-    display: flex; flex-wrap: wrap; gap: 4px; align-items: center; 
-    padding-left: 28px; font-size: 12px; 
+  /* ЕДИНАЯ СТРОКА (ИНФО И ВОДИТЕЛЬ) */
+  .row-info-line { 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+    flex-wrap: wrap;
+    width: 100%;
+    padding-left: 28px;
+    font-size: 11px;
   }
   
   .driver-badge { 
     background: #fff; 
     color: #0369a1; 
-    padding: 3px 6px; 
-    border-radius: 4px; 
+    padding: 2px 5px; 
+    border-radius: 3px; 
     font-weight: 700; 
     display: flex; 
     align-items: center; 
-    gap: 3px; 
+    gap: 2px; 
     border: 1px solid #000; 
+    white-space: nowrap;
   }
-  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; }
+  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; }
   
-  .no-driver-badge { background: #fff; color: #991b1b; padding: 3px 6px; border-radius: 4px; font-weight: 800; border: 1px solid #000; }
-  .reason-badge { background: #fff; color: #854d0e; padding: 3px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #000; }
+  .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
+  .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
   .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
-  .timer-badge { background: #fff; color: #991b1b; padding: 3px 6px; border-radius: 4px; font-weight: 800; font-family: monospace; border: 1px solid #000; }
+  .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
   
   .author-badge { 
     color: #475569; 
     font-style: italic; 
-    font-size: 11px; 
+    font-size: 10px; 
     font-weight: 600; 
     background: rgba(255,255,255,0.8); 
-    padding: 3px 6px; 
-    border-radius: 4px; 
+    padding: 2px 5px; 
+    border-radius: 3px; 
     border: 1px solid #cbd5e1; 
+    white-space: nowrap;
+    margin-left: auto; /* Прижимает к правому краю */
   }
 
   .col-footer { padding: 6px; background: #fff; border-top: 2px solid #000; }
@@ -464,6 +472,24 @@
 <div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail" placeholder="Например: течь масла..."></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
 
 <div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
+
+<!-- Модалка редактирования машины в админке -->
+<div class="modal-overlay hidden" id="editMachineModal">
+  <div class="modal">
+    <h3>Редактировать машину</h3>
+    <input type="hidden" id="editMachineId">
+    <label>Госномер</label>
+    <input type="text" id="editMachineNum" placeholder="А123ВС186">
+    <label style="margin-top:10px;">Модель</label>
+    <input type="text" id="editMachineModel" placeholder="Урал">
+    <label style="margin-top:10px;">Категория</label>
+    <select id="editMachineCat"></select>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('editMachineModal')">Отмена</button>
+      <button class="btn-modal green" onclick="saveEditedMachine()">Сохранить</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay hidden" id="addMachineModal">
   <div class="modal">
@@ -725,7 +751,7 @@
         const rankA = getRank(a.lastStatus);
         const rankB = getRank(b.lastStatus);
         if (rankA !== rankB) return rankA - rankB;
-        return 0; // Сохраняем изначальный порядок внутри группы
+        return 0; 
       });
 
       html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
@@ -735,6 +761,7 @@
           const st = m.lastStatus || 'line'; 
           const cause = m.lastCause || '';
           const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
+          
           let bottomHtml = '';
           if (st !== 'bv') {
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
@@ -759,7 +786,7 @@
                 <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
               </div>
             </div>
-            <div class="row-bottom">${bottomHtml}</div>
+            <div class="row-info-line">${bottomHtml}</div>
           </div>`;
           
           if ((st === 'off' || st === 'parts') && m.lastTime) {
@@ -917,6 +944,33 @@
     }); 
     closeModal('addMachineModal'); 
   }
+
+  // ============================================================
+  // ФУНКЦИИ РЕДАКТИРОВАНИЯ МАШИН В АДМИНКЕ
+  // ============================================================
+  window.openEditMachineModal = function(key) {
+    if (!isAdminLoggedIn) return;
+    const m = MACHINES[key];
+    if (!m) return;
+    $('editMachineId').value = key;
+    $('editMachineNum').value = m.num || '';
+    $('editMachineModel').value = m.model || '';
+    $('editMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    $('editMachineCat').value = m.catId || '';
+    $('editMachineModal').classList.remove('hidden');
+  };
+
+  window.saveEditedMachine = async function() {
+    const key = $('editMachineId').value;
+    if (!key) return;
+    const num = $('editMachineNum').value.trim();
+    const model = $('editMachineModel').value.trim();
+    const catId = $('editMachineCat').value;
+    if (!num) return showToast('Введите номер', true);
+    await update(ref(db, 'machines/' + key), { num, model, catId });
+    showToast('Машина сохранена');
+    closeModal('editMachineModal');
+  };
 
   // ============================================================
   // ЖУРНАЛ И ОТЧЕТЫ
@@ -1123,7 +1177,18 @@
 
   function renderBuilder() {
     $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`<li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><button class="btn red small" onclick="delMach('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
+    
+    // МАШИНЫ (с кнопкой редактирования)
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`
+      <li>
+        <span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn gray small" onclick="openEditMachineModal('${key}')">✏️</button>
+          <button class="btn red small" onclick="delMach('${key}')">✕</button>
+        </div>
+      </li>
+    `).join('') || '<li class="empty">Пусто</li>';
+
     $('builderRolesList').innerHTML = Object.entries(ROLES).map(([key, r])=>{
       const isChief = r.name === CHIEF_ROLE_NAME;
       const delBtn = isChief ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
