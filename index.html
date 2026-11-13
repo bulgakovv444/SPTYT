@@ -119,13 +119,13 @@
   }
   .row:last-child { border-bottom: none; }
 
-  /* ЯРКИЕ ЦВЕТА */
+  /* ЦВЕТА СТАТУСОВ */
   .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
   .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
   .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
   
-  /* БОЛЕЕ НАСЫЩЕННЫЙ БВ */
-  .row.st-bv   { background: #94a3b8; border-left: 6px solid #dc2626; } /* Темно-серый фон и красная полоса */
+  /* БВ (БЕЗ ВОДИТЕЛЯ) - СВЕТЛО-СЕРЫЙ С КРАСНОЙ ПОЛОСОЙ */
+  .row.st-bv   { background: #f1f5f9; border-left: 6px solid #dc2626; } 
 
   .row-top { 
     display: flex; 
@@ -174,7 +174,7 @@
   .btn-st.active-line { background: #22c55e; color: #fff; border-color: #000; }
   .btn-st.active-off { background: #eab308; color: #000; border-color: #000; }
   .btn-st.active-parts { background: #ef4444; color: #fff; border-color: #000; }
-  .btn-st.active-bv { background: #475569; color: #fff; border-color: #000; }
+  .btn-st.active-bv { background: #64748b; color: #fff; border-color: #000; }
 
   /* УВЕЛИЧЕННЫЙ НИЗ (ВОДИТЕЛИ) */
   .row-bottom { 
@@ -566,17 +566,21 @@
     let changesMade = false;
 
     for (const [id, m] of Object.entries(MACHINES)) {
+      // Проверяем машины, которые не в Сходе и не в Ремонте
       if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         const hasDriver = activeDriver && activeDriver.trim() !== '';
         let needsUpdate = false;
 
+        // Если нет водителя и машина не в БВ — принудительно в БВ
         if (!hasDriver && m.lastStatus !== 'bv') {
           m.lastStatus = 'bv';
           m.author = 'Авто-БВ (нет водителя): ' + loggedUser.name;
           m.lastTime = Date.now();
           needsUpdate = true;
-        } else if (hasDriver && m.lastStatus === 'bv') {
+        } 
+        // Если есть водитель, а машина в БВ — ставим на линию
+        else if (hasDriver && m.lastStatus === 'bv') {
           m.lastStatus = 'line';
           m.author = 'Авто-Линия (есть водитель): ' + loggedUser.name;
           m.lastTime = 0;
@@ -590,9 +594,12 @@
       }
     }
 
-    if (changesMade) { renderMainGrid(); }
+    if (changesMade) {
+      renderMainGrid();
+    }
   }
 
+  // Запускаем проверку раз в минуту и при старте
   setInterval(enforceStatusRules, 60000);
 
   // ============================================================
@@ -733,7 +740,7 @@
                 <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
               </div>
               <div class="row-actions">
-                <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')">На линии</button>
+                <button class="btn-st ${st==='line'?'active-line':''}" onclick="trySetLine('${m.id}')">На линии</button>
                 <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
                 <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')">Ож. ремонта</button>
                 <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
@@ -756,10 +763,29 @@
     updateClocks();
   }
 
+  // === НОВАЯ ФУНКЦИЯ ДЛЯ ОБРАБОТКИ НАЖАТИЯ "НА ЛИНИИ" ===
+  function trySetLine(machineId) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const m = MACHINES[machineId]; if (!m) return;
+    
+    const { isShift1 } = getShiftInfo();
+    const activeDriver = isShift1 ? m.driver1 : m.driver2;
+    
+    // Если водителя нет, открываем окно ввода
+    if (!activeDriver || activeDriver.trim() === '') {
+      openEditDriverModal(machineId);
+      showToast('Введите водителя, чтобы поставить на линию', true);
+    } else {
+      // Если водитель есть, ставим на линию
+      setStatus(machineId, 'line');
+    }
+  }
+
   async function setStatus(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
 
+    // Дополнительная защита
     if (status === 'line') {
       const { isShift1 } = getShiftInfo();
       const activeDriver = isShift1 ? m.driver1 : m.driver2;
@@ -806,7 +832,16 @@
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
   }
   function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
-  function openEditDriverModal(machineId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return; $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || ''; $('editDriverModal').classList.remove('hidden'); }
+  
+  function openEditDriverModal(machineId) { 
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); 
+    editingRowId = machineId; 
+    const m = MACHINES[machineId]; 
+    if (!m) return; 
+    $('editDriver1').value = m.driver1 || ''; 
+    $('editDriver2').value = m.driver2 || ''; 
+    $('editDriverModal').classList.remove('hidden'); 
+  }
   
   async function saveNewDrivers() { 
     if (!editingRowId) return; 
@@ -816,6 +851,7 @@
     m.driver1 = $('editDriver1').value.trim(); 
     m.driver2 = $('editDriver2').value.trim(); 
     
+    // При сохранении запускаем правило
     enforceStatusRules();
     
     await update(ref(db, 'machines/' + editingRowId), m); 
@@ -1014,7 +1050,7 @@
     $('usersCodeInput').focus(); 
   };
   
-  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
+  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
     const sorted = Object.entries(USERS).map(([key, u]) => ({ ...(u || {}), _key: key })).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
