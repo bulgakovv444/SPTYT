@@ -143,7 +143,7 @@
   }
   @keyframes pulse-bg-off {
     0% { background: #fef9c3; border-left: 6px solid #ca8a04; }
-    50% { background: #fde047; border-left: 6px solid #b45309; } /* Чуть темнее/ярче */
+    50% { background: #fde047; border-left: 6px solid #b45309; }
     100% { background: #fef9c3; border-left: 6px solid #ca8a04; }
   }
 
@@ -237,7 +237,7 @@
 
   .status-dropdown.show .dropdown-content { display: block; }
 
-  /* ЕДИНАЯ СТРОКА */
+  /* ЕДИНАЯ СТРОКА (ВОДИТЕЛЬ) */
   .row-info-line { 
     display: flex; 
     align-items: center; 
@@ -653,21 +653,17 @@
     let changesMade = false;
 
     for (const [id, m] of Object.entries(MACHINES)) {
-      // Проверяем машины, которые не в Сходе и не в Ремонте
       if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         const hasDriver = activeDriver && activeDriver.trim() !== '';
         let needsUpdate = false;
 
-        // Если нет водителя и машина не в БВ — принудительно в БВ
         if (!hasDriver && m.lastStatus !== 'bv') {
           m.lastStatus = 'bv';
           m.author = 'БВ: ' + loggedUser.name;
           m.lastTime = Date.now();
           needsUpdate = true;
-        } 
-        // Если есть водитель, а машина в БВ — ставим на линию
-        else if (hasDriver && m.lastStatus === 'bv') {
+        } else if (hasDriver && m.lastStatus === 'bv') {
           m.lastStatus = 'line';
           m.author = 'На линии: ' + loggedUser.name;
           m.lastTime = 0;
@@ -845,14 +841,13 @@
           const st = m.lastStatus || 'line'; 
           const cause = m.lastCause || '';
           
-          // Класс строки (с миганием для схода)
           let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
           
           let bottomHtml = '';
           if (st !== 'bv') {
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-            const label = getShiftInfo().isShift1 ? '1 см' : '2 см';
-            bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? label+': '+activeDriver : label+': Нет')}</span></span>`;
+            // Убрали "1 см" и "2 см", оставили только ФИО
+            bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? activeDriver : 'Нет')}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
           if ((st === 'off' || st === 'parts') && cause) {
             bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
