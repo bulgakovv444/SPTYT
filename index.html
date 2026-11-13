@@ -343,7 +343,7 @@
 
 <div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
 
-<div class="modal-overlay hidden" id="addMachineModal"><div class="modal"><h3>Добавить машину</h3><label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186"><label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал"><label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button><button class="btn-modal green" onclick="addNewMachine()">Добавить</button></div></div></div>
+<div class="modal-overlay hidden" id="addMachineModal"><div class="modal"><h3>Добавить машину</h3><p id="addMachineAuthText">Введите код администратора для добавления машины.</p><input type="password" id="addMachineCode" placeholder="Код 1234" style="margin-bottom:10px;"><div id="addMachineFields" class="hidden"><label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186"><label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал"><label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Петров П.П."></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button><button class="btn-modal green" id="addMachineConfirmBtn" onclick="confirmAddMachineAuth()">Далее</button><button class="btn-modal green hidden" id="addMachineSaveBtn" onclick="addNewMachine()">Добавить</button></div></div></div>
 
 <div class="modal-overlay hidden" id="usersCodeModal"><div class="modal"><h3>Подтверждение действия</h3><p>Введите код Главного инженера.</p><input type="password" id="usersCodeInput"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('usersCodeModal')">Отмена</button><button class="btn-modal red" id="confirmUsersCodeBtn">Подтвердить</button></div></div></div>
 
@@ -370,7 +370,8 @@
 
   const ADMIN_CODE = 'admin2483';
   const USERS_CODE = '1104';
-  const CHIEF_ENGINEER_CODE = '2483';
+  const CHIEF_ENGINEER_CODE = '1234'; // <-- ИЗМЕНЕН КОД ГИ
+  const ADD_MACHINE_CODE = '1234';    // <-- КОД ДЛЯ ДОБАВЛЕНИЯ МАШИН
   const CHIEF_ROLE_NAME = 'Главный инженер';
 
   const DEFAULT_CATS = {
@@ -595,8 +596,37 @@
   function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
   function openEditDriverModal(machineId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return; $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || ''; $('editDriverModal').classList.remove('hidden'); }
   async function saveNewDrivers() { if (!editingRowId) return; const m = MACHINES[editingRowId]; if (!m) return; m.driver1 = $('editDriver1').value.trim(); m.driver2 = $('editDriver2').value.trim(); await update(ref(db, 'machines/' + editingRowId), m); closeModal('editDriverModal'); }
-  function openAddMachineModal(catId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); currentCatForAdd = catId; $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = ''; $('addMachineModal').classList.remove('hidden'); }
-  async function addNewMachine() { const num = $('addNum').value.trim(); if (!num) return showToast('Введите номер', true); const id = newId('mach'); await set(ref(db, 'machines/' + id), { id, num, model: $('addModel').value.trim(), catId: currentCatForAdd, driver1: $('addDriver1').value.trim(), driver2: $('addDriver2').value.trim(), lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name }); closeModal('addMachineModal'); }
+  
+  // ============================================================
+  // ДОБАВЛЕНИЕ МАШИНЫ (С ПАРОЛЕМ)
+  // ============================================================
+  function openAddMachineModal(catId) { 
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); 
+    currentCatForAdd = catId; 
+    $('addMachineCode').value = '';
+    $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = '';
+    $('addMachineFields').classList.add('hidden');
+    $('addMachineAuthText').classList.remove('hidden');
+    $('addMachineConfirmBtn').classList.remove('hidden');
+    $('addMachineSaveBtn').classList.add('hidden');
+    $('addMachineModal').classList.remove('hidden'); 
+  }
+
+  function confirmAddMachineAuth() {
+    if ($('addMachineCode').value !== ADD_MACHINE_CODE) return showToast('Неверный код', true);
+    $('addMachineAuthText').classList.add('hidden');
+    $('addMachineConfirmBtn').classList.add('hidden');
+    $('addMachineSaveBtn').classList.remove('hidden');
+    $('addMachineFields').classList.remove('hidden');
+  }
+
+  async function addNewMachine() { 
+    const num = $('addNum').value.trim(); 
+    if (!num) return showToast('Введите номер', true); 
+    const id = newId('mach'); 
+    await set(ref(db, 'machines/' + id), { id, num, model: $('addModel').value.trim(), catId: currentCatForAdd, driver1: $('addDriver1').value.trim(), driver2: $('addDriver2').value.trim(), lastStatus: 'line', lastTime: 0, author: 'На линии: ' + loggedUser.name }); 
+    closeModal('addMachineModal'); 
+  }
 
   // ============================================================
   // ЖУРНАЛ И ОТЧЕТЫ
@@ -653,7 +683,7 @@
   window.delCause = async function(key) { if(confirm('Удалить эту причину?')) await remove(ref(db,'causes/' + key)); };
 
   window.userAction = function(uid, act) { pendingUserAction = { uid, act }; $('usersCodeInput').value = ''; $('usersCodeModal').classList.remove('hidden'); $('usersCodeInput').focus(); };
-  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
+  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
     const sorted = Object.entries(USERS).map(([key, u]) => ({ ...(u || {}), _key: key })).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -730,64 +760,35 @@
     $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
     $('loginCategory').onchange = updateRoleSelect;
 
-    // ============ ЖЕСТКАЯ ПРОВЕРКА УНИКАЛЬНОСТИ НОМЕРА И СЛУЖБЫ ============
     $('loginBtn').onclick = async () => {
-      const name = $('loginName').value.trim();
-      const phone = $('loginPhone').value.trim();
-      const cat = $('loginCategory').value;
-      const roleSelect = $('loginRole');
-      const roleId = roleSelect.value;
-
+      const name = $('loginName').value.trim(); const phone = $('loginPhone').value.trim(); const cat = $('loginCategory').value;
+      const roleSelect = $('loginRole'); const roleId = roleSelect.value;
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
 
       let roleObj = ROLES[roleId];
-      if (!roleObj) {
-        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
-        roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList);
-      }
-      if (!roleObj) {
-        const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text;
-        roleObj = { id: roleId, name: roleNameInList, cat: cat };
-      }
+      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList); }
+      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = { id: roleId, name: roleNameInList, cat: cat }; }
 
-      // ПРОВЕРКА 1: Существует ли уже пользователь с таким телефоном?
       const norm = normPhone(phone);
       const existingEntry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
 
       if (existingEntry) {
         const [key, u] = existingEntry;
-        // ПРОВЕРКА 2: Совпадает ли выбранная служба (категория) с той, что в базе?
-        if (u.cat !== cat) {
-          return showToast(`Этот номер уже привязан к службе "${u.catLabel}". Вход в другую службу запрещён.`, true);
-        }
-        // ПРОВЕРКА 3: Совпадает ли выбранная должность с той, что в базе?
-        if (u.roleId !== roleObj.id) {
-          return showToast(`Этот номер уже привязан к должности "${u.roleName}". Смена должности запрещена.`, true);
-        }
-        // (Опционально) Если хотите запретить смену имени под тем же номером, раскомментируйте:
-        // if (u.name !== name) return showToast('Этот номер уже зарегистрирован на другое имя.', true);
-
-        // Если это Главный инженер, проверяем, что он один
+        if (u.cat !== cat) return showToast(`Этот номер уже привязан к службе "${u.catLabel}". Вход в другую службу запрещён.`, true);
+        if (u.roleId !== roleObj.id) return showToast(`Этот номер уже привязан к должности "${u.roleName}". Смена должности запрещена.`, true);
         if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') {
-           // он уже ГИ, все ок, пускаем
+           // он уже ГИ, все ок
         } else if (roleObj.name === CHIEF_ROLE_NAME) {
            const otherChief = findExistingChief(key);
            if (otherChief) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
         }
       } else {
-        // Если пользователя нет, но выбрана должность ГИ — проверяем, нет ли уже другого ГИ
         if (roleObj.name === CHIEF_ROLE_NAME) {
           const existing = findExistingChief();
-          if (existing) {
-            const [, u] = existing;
-            if (normPhone(u.phone) !== normPhone(phone)) {
-              return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
-            }
-          }
+          if (existing) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
         }
       }
 
-      // Запуск входа
       if (roleObj.name === CHIEF_ROLE_NAME) {
         pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name };
         $('chiefEngineerRegCode').value = '';
@@ -805,30 +806,8 @@
         const [key, u] = entry;
         if (u.status === 'rejected') return showToast('Ваш аккаунт отклонён Главным инженером', true);
         const newStatus = autoApprove ? 'approved' : (u.status || 'pending');
-        
-        // ВСЕГДА БЕРЕМ ДАННЫЕ ИЗ БАЗЫ (если они там есть), а не из введенных
-        loggedUser = { 
-          ...data, 
-          name: u.name || data.name, // имя из базы
-          cat: u.cat || data.cat, // служба из базы
-          catLabel: u.catLabel || data.catLabel, 
-          roleId: u.roleId || data.roleId, 
-          roleName: u.roleName || data.roleName, 
-          status: newStatus 
-        };
-        
-        try { 
-          await update(ref(db, 'users/' + key), { 
-            id: key, 
-            name: loggedUser.name, 
-            phone: u.phone || data.phone, 
-            cat: loggedUser.cat, 
-            roleId: loggedUser.roleId, 
-            roleName: loggedUser.roleName, 
-            catLabel: loggedUser.catLabel, 
-            status: newStatus 
-          }); 
-        } catch(e) { console.error(e); }
+        loggedUser = { ...data, name: u.name || data.name, cat: u.cat || data.cat, catLabel: u.catLabel || data.catLabel, roleId: u.roleId || data.roleId, roleName: u.roleName || data.roleName, status: newStatus };
+        try { await update(ref(db, 'users/' + key), { id: key, name: loggedUser.name, phone: u.phone || data.phone, cat: loggedUser.cat, roleId: loggedUser.roleId, roleName: loggedUser.roleName, catLabel: loggedUser.catLabel, status: newStatus }); } catch(e) { console.error(e); }
       } else {
         const newUid = newId('u'); const status = autoApprove ? 'approved' : 'pending';
         loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status };
