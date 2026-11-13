@@ -59,6 +59,16 @@
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
   .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
 
+  /* ПУЛЬСАЦИЯ ДЛЯ СХОДА В ШАПКЕ */
+  .stat-badge.off.animate-pulse {
+    animation: pulse-yellow 1.5s infinite;
+  }
+  @keyframes pulse-yellow {
+    0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+  }
+
   .clock-block {
     font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9;
     padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; white-space: nowrap;
@@ -125,9 +135,17 @@
   .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
   .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
   .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
-  
-  /* БВ - НАСЫЩЕННЫЙ СЕРЫЙ */
   .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; } 
+
+  /* МИГАЮЩИЙ СХОД */
+  .row.st-off {
+    animation: pulse-bg-off 1.5s infinite;
+  }
+  @keyframes pulse-bg-off {
+    0% { background: #fef9c3; border-left: 6px solid #ca8a04; }
+    50% { background: #fde047; border-left: 6px solid #b45309; } /* Чуть темнее/ярче */
+    100% { background: #fef9c3; border-left: 6px solid #ca8a04; }
+  }
 
   .row-top { 
     display: flex; 
@@ -421,7 +439,7 @@
         <div class="header-right">
           <div class="global-stats" id="globalStatsBlock">
             <div class="stat-badge total"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
-            <div class="stat-badge off"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
+            <div class="stat-badge off" id="badgeOffStat"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
             <div class="stat-badge parts"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
             <div class="stat-badge bv"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
           </div>
@@ -677,7 +695,7 @@
     MACHINES = snap.val() || {}; 
     checkDataReady(); 
     enforceStatusRules(); 
-    updateTopCounters(); // Обновляем счетчики
+    updateTopCounters(); 
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -767,6 +785,13 @@
     if ($('statOffCount')) $('statOffCount').textContent = countOff;
     if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
     if ($('statBvCount')) $('statBvCount').textContent = countBv;
+
+    // Анимация для счетчика "Сход"
+    const badgeOff = $('badgeOffStat');
+    if (badgeOff) {
+      if (countOff > 0) badgeOff.classList.add('animate-pulse');
+      else badgeOff.classList.remove('animate-pulse');
+    }
   }
 
   // ============================================================
@@ -776,10 +801,6 @@
     const { shiftName, timeStr } = getShiftInfo();
     if ($('shiftName')) $('shiftName').textContent = shiftName;
     if ($('timeText')) $('timeText').textContent = timeStr;
-    
-    // Обновляем старые счетчики времени (они есть внизу карточек)
-    const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
-    // ...
   }
   setInterval(updateClocks, 1000);
 
@@ -823,7 +844,9 @@
         catMachines.forEach((m, idx) => {
           const st = m.lastStatus || 'line'; 
           const cause = m.lastCause || '';
-          const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
+          
+          // Класс строки (с миганием для схода)
+          let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
           
           let bottomHtml = '';
           if (st !== 'bv') {
@@ -836,7 +859,6 @@
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
           
-          // Формируем выпадающее меню
           const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
           const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
 
@@ -874,7 +896,6 @@
     updateTopCounters();
   }
 
-  // Закрытие меню при клике вне его
   document.addEventListener('click', function(event) {
     if (!event.target.closest('.status-dropdown')) {
       document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
