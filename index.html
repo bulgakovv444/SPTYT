@@ -794,7 +794,6 @@
     
     let activeIdx = -1;
     
-    // Кнопка создания привязана к конкретному полю
     let createBtnId = '';
     if (input.id === 'editDriver1') createBtnId = 'btnAddNewDriverFromEdit1';
     else if (input.id === 'editDriver2') createBtnId = 'btnAddNewDriverFromEdit2';
@@ -852,7 +851,6 @@
     });
   }
 
-  // Открытие модалки создания водителя из машины
   window.openAddDriverFromMachine = function(inputId, isShift2) {
     const input = $(inputId);
     const name = input.value.trim();
@@ -861,10 +859,7 @@
     $('driverPosition').value = '';
     $('driverTabNum').value = '';
     $('driverModalTitle').textContent = 'Новый водитель';
-    
-    // Запоминаем, откуда пришли, чтобы после сохранения подставить
     window.pendingDriverTarget = { inputId, isShift2 };
-    
     $('driverModal').classList.remove('hidden');
   };
 
@@ -905,34 +900,41 @@
     }
   }
 
-  // === УВЕДОМЛЕНИЯ ===
+  // === УВЕДОМЛЕНИЯ (ИСПРАВЛЕННЫЕ) ===
   let audioCtx = null;
   let lastMachineStatuses = {};
   const notifyBtn = $('notifyBtn');
+  
   function updateNotifyButtonState() {
     if (!("Notification" in window)) { notifyBtn.textContent = '🔕 Не поддерживается'; notifyBtn.className = 'btn-notify denied'; notifyBtn.disabled = true; return; }
     if (Notification.permission === 'granted') { notifyBtn.textContent = '🔔 Звук вкл'; notifyBtn.className = 'btn-notify enabled'; }
     else if (Notification.permission === 'denied') { notifyBtn.textContent = '🔕 Заблокировано'; notifyBtn.className = 'btn-notify denied'; }
     else { notifyBtn.textContent = '🔔 Включить звук'; notifyBtn.className = 'btn-notify pulse-red'; }
   }
+  
   function playNotificationSound() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
-    osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-    osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-    setTimeout(() => {
-      const osc2 = audioCtx.createOscillator(); const gainNode2 = audioCtx.createGain();
-      osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
-      osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime);
-      gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-      osc2.start(); osc2.stop(audioCtx.currentTime + 0.5);
-    }, 600);
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator(); 
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+      setTimeout(() => {
+        const osc2 = audioCtx.createOscillator(); 
+        const gainNode2 = audioCtx.createGain();
+        osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
+        osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime);
+        gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc2.start(); osc2.stop(audioCtx.currentTime + 0.5);
+      }, 600);
+    } catch(e) { console.error("Audio error:", e); }
   }
+  
   window.requestNotificationPermission = function() {
     if (!("Notification" in window)) { showToast("Ваш браузер не поддерживает уведомления", true); return; }
     if (Notification.permission === 'granted') { playNotificationSound(); showToast('Звук уведомлений активирован'); return; }
@@ -942,22 +944,50 @@
       else showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
     });
   };
+  
   function showPushNotification(title, body) {
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body, icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>', vibrate: [200,100,200,100,200] });
-    }
+    if (Notification.permission !== 'granted') return;
+    if (!document.hidden) return; // Не спамим, если вкладка активна
+    
+    try {
+      const options = { 
+        body: body, 
+        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>', 
+        vibrate: [200,100,200,100,200],
+        tag: 'spt-alert-' + Date.now(),
+        renotify: true
+      };
+      new Notification(title, options);
+    } catch (e) { console.error("Push error:", e); }
   }
+  
   function checkForNewOffStatus(machinesData) {
-    if (!isDataReady || Notification.permission !== 'granted') return;
-    if (Object.keys(lastMachineStatuses).length === 0) { for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus; return; }
-    let hasNewOff = false; let notificationMessage = "";
+    if (!isDataReady) return;
+    if (Object.keys(lastMachineStatuses).length === 0) { 
+      for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus; 
+      return; 
+    }
+    
+    let newOffMachines = [];
     for (const [id, m] of Object.entries(machinesData)) {
-      const prevStatus = lastMachineStatuses[id]; const currStatus = m.lastStatus;
-      if (currStatus === 'off' && prevStatus !== 'off') { hasNewOff = true; notificationMessage += `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'}). `; }
+      const prevStatus = lastMachineStatuses[id]; 
+      const currStatus = m.lastStatus;
+      if (currStatus === 'off' && prevStatus !== 'off') { 
+        newOffMachines.push(m);
+      }
       lastMachineStatuses[id] = currStatus;
     }
-    if (hasNewOff) { playNotificationSound(); showPushNotification('⚠️ ВНИМАНИЕ: Новый сход!', notificationMessage); }
+    
+    if (newOffMachines.length > 0) {
+      playNotificationSound();
+      newOffMachines.forEach((m, index) => {
+        setTimeout(() => {
+          showPushNotification('⚠️ Новый сход!', `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'})`);
+        }, index * 500);
+      });
+    }
   }
+  
   function checkForLongDowntime(machinesData) {
     if (!isDataReady) return;
     const TWO_HOURS = 2 * 60 * 60 * 1000;
@@ -969,7 +999,9 @@
           showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} стоит в сходе уже более 2 часов! (${m.lastCause || 'Без причины'})`);
           alertedMachineIds[id] = true;
         }
-      } else { if (alertedMachineIds[id]) delete alertedMachineIds[id]; }
+      } else { 
+        if (alertedMachineIds[id]) delete alertedMachineIds[id]; 
+      }
     }
   }
   updateNotifyButtonState();
@@ -1582,7 +1614,6 @@
     if (!name) return showToast('Введите ФИО', true);
     if (!tabNum) return showToast('Введите табельный номер', true);
 
-    // ПРОВЕРКА КОНФЛИКТА ТАБЕЛЬНОГО НОМЕРА
     const conflict = Object.values(DRIVERS).find(d => d && d.tabNum === tabNum && d.id !== id);
     if (conflict) {
         return showToast(`Водитель с табельным номером ${tabNum} уже существует: ${conflict.name}`, true);
@@ -1596,12 +1627,10 @@
         await set(ref(db, 'drivers/' + nid), { id: nid, name, position, tabNum }); 
         showToast('Водитель добавлен');
         
-        // Если создавали из машины, подставляем в поле
         if (window.pendingDriverTarget) {
             const targetInput = $(window.pendingDriverTarget.inputId);
             if (targetInput) {
                 targetInput.value = name;
-                // Скрываем кнопку создания
                 const createBtnId = window.pendingDriverTarget.inputId === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : (window.pendingDriverTarget.inputId === 'addDriver2' ? 'btnAddNewDriverFromAdd2' : (window.pendingDriverTarget.inputId === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : 'btnAddNewDriverFromEdit2'));
                 if ($(createBtnId)) $(createBtnId).style.display = 'none';
             }
