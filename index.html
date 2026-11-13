@@ -429,7 +429,23 @@
 
 <div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail" placeholder="Например: течь масла..."></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
 
-<div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Начните вводить ФИО..." autocomplete="off"><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Начните вводить ФИО..." autocomplete="off"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
+<div class="modal-overlay hidden" id="editDriverModal">
+  <div class="modal">
+    <h3>Смена водителей</h3>
+    <label>Водитель 1 смены</label>
+    <input type="text" id="editDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
+    <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromEdit1" onclick="openAddDriverFromMachine('editDriver1', false)">➕ Создать нового водителя</button>
+    
+    <label style="margin-top:10px;">Водитель 2 смены (необязательно)</label>
+    <input type="text" id="editDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
+    <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromEdit2" onclick="openAddDriverFromMachine('editDriver2', true)">➕ Создать нового водителя</button>
+    
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button>
+      <button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay hidden" id="editMachineModal">
   <div class="modal">
@@ -450,9 +466,13 @@
     <div id="addMachineFields" class="hidden">
       <label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186">
       <label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал">
-      <label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
+      
+      <label style="margin-top:10px;">Водитель 1 см</label>
+      <input type="text" id="addDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
       <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd1" onclick="openAddDriverFromMachine('addDriver1', false)">➕ Создать нового водителя</button>
-      <label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
+      
+      <label style="margin-top:10px;">Водитель 2 см</label>
+      <input type="text" id="addDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
       <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd2" onclick="openAddDriverFromMachine('addDriver2', true)">➕ Создать нового водителя</button>
     </div>
     <div class="modal-actions">
@@ -734,7 +754,6 @@
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
-  // ФУНКЦИЯ СОКРАЩЕНИЯ ФИО ДО "ФАМИЛИЯ ИМЯ"
   function shortDriverName(fullName) {
     const parts = String(fullName || '').trim().split(/\s+/);
     if (parts.length >= 2) return parts[0] + ' ' + parts[1];
@@ -758,35 +777,48 @@
     const pref = driverSearch(raw);
     return pref.length ? pref[0].name : raw;
   }
+  
   function attachDriverAutocomplete(input) {
     if (!input || input.dataset.acBound) return;
     input.dataset.acBound = '1';
     input.setAttribute('autocomplete', 'off');
+    
     const wrap = document.createElement('div');
     wrap.className = 'ac-wrap';
     input.parentNode.insertBefore(wrap, input);
     wrap.appendChild(input);
+    
     const list = document.createElement('div');
     list.className = 'ac-list';
     wrap.appendChild(list);
+    
     let activeIdx = -1;
     
+    // Кнопка создания привязана к конкретному полю
+    let createBtnId = '';
+    if (input.id === 'editDriver1') createBtnId = 'btnAddNewDriverFromEdit1';
+    else if (input.id === 'editDriver2') createBtnId = 'btnAddNewDriverFromEdit2';
+    else if (input.id === 'addDriver1') createBtnId = 'btnAddNewDriverFromAdd1';
+    else if (input.id === 'addDriver2') createBtnId = 'btnAddNewDriverFromAdd2';
+    
+    function updateCreateBtn() {
+      const btn = $(createBtnId);
+      if (!btn) return;
+      const raw = input.value.trim();
+      if (raw.length > 1 && !Object.values(DRIVERS).some(d => d.name.toLowerCase() === raw.toLowerCase())) {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
     function renderList() {
       const items = driverSearch(input.value);
       if (!items.length) { 
         list.style.display = 'none'; 
         list.innerHTML = ''; 
         activeIdx = -1; 
-        // Если введено что-то, но нет совпадений — показываем кнопку "Создать"
-        const createBtnId = input.id === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : (input.id === 'editDriver2' ? 'btnAddNewDriverFromEdit2' : (input.id === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : 'btnAddNewDriverFromAdd2'));
-        const btn = $(createBtnId);
-        if (btn) {
-           if (input.value.trim().length > 1 && !Object.values(DRIVERS).find(d => d.name.toLowerCase() === input.value.trim().toLowerCase())) {
-               btn.style.display = 'block';
-           } else {
-               btn.style.display = 'none';
-           }
-        }
+        updateCreateBtn();
         return; 
       }
       list.innerHTML = items.map((d, i) =>
@@ -799,9 +831,8 @@
           input.value = el.dataset.name;
           list.style.display = 'none';
           activeIdx = -1;
-          input.dispatchEvent(new Event('change'));
-          const createBtnId = input.id === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : (input.id === 'editDriver2' ? 'btnAddNewDriverFromEdit2' : (input.id === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : 'btnAddNewDriverFromAdd2'));
           if ($(createBtnId)) $(createBtnId).style.display = 'none';
+          input.dispatchEvent(new Event('change'));
         });
       });
     }
@@ -809,12 +840,7 @@
     input.addEventListener('input', () => { activeIdx = -1; renderList(); });
     input.addEventListener('focus', () => { if (input.value.trim()) renderList(); });
     input.addEventListener('blur', () => {
-      setTimeout(() => { 
-          list.style.display = 'none'; 
-          // Не скрываем кнопку сразу, чтобы можно было на неё нажать
-      }, 200);
-      // const canon = canonicalDriverName(input);
-      // if (canon && canon !== input.value) input.value = canon;
+      setTimeout(() => { list.style.display = 'none'; }, 200);
     });
     input.addEventListener('keydown', (e) => {
       const items = list.querySelectorAll('.ac-item');
