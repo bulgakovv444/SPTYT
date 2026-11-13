@@ -89,17 +89,18 @@
     flex-direction: column; 
   }
 
-  /* ОЧЕНЬ КРУПНЫЙ ЗАГОЛОВОК */
+  /* УЗКАЯ ПЛАШКА ЗАГОЛОВКА */
   .col-header { 
     background: #e2e8f0; 
     color: #000; 
     font-weight: 900; 
-    font-size: 24px; /* Увеличено */
+    font-size: 20px; /* Крупный шрифт */
     text-align: center; 
-    padding: 12px 8px; /* Увеличено */
-    letter-spacing: 1.5px; 
+    padding: 4px 8px; /* Уменьшили высоту (было 12px) */
+    letter-spacing: 1px; 
     border-bottom: 2px solid #000;
     text-transform: uppercase;
+    line-height: 1.2; /* Плотнее строки */
   }
 
   .col-body { 
@@ -139,7 +140,6 @@
     flex-shrink: 0; 
   }
   
-  /* Средний размер квадратика */
   .row-num { 
     display: flex; align-items: center; justify-content: center;
     font-weight: 900; color: #000; font-size: 12px; 
@@ -148,7 +148,6 @@
     flex-shrink: 0; 
   }
   
-  /* Увеличен, но аккуратен */
   .row-name { 
     font-weight: 800; 
     font-size: 14px; 
@@ -176,7 +175,7 @@
 
   .row-bottom { 
     display: flex; flex-wrap: wrap; gap: 3px; align-items: center; 
-    padding-left: 25px; font-size: 10px; /* Отступ под квадратик */
+    padding-left: 25px; font-size: 10px; 
   }
   
   .driver-badge { background: #fff; color: #0369a1; padding: 1px 3px; border-radius: 3px; font-weight: 700; display: flex; align-items: center; gap: 2px; border: 1px solid #000; }
