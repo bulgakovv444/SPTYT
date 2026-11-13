@@ -915,6 +915,7 @@
     updateTopCounters();
   }
 
+  // ИСПРАВЛЕННОЕ ЗАКРЫТИЕ ВЫПАДАЮЩЕГО МЕНЮ
   document.addEventListener('click', function(event) {
     if (!event.target.closest('.status-dropdown')) {
       document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
@@ -922,6 +923,13 @@
       });
     }
   });
+  
+  // Закрываем меню при скролле
+  document.addEventListener('scroll', function(event) {
+    document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
+      dropdown.classList.remove('show');
+    });
+  }, true);
 
   function trySetLine(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
