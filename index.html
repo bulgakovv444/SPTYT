@@ -601,14 +601,14 @@
         // Если нет водителя и машина не в БВ — принудительно в БВ
         if (!hasDriver && m.lastStatus !== 'bv') {
           m.lastStatus = 'bv';
-          m.author = 'Авто-БВ (нет водителя): ' + loggedUser.name;
+          m.author = 'БВ: ' + loggedUser.name;
           m.lastTime = Date.now();
           needsUpdate = true;
         } 
         // Если есть водитель, а машина в БВ — ставим на линию
         else if (hasDriver && m.lastStatus === 'bv') {
           m.lastStatus = 'line';
-          m.author = 'Авто-Линия (есть водитель): ' + loggedUser.name;
+          m.author = 'На линии: ' + loggedUser.name;
           m.lastTime = 0;
           needsUpdate = true;
         }
