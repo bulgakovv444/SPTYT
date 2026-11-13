@@ -731,7 +731,7 @@
   }
 
   // ============================================================
-  // ЖУРНАЛ И ОТЧЕТЫ
+  // ЖУРНАЛ И ОТЧЕТЫ (ИСПРАВЛЕНО)
   // ============================================================
   let logModalMachineFilter = null;
   function showLogModal(type, machineName = null) {
@@ -747,32 +747,110 @@
     let filtered = Object.values(eventLog).filter(e => e.month === month);
     if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`; } 
     else { let title = ''; if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; } else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; } else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; } else { title = 'Все события'; } $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`; }
-    let totalMs = filtered.reduce((acc, e) => acc + e.duration, 0); $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0); $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
     if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>'; return; }
     let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
-    filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).forEach(e => {
-      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
+    filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
+      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
     });
     $('logModalContent').innerHTML = html + '</tbody></table>';
   }
 
-  function setReportStatus(status) { reportStatusFilter = status; document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn'); const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`); if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); } buildReport(); }
-  function buildReport() {
-    const dateFrom = $('repDateFrom').value, dateTo = $('repDateTo').value, filterCause = $('repCause').value, filterCat = $('repCat').value;
-    let filtered = Object.values(eventLog);
-    if (dateFrom) { const p = dateFrom.split('-'); filtered = filtered.filter(r => r.date >= `${p[2]}.${p[1]}.${p[0]}`); }
-    if (dateTo) { const p = dateTo.split('-'); filtered = filtered.filter(r => r.date <= `${p[2]}.${p[1]}.${p[0]}`); }
-    if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
-    if (filterCause) filtered = filtered.filter(r => r.cause.startsWith(filterCause));
-    if (filterCat) filtered = filtered.filter(r => { const m = Object.values(MACHINES).find(x => `${x.num} ${x.model}` === r.machine); return m && m.catId === filterCat; });
-    let totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
-    filtered.forEach(r => { if (r.status === 'off') { totalOff++; totalOffMs += r.duration; } if (r.status === 'parts') { totalParts++; totalOffMs += r.duration; } if (r.status === 'bv') { totalBV++; totalOffMs += r.duration; } });
-    $('reportStatsRow').innerHTML = `<div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div><div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div><div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div><div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div><div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>`;
-    if (!filtered.length) { $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`; return; }
-    filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
-    $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
+  function setReportStatus(status) { 
+    reportStatusFilter = status; 
+    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn'); 
+    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`); 
+    if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); } 
+    buildReport(); 
   }
-  function exportExcel() { const table = document.querySelector('.report-table'); if (!table) return showToast('Сначала сформируйте отчёт', true); let csv = '\uFEFF'; table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+
+  function buildReport() {
+    try {
+      const dateFrom = $('repDateFrom').value;
+      const dateTo = $('repDateTo').value;
+      const filterCause = $('repCause').value;
+      const filterCat = $('repCat').value;
+
+      let filtered = Object.values(eventLog);
+
+      // ПРАВИЛЬНЫЙ ФИЛЬТР ДАТ (превращаем 2026-11-13 в 13.11.2026 для сравнения)
+      if (dateFrom) {
+        const p = dateFrom.split('-');
+        const dFromStr = `${p[2]}.${p[1]}.${p[0]}`;
+        filtered = filtered.filter(r => r.date && r.date >= dFromStr);
+      }
+      if (dateTo) {
+        const p = dateTo.split('-');
+        const dToStr = `${p[2]}.${p[1]}.${p[0]}`;
+        filtered = filtered.filter(r => r.date && r.date <= dToStr);
+      }
+
+      if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
+      if (filterCause) filtered = filtered.filter(r => r.cause && r.cause.startsWith(filterCause));
+      if (filterCat) filtered = filtered.filter(r => { 
+        const m = Object.values(MACHINES).find(x => `${x.num} ${x.model}` === r.machine); 
+        return m && m.catId === filterCat; 
+      });
+
+      let totalOff = 0, totalParts = 0, totalBV = 0, totalOffMs = 0;
+      filtered.forEach(r => { 
+        const dur = r.duration || 0;
+        if (r.status === 'off') { totalOff++; totalOffMs += dur; } 
+        if (r.status === 'parts') { totalParts++; totalOffMs += dur; } 
+        if (r.status === 'bv') { totalBV++; totalOffMs += dur; } 
+      });
+
+      $('reportStatsRow').innerHTML = `
+        <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
+        <div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div>
+        <div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div>
+        <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
+        <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>
+      `;
+
+      if (!filtered.length) { 
+        $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`; 
+        return; 
+      }
+
+      filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
+      
+      $('reportContent').innerHTML = `
+        <table class="report-table">
+          <thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
+          <tbody>
+            ${filtered.map(r => `
+              <tr onclick="showLogModal('', '${r.machine}')">
+                <td>${r.date}</td>
+                <td><strong>${esc(r.machine)}</strong></td>
+                <td>${esc(r.driver || '—')}</td>
+                <td><span class="status-badge ${r.status}">${r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td>
+                <td>${r.time}</td>
+                <td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td>
+                <td>${esc(r.cause)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch(err) {
+      console.error(err);
+      $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка формирования отчета: ${esc(err.message)}</p>`;
+    }
+  }
+
+  function exportExcel() { 
+    const table = document.querySelector('.report-table'); 
+    if (!table) return showToast('Сначала сформируйте отчёт', true); 
+    let csv = '\uFEFF'; 
+    table.querySelectorAll('tr').forEach(row => { 
+      csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; 
+    }); 
+    const a = document.createElement('a'); 
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+    a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; 
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+  }
 
   // ============================================================
   // АДМИН
