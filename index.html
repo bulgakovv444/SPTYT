@@ -11,6 +11,12 @@
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
+  /* БАННЕР УВЕДОМЛЕНИЙ */
+  .notif-banner { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 10px rgba(239,68,68,.2); }
+  .notif-banner.hidden { display: none; }
+  .notif-banner button { background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+  .notif-banner button:hover { background: #dc2626; }
+
   .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
   .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
@@ -42,7 +48,6 @@
   }
   .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
   
-  /* СТАТИСТИКА - 2 РЯДА */
   .stats-container { display: flex; flex-direction: column; gap: 6px; }
   .stats-row { display: flex; gap: 6px; flex-wrap: wrap; }
   
@@ -62,10 +67,7 @@
   .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
 
-  /* ПУЛЬСАЦИЯ ДЛЯ СХОДА */
-  .stat-badge.off.animate-pulse {
-    animation: pulse-yellow 1.5s infinite;
-  }
+  .stat-badge.off.animate-pulse { animation: pulse-yellow 1.5s infinite; }
   @keyframes pulse-yellow {
     0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
     70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
@@ -78,9 +80,6 @@
   }
   .clock-block span { color: #2563eb; }
 
-  /* ============================================================
-     СЕТКА (ЖЁСТКО 4 КОЛОНКИ) И КАРТОЧКИ
-     ============================================================ */
   .grid-wrapper { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
@@ -88,12 +87,8 @@
     align-items: start; 
   }
   
-  @media (max-width: 1200px) {
-    .grid-wrapper { grid-template-columns: repeat(3, 1fr); }
-  }
-  @media (max-width: 900px) {
-    .grid-wrapper { grid-template-columns: repeat(2, 1fr); }
-  }
+  @media (max-width: 1200px) { .grid-wrapper { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 900px) { .grid-wrapper { grid-template-columns: repeat(2, 1fr); } }
 
   .col { 
     background: #fff; 
@@ -134,16 +129,12 @@
   }
   .row:last-child { border-bottom: none; }
 
-  /* ЯРКИЕ ЦВЕТА */
   .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
   .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
   .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
   .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; } 
 
-  /* МИГАЮЩИЙ СХОД */
-  .row.st-off {
-    animation: pulse-bg-off 1.5s infinite;
-  }
+  .row.st-off { animation: pulse-bg-off 1.5s infinite; }
   @keyframes pulse-bg-off {
     0% { background: #fef9c3; border-left: 6px solid #ca8a04; }
     50% { background: #fde047; border-left: 6px solid #b45309; }
@@ -186,7 +177,6 @@
     letter-spacing: 0.3px; 
   }
 
-  /* ВЫПАДАЮЩЕЕ МЕНЮ */
   .status-dropdown { position: relative; display: inline-block; }
   
   .btn-status { 
@@ -240,7 +230,6 @@
 
   .status-dropdown.show .dropdown-content { display: block; }
 
-  /* ЕДИНАЯ СТРОКА (ВОДИТЕЛЬ) */
   .row-info-line { 
     display: flex; 
     align-items: center; 
@@ -251,42 +240,22 @@
     font-size: 11px;
   }
   
-  .driver-badge { 
-    background: #fff; 
-    color: #0369a1; 
-    padding: 2px 5px; 
-    border-radius: 3px; 
-    font-weight: 700; 
-    display: flex; 
-    align-items: center; 
-    gap: 2px; 
-    border: 1px solid #000; 
-    white-space: nowrap;
-  }
+  .driver-badge { background: #fff; color: #0369a1; padding: 2px 5px; border-radius: 3px; font-weight: 700; display: flex; align-items: center; gap: 2px; border: 1px solid #000; white-space: nowrap; }
   .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; }
-  
   .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
   .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
   .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
   .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
   
   .author-badge { 
-    color: #475569; 
-    font-style: italic; 
-    font-size: 10px; 
-    font-weight: 600; 
-    background: rgba(255,255,255,0.8); 
-    padding: 2px 5px; 
-    border-radius: 3px; 
-    border: 1px solid #cbd5e1; 
-    white-space: nowrap;
-    margin-left: auto;
+    color: #475569; font-style: italic; font-size: 10px; font-weight: 600; 
+    background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 3px; 
+    border: 1px solid #cbd5e1; white-space: nowrap; margin-left: auto; 
   }
 
   .col-footer { padding: 6px; background: #fff; border-top: 2px solid #000; }
   .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 800; border-radius: 4px; cursor: pointer; border: 2px dashed #16a34a; background: #dcfce7; color: #166534; transition: all 0.15s; }
   .footer-btn:hover { background: #bbf7d0; }
-  /* ============================================================ */
 
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
@@ -402,6 +371,12 @@
 <body>
 <div class="container">
 
+  <!-- БАННЕР ДЛЯ ЗАПРОСА УВЕДОМЛЕНИЙ -->
+  <div id="notificationBanner" class="notif-banner hidden">
+    <div>🔔 <strong>Внимание!</strong> Включите уведомления, чтобы не пропустить сходы машин.</div>
+    <button onclick="requestNotificationPermission()">Включить уведомления</button>
+  </div>
+
   <div class="tabs">
     <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
     <button class="tab-btn" id="tabReports">📊 Отчёты</button>
@@ -441,14 +416,12 @@
         </div>
         <div class="header-right">
           <div class="stats-container" id="globalStatsBlock">
-            <!-- ВЕРХНИЙ РЯД: КОЛИЧЕСТВО -->
             <div class="stats-row">
               <div class="stat-badge total" title="Всего машин"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
               <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
               <div class="stat-badge parts" title="Машин в ремонте"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
               <div class="stat-badge bv" title="Машин без водителя"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
             </div>
-            <!-- НИЖНИЙ РЯД: ВРЕМЯ -->
             <div class="stats-row">
               <div class="stat-badge total" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
               <div class="stat-badge off" title="Время в сходе"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
@@ -547,7 +520,6 @@
 
 <div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
 
-<!-- Модалка редактирования машины в админке -->
 <div class="modal-overlay hidden" id="editMachineModal">
   <div class="modal">
     <h3>Редактировать машину</h3>
@@ -657,6 +629,122 @@
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
   // ============================================================
+  // УВЕДОМЛЕНИЯ
+  // ============================================================
+  let audioCtx = null;
+  
+  // Создаём звук через Web Audio API (чтобы не зависеть от mp3-файлов)
+  function playNotificationSound() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Частота
+    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+    
+    // Второй писк
+    setTimeout(() => {
+        const osc2 = audioCtx.createOscillator();
+        const gainNode2 = audioCtx.createGain();
+        osc2.connect(gainNode2);
+        gainNode2.connect(audioCtx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1100, audioCtx.currentTime); 
+        gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc2.start();
+        osc2.stop(audioCtx.currentTime + 0.5);
+    }, 600);
+  }
+
+  // Запрос разрешения на уведомления
+  window.requestNotificationPermission = function() {
+    if (!("Notification" in window)) {
+      showToast("Ваш браузер не поддерживает уведомления", true);
+      return;
+    }
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        showToast('Уведомления включены!');
+        $('notificationBanner').classList.add('hidden');
+        // Принудительно проигрываем звук, чтобы разблокировать аудио-контекст
+        playNotificationSound();
+      } else {
+        showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
+      }
+    });
+  };
+
+  function showPushNotification(title, body) {
+    if (Notification.permission === 'granted') {
+      const options = {
+        body: body,
+        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>',
+        vibrate: [200, 100, 200, 100, 200] // Вибрация для телефонов
+      };
+      new Notification(title, options);
+    }
+  }
+
+  // Отслеживаем предыдущие статусы, чтобы отправлять уведомление только когда статус СТАЛ "off"
+  let lastMachineStatuses = {};
+
+  function checkForNewOffStatus(machinesData) {
+    if (!isDataReady || Notification.permission !== 'granted') return;
+    
+    // Инициализация при первой загрузке
+    if (Object.keys(lastMachineStatuses).length === 0) {
+      for (const [id, m] of Object.entries(machinesData)) {
+        lastMachineStatuses[id] = m.lastStatus;
+      }
+      return;
+    }
+
+    let hasNewOff = false;
+    let notificationMessage = "";
+
+    for (const [id, m] of Object.entries(machinesData)) {
+      const prevStatus = lastMachineStatuses[id];
+      const currStatus = m.lastStatus;
+
+      // Если статус сменился на 'off' (Сход)
+      if (currStatus === 'off' && prevStatus !== 'off') {
+        hasNewOff = true;
+        notificationMessage += `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'}). `;
+      }
+      lastMachineStatuses[id] = currStatus;
+    }
+
+    if (hasNewOff) {
+      playNotificationSound();
+      showPushNotification('⚠️ ВНИМАНИЕ: Новый сход!', notificationMessage);
+    }
+  }
+
+  // Проверяем разрешение при загрузке
+  if ("Notification" in window) {
+    if (Notification.permission === 'default') {
+      $('notificationBanner').classList.remove('hidden');
+    } else if (Notification.permission === 'denied') {
+      $('notificationBanner').classList.remove('hidden');
+      $('notificationBanner').innerHTML = `<div>🔕 <strong>Уведомления заблокированы браузером.</strong> Вы не увидите сходы. Разрешите их в настройках сайта.</div>`;
+    }
+  }
+
+  // ============================================================
   // ФУНКЦИЯ МГНОВЕННОЙ ПРОВЕРКИ И АВТО-РАССТАНОВКИ
   // ============================================================
   function enforceStatusRules() {
@@ -666,21 +754,17 @@
     let changesMade = false;
 
     for (const [id, m] of Object.entries(MACHINES)) {
-      // Проверяем машины, которые не в Сходе и не в Ремонте
       if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         const hasDriver = activeDriver && activeDriver.trim() !== '';
         let needsUpdate = false;
 
-        // Если нет водителя и машина не в БВ — принудительно в БВ
         if (!hasDriver && m.lastStatus !== 'bv') {
           m.lastStatus = 'bv';
           m.author = 'БВ: ' + loggedUser.name;
           m.lastTime = Date.now();
           needsUpdate = true;
-        } 
-        // Если есть водитель, а машина в БВ — ставим на линию
-        else if (hasDriver && m.lastStatus === 'bv') {
+        } else if (hasDriver && m.lastStatus === 'bv') {
           m.lastStatus = 'line';
           m.author = 'На линии: ' + loggedUser.name;
           m.lastTime = 0;
@@ -709,6 +793,7 @@
     checkDataReady(); 
     enforceStatusRules(); 
     updateTopCounters(); 
+    checkForNewOffStatus(MACHINES); // Проверка на новый сход для уведомлений
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -794,20 +879,17 @@
       if (m.lastStatus === 'bv') countBv++;
     }
 
-    // Обновляем количество
     if ($('statTotalCount')) $('statTotalCount').textContent = countTotal;
     if ($('statOffCount')) $('statOffCount').textContent = countOff;
     if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
     if ($('statBvCount')) $('statBvCount').textContent = countBv;
 
-    // Обновляем накопленное время из monthlyStats
     const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
     if ($('statTotalTime')) $('statTotalTime').textContent = formatMs(stats.total);
     if ($('statOffTime')) $('statOffTime').textContent = formatMs(stats.off);
     if ($('statPartsTime')) $('statPartsTime').textContent = formatMs(stats.parts);
     if ($('statBvTime')) $('statBvTime').textContent = formatMs(stats.bv);
 
-    // Анимация для счетчика "Сход"
     const badgeOff = $('badgeOffStat');
     if (badgeOff) {
       if (countOff > 0) badgeOff.classList.add('animate-pulse');
@@ -844,7 +926,6 @@
     Object.values(CATS).forEach(cat => {
       let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
       
-      // СОРТИРОВКА: На линии (0) -> Сход (1) -> Ремонт (2) -> БВ (3)
       catMachines.sort((a, b) => {
         const getRank = (st) => {
           if (st === 'line' || !st) return 0;
@@ -915,7 +996,6 @@
     updateTopCounters();
   }
 
-  // ИСПРАВЛЕННОЕ ЗАКРЫТИЕ ВЫПАДАЮЩЕГО МЕНЮ
   document.addEventListener('click', function(event) {
     if (!event.target.closest('.status-dropdown')) {
       document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
@@ -924,7 +1004,6 @@
     }
   });
   
-  // Закрываем меню при скролле
   document.addEventListener('scroll', function(event) {
     document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
       dropdown.classList.remove('show');
@@ -983,6 +1062,10 @@
     m.lastStatus = status; m.lastCause = causeText; m.lastTime = status === 'line' ? 0 : now;
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
+    
+    // Обновляем lastMachineStatuses, чтобы не выскочило уведомление о своем же сходе
+    lastMachineStatuses[machineId] = status;
+
     await update(ref(db, 'machines/' + machineId), m);
   }
 
@@ -1301,7 +1384,6 @@
   function renderBuilder() {
     $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
     
-    // МАШИНЫ (с кнопкой редактирования)
     $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`
       <li>
         <span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span>
