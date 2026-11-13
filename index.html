@@ -91,26 +91,8 @@
 
   .row-info-line { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; width: 100%; padding-left: 28px; font-size: 11px; }
   
-  /* ОБНОВЛЕННЫЙ БЕЙДЖ ВОДИТЕЛЯ (ОГРАНИЧЕНИЕ ШИРИНЫ) */
-  .driver-badge { 
-    background: #fff; 
-    color: #0369a1; 
-    padding: 2px 5px; 
-    border-radius: 3px; 
-    font-weight: 700; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 3px; 
-    border: 1px solid #000; 
-    white-space: nowrap; 
-    max-width: 160px; 
-    overflow: hidden; 
-  }
-  .driver-badge .driver-text { 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap; 
-  }
+  .driver-badge { background: #fff; color: #0369a1; padding: 2px 5px; border-radius: 3px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; border: 1px solid #000; white-space: nowrap; max-width: 160px; overflow: hidden; }
+  .driver-badge .driver-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
   .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
   .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
@@ -159,6 +141,7 @@
   .btn-modal.red { background: #ef4444; }
   .btn-modal.green { background: #10b981; }
   .btn-modal.yellow { background: #eab308; }
+  .btn-modal.purple { background: #8b5cf6; }
 
   .log-filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
   .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -253,6 +236,9 @@
   .ac-item:last-child { border-bottom: none; }
   .ac-item:hover, .ac-item.active { background: #dbeafe; }
   .ac-wrap { position: relative; }
+  
+  .btn-add-driver-in-modal { background: #8b5cf6; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; display: none; margin-top: 6px; width: 100%; transition: background .15s; }
+  .btn-add-driver-in-modal:hover { background: #7c3aed; }
 </style>
 </head>
 <body>
@@ -465,7 +451,9 @@
       <label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186">
       <label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал">
       <label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
+      <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd1" onclick="openAddDriverFromMachine('addDriver1', false)">➕ Создать нового водителя</button>
       <label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
+      <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd2" onclick="openAddDriverFromMachine('addDriver2', true)">➕ Создать нового водителя</button>
     </div>
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button>
@@ -749,9 +737,7 @@
   // ФУНКЦИЯ СОКРАЩЕНИЯ ФИО ДО "ФАМИЛИЯ ИМЯ"
   function shortDriverName(fullName) {
     const parts = String(fullName || '').trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return parts[0] + ' ' + parts[1];
-    }
+    if (parts.length >= 2) return parts[0] + ' ' + parts[1];
     return parts[0] || '';
   }
 
@@ -784,9 +770,25 @@
     list.className = 'ac-list';
     wrap.appendChild(list);
     let activeIdx = -1;
+    
     function renderList() {
       const items = driverSearch(input.value);
-      if (!items.length) { list.style.display = 'none'; list.innerHTML = ''; activeIdx = -1; return; }
+      if (!items.length) { 
+        list.style.display = 'none'; 
+        list.innerHTML = ''; 
+        activeIdx = -1; 
+        // Если введено что-то, но нет совпадений — показываем кнопку "Создать"
+        const createBtnId = input.id === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : (input.id === 'editDriver2' ? 'btnAddNewDriverFromEdit2' : (input.id === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : 'btnAddNewDriverFromAdd2'));
+        const btn = $(createBtnId);
+        if (btn) {
+           if (input.value.trim().length > 1 && !Object.values(DRIVERS).find(d => d.name.toLowerCase() === input.value.trim().toLowerCase())) {
+               btn.style.display = 'block';
+           } else {
+               btn.style.display = 'none';
+           }
+        }
+        return; 
+      }
       list.innerHTML = items.map((d, i) =>
         `<div class="ac-item ${i === activeIdx ? 'active' : ''}" data-idx="${i}" data-name="${esc(d.name)}">${esc(d.name)}</div>`
       ).join('');
@@ -798,15 +800,21 @@
           list.style.display = 'none';
           activeIdx = -1;
           input.dispatchEvent(new Event('change'));
+          const createBtnId = input.id === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : (input.id === 'editDriver2' ? 'btnAddNewDriverFromEdit2' : (input.id === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : 'btnAddNewDriverFromAdd2'));
+          if ($(createBtnId)) $(createBtnId).style.display = 'none';
         });
       });
     }
+    
     input.addEventListener('input', () => { activeIdx = -1; renderList(); });
     input.addEventListener('focus', () => { if (input.value.trim()) renderList(); });
     input.addEventListener('blur', () => {
-      setTimeout(() => { list.style.display = 'none'; }, 150);
-      const canon = canonicalDriverName(input);
-      if (canon && canon !== input.value) input.value = canon;
+      setTimeout(() => { 
+          list.style.display = 'none'; 
+          // Не скрываем кнопку сразу, чтобы можно было на неё нажать
+      }, 200);
+      // const canon = canonicalDriverName(input);
+      // if (canon && canon !== input.value) input.value = canon;
     });
     input.addEventListener('keydown', (e) => {
       const items = list.querySelectorAll('.ac-item');
@@ -817,6 +825,22 @@
       else if (e.key === 'Escape') { list.style.display = 'none'; activeIdx = -1; }
     });
   }
+
+  // Открытие модалки создания водителя из машины
+  window.openAddDriverFromMachine = function(inputId, isShift2) {
+    const input = $(inputId);
+    const name = input.value.trim();
+    $('driverEditId').value = '';
+    $('driverName').value = name;
+    $('driverPosition').value = '';
+    $('driverTabNum').value = '';
+    $('driverModalTitle').textContent = 'Новый водитель';
+    
+    // Запоминаем, откуда пришли, чтобы после сохранения подставить
+    window.pendingDriverTarget = { inputId, isShift2 };
+    
+    $('driverModal').classList.remove('hidden');
+  };
 
   // === КОНФЛИКТЫ ВОДИТЕЛЕЙ ===
   function findShiftConflict(driverName, shiftField, excludeMachineId) {
@@ -1183,10 +1207,13 @@
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
   }
   function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
+  
   function openEditDriverModal(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return;
     $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || '';
+    $('btnAddNewDriverFromEdit1').style.display = 'none';
+    $('btnAddNewDriverFromEdit2').style.display = 'none';
     $('editDriverModal').classList.remove('hidden');
   }
   async function saveNewDrivers() {
@@ -1207,6 +1234,7 @@
     await update(ref(db, 'machines/' + editingRowId), m);
     closeModal('editDriverModal');
   }
+  
   function openAddMachineModal(catId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentCatForAdd = catId;
@@ -1214,6 +1242,8 @@
     $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = '';
     $('addMachineFields').classList.add('hidden'); $('addMachineAuthText').classList.remove('hidden');
     $('addMachineConfirmBtn').classList.remove('hidden'); $('addMachineSaveBtn').classList.add('hidden');
+    $('btnAddNewDriverFromAdd1').style.display = 'none';
+    $('btnAddNewDriverFromAdd2').style.display = 'none';
     $('addMachineModal').classList.remove('hidden');
   }
   function confirmAddMachineAuth() {
@@ -1499,24 +1529,62 @@
     container.innerHTML = html;
   }
   window.renderDriversTab = renderDriversTab;
+  
   window.openAddDriverRecord = function() {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     $('driverEditId').value = ''; $('driverName').value = ''; $('driverPosition').value = ''; $('driverTabNum').value = '';
-    $('driverModalTitle').textContent = 'Добавить водителя'; $('driverModal').classList.remove('hidden');
+    $('driverModalTitle').textContent = 'Добавить водителя'; 
+    window.pendingDriverTarget = null;
+    $('driverModal').classList.remove('hidden');
   };
+  
   window.openEditDriverRecord = function(id) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const d = DRIVERS[id]; if (!d) return;
     $('driverEditId').value = id; $('driverName').value = d.name || ''; $('driverPosition').value = d.position || ''; $('driverTabNum').value = d.tabNum || '';
-    $('driverModalTitle').textContent = 'Редактировать водителя'; $('driverModal').classList.remove('hidden');
+    $('driverModalTitle').textContent = 'Редактировать водителя';
+    window.pendingDriverTarget = null;
+    $('driverModal').classList.remove('hidden');
   };
+  
   window.saveDriverRecord = async function() {
-    const id = $('driverEditId').value; const name = $('driverName').value.trim(); const position = $('driverPosition').value.trim(); const tabNum = $('driverTabNum').value.trim();
+    const id = $('driverEditId').value; 
+    const name = $('driverName').value.trim(); 
+    const position = $('driverPosition').value.trim(); 
+    const tabNum = $('driverTabNum').value.trim();
+    
     if (!name) return showToast('Введите ФИО', true);
-    if (id) { await update(ref(db, 'drivers/' + id), { name, position, tabNum }); showToast('Водитель обновлён'); }
-    else { const nid = newId('drv'); await set(ref(db, 'drivers/' + nid), { id: nid, name, position, tabNum }); showToast('Водитель добавлен'); }
+    if (!tabNum) return showToast('Введите табельный номер', true);
+
+    // ПРОВЕРКА КОНФЛИКТА ТАБЕЛЬНОГО НОМЕРА
+    const conflict = Object.values(DRIVERS).find(d => d && d.tabNum === tabNum && d.id !== id);
+    if (conflict) {
+        return showToast(`Водитель с табельным номером ${tabNum} уже существует: ${conflict.name}`, true);
+    }
+
+    if (id) { 
+        await update(ref(db, 'drivers/' + id), { name, position, tabNum }); 
+        showToast('Водитель обновлён'); 
+    } else { 
+        const nid = newId('drv'); 
+        await set(ref(db, 'drivers/' + nid), { id: nid, name, position, tabNum }); 
+        showToast('Водитель добавлен');
+        
+        // Если создавали из машины, подставляем в поле
+        if (window.pendingDriverTarget) {
+            const targetInput = $(window.pendingDriverTarget.inputId);
+            if (targetInput) {
+                targetInput.value = name;
+                // Скрываем кнопку создания
+                const createBtnId = window.pendingDriverTarget.inputId === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : (window.pendingDriverTarget.inputId === 'addDriver2' ? 'btnAddNewDriverFromAdd2' : (window.pendingDriverTarget.inputId === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : 'btnAddNewDriverFromEdit2'));
+                if ($(createBtnId)) $(createBtnId).style.display = 'none';
+            }
+            window.pendingDriverTarget = null;
+        }
+    }
     closeModal('driverModal');
   };
+  
   window.deleteDriverRecord = async function(id) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const d = DRIVERS[id]; if (!d) return;
