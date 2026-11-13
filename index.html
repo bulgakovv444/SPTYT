@@ -11,11 +11,31 @@
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
 
-  /* БАННЕР УВЕДОМЛЕНИЙ */
-  .notif-banner { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 10px rgba(239,68,68,.2); }
-  .notif-banner.hidden { display: none; }
-  .notif-banner button { background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-  .notif-banner button:hover { background: #dc2626; }
+  /* КНОПКА УВЕДОМЛЕНИЙ */
+  .btn-notify {
+    background: #f8fafc; border: 2px solid #cbd5e1; color: #475569;
+    padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-size: 13px;
+  }
+  .btn-notify:hover { background: #e2e8f0; }
+  
+  /* Если уведомления не включены - пульсирует */
+  .btn-notify.pulse-red {
+    border-color: #ef4444; color: #991b1b; background: #fee2e2;
+    animation: pulse-red-btn 1.5s infinite;
+  }
+  @keyframes pulse-red-btn {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+
+  .btn-notify.enabled {
+    border-color: #10b981; color: #065f46; background: #dcfce7; cursor: default;
+  }
+  .btn-notify.denied {
+    border-color: #ef4444; color: #991b1b; background: #fef2f2;
+  }
 
   .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
@@ -371,11 +391,6 @@
 <body>
 <div class="container">
 
-  <div id="notificationBanner" class="notif-banner hidden">
-    <div>🔔 <strong>Внимание!</strong> Включите уведомления, чтобы не пропустить сходы машин.</div>
-    <button onclick="requestNotificationPermission()">Включить уведомления</button>
-  </div>
-
   <div class="tabs">
     <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
     <button class="tab-btn" id="tabReports">📊 Отчёты</button>
@@ -429,6 +444,10 @@
             </div>
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
+          
+          <!-- КНОПКА УВЕДОМЛЕНИЙ -->
+          <button class="btn-notify pulse-red" id="notifyBtn" onclick="requestNotificationPermission()">🔔 Включить звук</button>
+
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
       </div>
@@ -632,6 +651,28 @@
   // ============================================================
   let audioCtx = null;
   let lastMachineStatuses = {};
+  const notifyBtn = $('notifyBtn');
+
+  function updateNotifyButtonState() {
+    if (!("Notification" in window)) {
+      notifyBtn.textContent = '🔕 Не поддерживается';
+      notifyBtn.className = 'btn-notify denied';
+      notifyBtn.disabled = true;
+      return;
+    }
+    
+    if (Notification.permission === 'granted') {
+      notifyBtn.textContent = '🔔 Звук вкл';
+      notifyBtn.className = 'btn-notify enabled';
+    } else if (Notification.permission === 'denied') {
+      notifyBtn.textContent = '🔕 Заблокировано';
+      notifyBtn.className = 'btn-notify denied';
+      notifyBtn.title = 'Разрешите уведомления в настройках браузера';
+    } else {
+      notifyBtn.textContent = '🔔 Включить звук';
+      notifyBtn.className = 'btn-notify pulse-red';
+    }
+  }
 
   function playNotificationSound() {
     if (!audioCtx) {
@@ -673,11 +714,19 @@
       showToast("Ваш браузер не поддерживает уведомления", true);
       return;
     }
+    
+    // Если уже разрешено - просто проигрываем звук, чтобы разблокировать его
+    if (Notification.permission === 'granted') {
+      playNotificationSound();
+      showToast('Звук уведомлений активирован');
+      return;
+    }
+
     Notification.requestPermission().then(permission => {
+      updateNotifyButtonState();
       if (permission === 'granted') {
         showToast('Уведомления включены!');
-        $('notificationBanner').classList.add('hidden');
-        playNotificationSound(); // Разблокировка звука
+        playNotificationSound(); 
       } else {
         showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
       }
@@ -725,14 +774,7 @@
     }
   }
 
-  if ("Notification" in window) {
-    if (Notification.permission === 'default') {
-      $('notificationBanner').classList.remove('hidden');
-    } else if (Notification.permission === 'denied') {
-      $('notificationBanner').classList.remove('hidden');
-      $('notificationBanner').innerHTML = `<div>🔕 <strong>Уведомления заблокированы браузером.</strong> Вы не увидите сходы. Разрешите их в настройках сайта.</div>`;
-    }
-  }
+  updateNotifyButtonState();
 
   // ============================================================
   // ФУНКЦИЯ МГНОВЕННОЙ ПРОВЕРКИ И АВТО-РАССТАНОВКИ
