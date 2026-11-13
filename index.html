@@ -119,13 +119,13 @@
   }
   .row:last-child { border-bottom: none; }
 
-  /* ЦВЕТА СТАТУСОВ */
+  /* ЯРКИЕ ЦВЕТА */
   .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
   .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
   .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
   
-  /* БВ (БЕЗ ВОДИТЕЛЯ) - СВЕТЛО-СЕРЫЙ С КРАСНОЙ ПОЛОСОЙ */
-  .row.st-bv   { background: #f1f5f9; border-left: 6px solid #dc2626; } 
+  /* БВ - НАСЫЩЕННЫЙ СЕРЫЙ */
+  .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; } 
 
   .row-top { 
     display: flex; 
@@ -174,7 +174,7 @@
   .btn-st.active-line { background: #22c55e; color: #fff; border-color: #000; }
   .btn-st.active-off { background: #eab308; color: #000; border-color: #000; }
   .btn-st.active-parts { background: #ef4444; color: #fff; border-color: #000; }
-  .btn-st.active-bv { background: #64748b; color: #fff; border-color: #000; }
+  .btn-st.active-bv { background: #475569; color: #fff; border-color: #000; }
 
   /* УВЕЛИЧЕННЫЙ НИЗ (ВОДИТЕЛИ) */
   .row-bottom { 
@@ -594,12 +594,9 @@
       }
     }
 
-    if (changesMade) {
-      renderMainGrid();
-    }
+    if (changesMade) { renderMainGrid(); }
   }
 
-  // Запускаем проверку раз в минуту и при старте
   setInterval(enforceStatusRules, 60000);
 
   // ============================================================
@@ -683,7 +680,7 @@
   }
 
   // ============================================================
-  // ГЛАВНАЯ (РЕНДЕР)
+  // ГЛАВНАЯ (РЕНДЕР) С СОРТИРОВКОЙ
   // ============================================================
   function updateClocks() {
     const { shiftName, timeStr } = getShiftInfo();
@@ -714,12 +711,28 @@
 
     let html = '';
     Object.values(CATS).forEach(cat => {
-      const catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
+      let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
+      
+      // СОРТИРОВКА: На линии (0) -> Сход (1) -> Ремонт (2) -> БВ (3)
+      catMachines.sort((a, b) => {
+        const getRank = (st) => {
+          if (st === 'line' || !st) return 0;
+          if (st === 'off') return 1;
+          if (st === 'parts') return 2;
+          if (st === 'bv') return 3;
+          return 4;
+        };
+        const rankA = getRank(a.lastStatus);
+        const rankB = getRank(b.lastStatus);
+        if (rankA !== rankB) return rankA - rankB;
+        return 0; // Сохраняем изначальный порядок внутри группы
+      });
+
       html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
       if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; } 
       else {
         catMachines.forEach((m, idx) => {
-          const st = m.lastStatus || 'bv'; 
+          const st = m.lastStatus || 'line'; 
           const cause = m.lastCause || '';
           const rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
           let bottomHtml = '';
