@@ -72,12 +72,12 @@
   @keyframes pulse-bg-off { 0% { background: #fef9c3; border-left: 6px solid #ca8a04; } 50% { background: #fde047; border-left: 6px solid #b45309; } 100% { background: #fef9c3; border-left: 6px solid #ca8a04; } }
 
   .row-top { display: flex; justify-content: space-between; align-items: center; gap: 4px; width: 100%; flex-wrap: wrap; }
-  .row-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .row-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; min-width: 0; }
   .row-num { display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 12px; width: 22px; height: 22px; background: #fff; border-radius: 4px; border: 1.5px solid #000; flex-shrink: 0; }
-  .row-name { font-weight: 900; font-size: 14px; color: #000; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1.5px solid #000; white-space: nowrap; letter-spacing: 0.3px; }
+  .row-name { font-weight: 900; font-size: 14px; color: #000; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1.5px solid #000; white-space: nowrap; letter-spacing: 0.3px; overflow: hidden; text-overflow: ellipsis; }
 
-  .status-dropdown { position: relative; display: inline-block; }
-  .btn-status { border: 1px solid #000; border-radius: 3px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .15s; }
+  .status-dropdown { position: relative; display: inline-block; flex-shrink: 0; }
+  .btn-status { border: 1px solid #000; border-radius: 3px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .15s; white-space: nowrap; }
   .btn-status:hover { filter: brightness(0.9); }
   .btn-status.line { background: #22c55e; color: #fff; border-color: #000; }
   .btn-status.off { background: #eab308; color: #000; border-color: #000; }
@@ -90,8 +90,28 @@
   .status-dropdown.show .dropdown-content { display: block; }
 
   .row-info-line { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; width: 100%; padding-left: 28px; font-size: 11px; }
-  .driver-badge { background: #fff; color: #0369a1; padding: 2px 5px; border-radius: 3px; font-weight: 700; display: flex; align-items: center; gap: 2px; border: 1px solid #000; white-space: nowrap; }
-  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; }
+  
+  /* ОБНОВЛЕННЫЙ БЕЙДЖ ВОДИТЕЛЯ (ОГРАНИЧЕНИЕ ШИРИНЫ) */
+  .driver-badge { 
+    background: #fff; 
+    color: #0369a1; 
+    padding: 2px 5px; 
+    border-radius: 3px; 
+    font-weight: 700; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 3px; 
+    border: 1px solid #000; 
+    white-space: nowrap; 
+    max-width: 160px; 
+    overflow: hidden; 
+  }
+  .driver-badge .driver-text { 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+  }
+  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
   .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
   .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
   .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
@@ -228,7 +248,6 @@
   .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
   .danger-zone .btn { margin: 4px; }
 
-  /* === АВТОКОМПЛИТ ВОДИТЕЛЕЙ === */
   .ac-list { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 2px solid #2563eb; border-radius: 6px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,.2); margin-top: 2px; }
   .ac-item { padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
   .ac-item:last-child { border-bottom: none; }
@@ -727,6 +746,15 @@
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
+  // ФУНКЦИЯ СОКРАЩЕНИЯ ФИО ДО "ФАМИЛИЯ ИМЯ"
+  function shortDriverName(fullName) {
+    const parts = String(fullName || '').trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return parts[0] + ' ' + parts[1];
+    }
+    return parts[0] || '';
+  }
+
   // === АВТОКОМПЛИТ ТОЛЬКО ФИО ===
   function driverSearch(query) {
     const q = String(query || '').trim().toLowerCase();
@@ -1058,8 +1086,10 @@
           let bottomHtml = '';
           if (st !== 'bv') {
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-            bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? activeDriver : 'Нет')}</span></span>`;
+            const shortName = activeDriver ? shortDriverName(activeDriver) : 'Нет';
+            bottomHtml += `<span class="driver-badge" title="${esc(activeDriver || 'Нет водителя')}"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(shortName)}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          
           if ((st === 'off' || st === 'parts') && cause) {
             const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
             const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
@@ -1068,9 +1098,10 @@
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
           const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
           const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
+          
           html += `<div class="row ${rowClass}" id="row-${m.id}">
             <div class="row-top">
-              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span></div>
+              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name" title="${esc(m.num)} ${esc(m.model || '')}">${esc(m.num)} ${esc(m.model || '')}</span></div>
               <div class="status-dropdown" onclick="this.classList.toggle('show')">
                 <button class="btn-status ${btnClass}">${btnText} ▾</button>
                 <div class="dropdown-content" onclick="event.stopPropagation()">
