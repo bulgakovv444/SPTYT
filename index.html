@@ -555,6 +555,56 @@
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
   // ============================================================
+  // АВТОМАТИЧЕСКАЯ ПРОВЕРКА СТАТУСОВ (ПЕРЕСМЕНКА И ПУСТЫЕ ВОДИТЕЛИ)
+  // ============================================================
+  async function autoCheckStatuses() {
+    if (!loggedUser.name || loggedUser.status !== 'approved') return;
+    
+    const { isShift1 } = getShiftInfo();
+    let changesMade = false;
+
+    for (const [id, m] of Object.entries(MACHINES)) {
+      let needsUpdate = false;
+      let newStatus = m.lastStatus;
+      let newAuthor = m.author;
+
+      // Проверяем только машины, которые не в Сходе и не в Ремонте
+      if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
+        const activeDriver = isShift1 ? m.driver1 : m.driver2;
+        const hasDriver = activeDriver && activeDriver.trim() !== '';
+
+        if (!hasDriver && m.lastStatus !== 'bv') {
+          // Если водителя нет, а машина на линии — уводим в БВ
+          newStatus = 'bv';
+          newAuthor = 'Авто-БВ (нет водителя): ' + loggedUser.name;
+          needsUpdate = true;
+        } else if (hasDriver && m.lastStatus === 'bv') {
+          // Если водитель есть, а машина в БВ — ставим на линию
+          newStatus = 'line';
+          newAuthor = 'Авто-Линия (есть водитель): ' + loggedUser.name;
+          needsUpdate = true;
+        }
+      }
+
+      if (needsUpdate) {
+        m.lastStatus = newStatus;
+        m.author = newAuthor;
+        m.lastTime = (newStatus === 'line') ? 0 : Date.now(); // Если БВ, ставим таймер
+        await update(ref(db, 'machines/' + id), m);
+        changesMade = true;
+      }
+    }
+
+    if (changesMade) {
+      // Перерисовываем интерфейс
+      renderMainGrid();
+    }
+  }
+  
+  // Запускаем проверку раз в минуту и при старте
+  setInterval(autoCheckStatuses, 60000);
+
+  // ============================================================
   // СИНХРОНИЗАЦИЯ
   // ============================================================
   onValue(ref(db, 'cats'), snap => { CATS = snap.val() || {}; if(Object.keys(CATS).length === 0) { CATS = DEFAULT_CATS; set(ref(db, 'cats'), CATS); } checkDataReady(); });
@@ -623,7 +673,7 @@
   function checkDataReady() {
     if (!isDataReady) {
       isDataReady = true;
-      if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); }
+      if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); autoCheckStatuses(); }
     }
     if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) { updateUserProfileBlock(); renderMainGrid(); updateClocks(); }
     if (isAdminLoggedIn) renderAdmin();
@@ -774,9 +824,19 @@
     
     // Если водителей нет, а машина "На линии" — переводим в БВ
     const hasDriver = m.driver1 !== '' || m.driver2 !== '';
-    if (!hasDriver && (m.lastStatus === 'line' || !m.lastStatus)) {
+    if (!hasDriver && m.lastStatus === 'line') {
       m.lastStatus = 'bv';
-      m.author = 'Авто-БВ: ' + loggedUser.name;
+      m.lastTime = Date.now();
+      m.author = 'Авто-БВ (очищены): ' + loggedUser.name;
+    }
+    
+    // Если водитель появился, а машина в БВ — ставим на линию
+    const { isShift1 } = getShiftInfo();
+    const activeDriver = isShift1 ? m.driver1 : m.driver2;
+    if (activeDriver && activeDriver !== '' && m.lastStatus === 'bv') {
+       m.lastStatus = 'line';
+       m.lastTime = 0;
+       m.author = 'Авто-Линия: ' + loggedUser.name;
     }
     
     await update(ref(db, 'machines/' + editingRowId), m); 
@@ -1061,7 +1121,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('spt_user'); if (savedUser) { try { loggedUser = JSON.parse(savedUser); } catch(e){} }
 
-    $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
+    $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); autoCheckStatuses(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
     $('tabReports').onclick = () => { $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden'); $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join(''); if (!$('repDateFrom').value) { const d = new Date(); $('repDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('repDateTo').value = d.toISOString().slice(0,10); } };
     $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
     $('loginCategory').onchange = updateRoleSelect;
@@ -1121,7 +1181,7 @@
       }
       localStorage.setItem('spt_user', JSON.stringify(loggedUser));
       $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
-      updateUserProfileBlock(); renderMainGrid(); enforceBlockState(); showToast('Добро пожаловать!');
+      updateUserProfileBlock(); renderMainGrid(); enforceBlockState(); autoCheckStatuses(); showToast('Добро пожаловать!');
     }
 
     $('logoutBtn').onclick = () => { localStorage.removeItem('spt_user'); loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' }; $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); };
