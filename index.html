@@ -41,6 +41,7 @@
     border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content;
   }
   .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+  
   .global-stats { display: flex; gap: 8px; flex-wrap: wrap; }
   .stat-badge {
     display: inline-flex; align-items: center; gap: 8px;
@@ -52,10 +53,12 @@
   .stat-badge .icon { font-size: 18px; }
   .stat-badge .val { font-family: monospace; font-size: 16px; }
   .stat-badge .lbl { font-size: 12px; opacity: 0.9; }
-  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+  
   .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
+  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+
   .clock-block {
     font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9;
     padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; white-space: nowrap;
@@ -89,7 +92,6 @@
     flex-direction: column; 
   }
 
-  /* УЗКАЯ ПЛАШКА ЗАГОЛОВКА */
   .col-header { 
     background: #e2e8f0; 
     color: #000; 
@@ -163,20 +165,61 @@
     letter-spacing: 0.3px; 
   }
 
-  .row-actions { display: flex; gap: 2px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-  .btn-st { 
+  /* ВЫПАДАЮЩЕЕ МЕНЮ */
+  .status-dropdown { position: relative; display: inline-block; }
+  
+  .btn-status { 
     border: 1px solid #000; 
-    background: #fff; color: #000; border-radius: 3px; 
-    padding: 3px 5px; font-size: 9px; font-weight: 700; 
-    cursor: pointer; white-space: nowrap; transition: all .1s; 
+    border-radius: 3px; 
+    padding: 4px 8px; 
+    font-size: 10px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+    transition: all .15s;
   }
-  .btn-st:hover { background: #e2e8f0; }
-  .btn-st.active-line { background: #22c55e; color: #fff; border-color: #000; }
-  .btn-st.active-off { background: #eab308; color: #000; border-color: #000; }
-  .btn-st.active-parts { background: #ef4444; color: #fff; border-color: #000; }
-  .btn-st.active-bv { background: #475569; color: #fff; border-color: #000; }
+  .btn-status:hover { filter: brightness(0.9); }
+  
+  .btn-status.line { background: #22c55e; color: #fff; border-color: #000; }
+  .btn-status.off { background: #eab308; color: #000; border-color: #000; }
+  .btn-status.parts { background: #ef4444; color: #fff; border-color: #000; }
+  .btn-status.bv { background: #475569; color: #fff; border-color: #000; }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    min-width: 140px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 10;
+    border: 2px solid #000;
+    border-radius: 4px;
+    right: 0;
+    top: 100%;
+  }
+  
+  .dropdown-content button {
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .dropdown-content button:last-child { border-bottom: none; }
+  .dropdown-content button:hover { background-color: #f1f5f9; }
 
-  /* ЕДИНАЯ СТРОКА (ИНФО И ВОДИТЕЛЬ) */
+  .status-dropdown.show .dropdown-content { display: block; }
+
+  /* ЕДИНАЯ СТРОКА */
   .row-info-line { 
     display: flex; 
     align-items: center; 
@@ -216,7 +259,7 @@
     border-radius: 3px; 
     border: 1px solid #cbd5e1; 
     white-space: nowrap;
-    margin-left: auto; /* Прижимает к правому краю */
+    margin-left: auto;
   }
 
   .col-footer { padding: 6px; background: #fff; border-top: 2px solid #000; }
@@ -377,10 +420,10 @@
         </div>
         <div class="header-right">
           <div class="global-stats" id="globalStatsBlock">
-            <div class="stat-badge total" onclick="showLogModal('total')"><span class="icon">📊</span><span class="val" id="statTotal">0 ч 0 м</span><span class="lbl">Всего</span></div>
-            <div class="stat-badge off" onclick="showLogModal('off')"><span class="icon">⚡️</span><span class="val" id="statOff">0 ч 0 м</span><span class="lbl">Сходы</span></div>
-            <div class="stat-badge parts" onclick="showLogModal('parts')"><span class="icon">🔧</span><span class="val" id="statParts">0 ч 0 м</span><span class="lbl">Ож. рем.</span></div>
-            <div class="stat-badge bv" onclick="showLogModal('bv')"><span class="icon">🛑</span><span class="val" id="statBv">0 ч 0 м</span><span class="lbl">БВ</span></div>
+            <div class="stat-badge total"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
+            <div class="stat-badge off"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
+            <div class="stat-badge parts"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
+            <div class="stat-badge bv"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
           <button class="btn gray small" id="logoutBtn">Выйти</button>
@@ -634,6 +677,7 @@
     MACHINES = snap.val() || {}; 
     checkDataReady(); 
     enforceStatusRules(); 
+    updateTopCounters(); // Обновляем счетчики
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -701,22 +745,41 @@
       isDataReady = true;
       if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); enforceStatusRules(); }
     }
-    if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) { updateUserProfileBlock(); renderMainGrid(); updateClocks(); }
+    if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) { updateUserProfileBlock(); renderMainGrid(); updateClocks(); updateTopCounters(); }
     if (isAdminLoggedIn) renderAdmin();
   }
 
   // ============================================================
-  // ГЛАВНАЯ (РЕНДЕР) С СОРТИРОВКОЙ
+  // СВОДНЫЕ СЧЕТЧИКИ СВЕРХУ
+  // ============================================================
+  function updateTopCounters() {
+    if (!isDataReady) return;
+    let countOff = 0, countParts = 0, countBv = 0, countTotal = 0;
+    
+    for (const m of Object.values(MACHINES)) {
+      countTotal++;
+      if (m.lastStatus === 'off') countOff++;
+      if (m.lastStatus === 'parts') countParts++;
+      if (m.lastStatus === 'bv') countBv++;
+    }
+
+    if ($('statTotalCount')) $('statTotalCount').textContent = countTotal;
+    if ($('statOffCount')) $('statOffCount').textContent = countOff;
+    if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
+    if ($('statBvCount')) $('statBvCount').textContent = countBv;
+  }
+
+  // ============================================================
+  // ГЛАВНАЯ (РЕНДЕР) С СОРТИРОВКОЙ И ВЫПАДАЮЩИМ МЕНЮ
   // ============================================================
   function updateClocks() {
     const { shiftName, timeStr } = getShiftInfo();
     if ($('shiftName')) $('shiftName').textContent = shiftName;
     if ($('timeText')) $('timeText').textContent = timeStr;
+    
+    // Обновляем старые счетчики времени (они есть внизу карточек)
     const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
-    if ($('statTotal')) $('statTotal').textContent = formatMs(stats.total);
-    if ($('statOff')) $('statOff').textContent = formatMs(stats.off);
-    if ($('statParts')) $('statParts').textContent = formatMs(stats.parts);
-    if ($('statBv')) $('statBv').textContent = formatMs(stats.bv);
+    // ...
   }
   setInterval(updateClocks, 1000);
 
@@ -773,17 +836,24 @@
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
           
+          // Формируем выпадающее меню
+          const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
+          const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
+
           html += `<div class="row ${rowClass}" id="row-${m.id}">
             <div class="row-top">
               <div class="row-left">
                 <span class="row-num">${idx + 1}</span>
                 <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
               </div>
-              <div class="row-actions">
-                <button class="btn-st ${st==='line'?'active-line':''}" onclick="trySetLine('${m.id}')">На линии</button>
-                <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
-                <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')">Ож. ремонта</button>
-                <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
+              <div class="status-dropdown" onclick="this.classList.toggle('show')">
+                <button class="btn-status ${btnClass}">${btnText} ▾</button>
+                <div class="dropdown-content" onclick="event.stopPropagation()">
+                  <button style="color:#16a34a;" onclick="trySetLine('${m.id}')">🟢 На линии</button>
+                  <button style="color:#ca8a04;" onclick="openCauseModal('${m.id}','off')">🟡 Сход</button>
+                  <button style="color:#dc2626;" onclick="openCauseModal('${m.id}','parts')">🔴 Ож. ремонта</button>
+                  <button style="color:#475569;" onclick="setStatus('${m.id}','bv')">⚪ БВ</button>
+                </div>
               </div>
             </div>
             <div class="row-info-line">${bottomHtml}</div>
@@ -801,9 +871,18 @@
     });
     $('mainGrid').innerHTML = html;
     updateClocks();
+    updateTopCounters();
   }
 
-  // === НОВАЯ ФУНКЦИЯ ДЛЯ ОБРАБОТКИ НАЖАТИЯ "НА ЛИНИИ" ===
+  // Закрытие меню при клике вне его
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.status-dropdown')) {
+      document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
+        dropdown.classList.remove('show');
+      });
+    }
+  });
+
   function trySetLine(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
@@ -811,12 +890,10 @@
     const { isShift1 } = getShiftInfo();
     const activeDriver = isShift1 ? m.driver1 : m.driver2;
     
-    // Если водителя нет, открываем окно ввода
     if (!activeDriver || activeDriver.trim() === '') {
       openEditDriverModal(machineId);
       showToast('Введите водителя, чтобы поставить на линию', true);
     } else {
-      // Если водитель есть, ставим на линию
       setStatus(machineId, 'line');
     }
   }
@@ -825,7 +902,6 @@
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
 
-    // Дополнительная защита
     if (status === 'line') {
       const { isShift1 } = getShiftInfo();
       const activeDriver = isShift1 ? m.driver1 : m.driver2;
@@ -891,7 +967,6 @@
     m.driver1 = $('editDriver1').value.trim(); 
     m.driver2 = $('editDriver2').value.trim(); 
     
-    // При сохранении запускаем правило
     enforceStatusRules();
     
     await update(ref(db, 'machines/' + editingRowId), m); 
