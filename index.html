@@ -1,635 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СПТ — Управление техникой</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; }
-  h1 { font-size: 22px; margin-bottom: 12px; color: #1e3a8a; }
-  h2 { font-size: 16px; margin: 16px 0 10px; }
-  .container { max-width: 1600px; margin: 0 auto; }
-
-  /* КНОПКА УВЕДОМЛЕНИЙ */
-  .btn-notify {
-    background: #f8fafc; border: 2px solid #cbd5e1; color: #475569;
-    padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-size: 13px;
-  }
-  .btn-notify:hover { background: #e2e8f0; }
-  .btn-notify.pulse-red {
-    border-color: #ef4444; color: #991b1b; background: #fee2e2;
-    animation: pulse-red-btn 1.5s infinite;
-  }
-  @keyframes pulse-red-btn {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  }
-  .btn-notify.enabled { border-color: #10b981; color: #065f46; background: #dcfce7; cursor: default; }
-  .btn-notify.denied { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
-
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
-  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
-  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
-  .tab-btn.active { background: #2563eb; color: #fff; }
-  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
-
-  .top-bar {
-    background: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
-    border-left: 5px solid #2563eb; margin-bottom: 15px;
-  }
-  .header-left { display: flex; align-items: center; gap: 15px; }
-  .user-profile {
-    display: flex; align-items: center; gap: 15px; background: #f8fafc;
-    padding: 10px 20px; border-radius: 10px; border: 1px solid #e2e8f0; min-width: 320px;
-  }
-  .user-avatar {
-    width: 48px; height: 48px; background: #2563eb; color: #fff;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 800; flex-shrink: 0;
-  }
-  .user-info { display: flex; flex-direction: column; }
-  .user-name { font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; }
-  .user-meta { font-size: 12px; color: #64748b; margin-top: 4px; }
-  .user-meta strong { color: #1e293b; }
-  .user-badge-role { background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content; }
-  .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
-  
-  .stats-container { display: flex; flex-direction: column; gap: 6px; }
-  .stats-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  
-  .stat-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: 6px; font-weight: 800;
-    font-size: 13px; border: 2px solid transparent;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  }
-  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-  .stat-badge .icon { font-size: 16px; }
-  .stat-badge .val { font-family: monospace; font-size: 14px; }
-  .stat-badge .lbl { font-size: 11px; opacity: 0.9; }
-  
-  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
-  .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
-  .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
-  .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
-
-  .stat-badge.off.animate-pulse { animation: pulse-yellow 1.5s infinite; }
-  @keyframes pulse-yellow {
-    0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
-    70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
-  }
-
-  .clock-block {
-    font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9;
-    padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; white-space: nowrap;
-  }
-  .clock-block span { color: #2563eb; }
-
-  .grid-wrapper { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 10px; 
-    align-items: start; 
-  }
-  
-  @media (max-width: 1200px) { .grid-wrapper { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 900px) { .grid-wrapper { grid-template-columns: repeat(2, 1fr); } }
-
-  .col { 
-    background: #fff; 
-    border-radius: 8px; 
-    border: 2px solid #000; 
-    box-shadow: 0 4px 10px rgba(0,0,0,.1); 
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column; 
-  }
-
-  .col-header { 
-    background: #e2e8f0; 
-    color: #000; 
-    font-weight: 900; 
-    font-size: 20px; 
-    text-align: center; 
-    padding: 4px 8px; 
-    letter-spacing: 1px; 
-    border-bottom: 2px solid #000;
-    text-transform: uppercase;
-    line-height: 1.2; 
-  }
-
-  .col-body { 
-    max-height: 600px; 
-    overflow-y: auto; 
-    background: #fff; 
-  }
-
-  .row { 
-    display: flex; 
-    flex-direction: column; 
-    padding: 8px 10px; 
-    border-bottom: 2px solid #000; 
-    gap: 4px; 
-    position: relative;
-  }
-  .row:last-child { border-bottom: none; }
-
-  .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
-  .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
-  .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
-  .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; } 
-
-  /* Мигание строки — ТОЛЬКО для сходов (off) */
-  .row.st-off { animation: pulse-bg-off 1.5s infinite; }
-  @keyframes pulse-bg-off {
-    0% { background: #fef9c3; border-left: 6px solid #ca8a04; }
-    50% { background: #fde047; border-left: 6px solid #b45309; }
-    100% { background: #fef9c3; border-left: 6px solid #ca8a04; }
-  }
-
-  .row-top { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    gap: 4px; 
-    width: 100%; 
-    flex-wrap: wrap; 
-  }
-  
-  .row-left { 
-    display: flex; 
-    align-items: center; 
-    gap: 6px; 
-    flex-shrink: 0; 
-  }
-  
-  .row-num { 
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; color: #000; font-size: 12px; 
-    width: 22px; height: 22px; 
-    background: #fff; border-radius: 4px; border: 1.5px solid #000;
-    flex-shrink: 0; 
-  }
-  
-  .row-name { 
-    font-weight: 900; 
-    font-size: 14px; 
-    color: #000; 
-    background: #fff; 
-    padding: 2px 6px; 
-    border-radius: 4px; 
-    border: 1.5px solid #000; 
-    white-space: nowrap;
-    letter-spacing: 0.3px; 
-  }
-
-  .status-dropdown { position: relative; display: inline-block; }
-  
-  .btn-status { 
-    border: 1px solid #000; 
-    border-radius: 3px; 
-    padding: 4px 8px; 
-    font-size: 10px; 
-    font-weight: 700; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    transition: all .15s;
-  }
-  .btn-status:hover { filter: brightness(0.9); }
-  
-  .btn-status.line { background: #22c55e; color: #fff; border-color: #000; }
-  .btn-status.off { background: #eab308; color: #000; border-color: #000; }
-  .btn-status.parts { background: #ef4444; color: #fff; border-color: #000; }
-  .btn-status.bv { background: #475569; color: #fff; border-color: #000; }
-  
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    min-width: 140px;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-    z-index: 10;
-    border: 2px solid #000;
-    border-radius: 4px;
-    right: 0;
-    top: 100%;
-  }
-  
-  .dropdown-content button {
-    color: black;
-    padding: 8px 12px;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-    text-align: left;
-    border: none;
-    background: none;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .dropdown-content button:last-child { border-bottom: none; }
-  .dropdown-content button:hover { background-color: #f1f5f9; }
-
-  .status-dropdown.show .dropdown-content { display: block; }
-
-  .row-info-line { 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    flex-wrap: wrap;
-    width: 100%;
-    padding-left: 28px;
-    font-size: 11px;
-  }
-  
-  .driver-badge { background: #fff; color: #0369a1; padding: 2px 5px; border-radius: 3px; font-weight: 700; display: flex; align-items: center; gap: 2px; border: 1px solid #000; white-space: nowrap; }
-  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; }
-  .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
-  .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
-  .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
-  .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
-  
-  /* МИГАНИЕ ТАЙМЕРА — применяется только на сходах (off) */
-  .timer-badge.blink-red {
-    background: #ef4444; color: #fff; border-color: #991b1b;
-    animation: blink-timer 1s infinite;
-  }
-  @keyframes blink-timer {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-
-  .author-badge { 
-    color: #475569; font-style: italic; font-size: 10px; font-weight: 600; 
-    background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 3px; 
-    border: 1px solid #cbd5e1; white-space: nowrap; margin-left: auto; 
-  }
-
-  .col-footer { padding: 6px; background: #fff; border-top: 2px solid #000; }
-  .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 800; border-radius: 4px; cursor: pointer; border: 2px dashed #16a34a; background: #dcfce7; color: #166534; transition: all 0.15s; }
-  .footer-btn:hover { background: #bbf7d0; }
-
-  input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-  textarea { resize: vertical; min-height: 60px; }
-  label.fld { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; }
-
-  .btn { display: inline-block; background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background .15s; text-align: center; }
-  .btn:hover { background: #1d4ed8; }
-  .btn.green { background: #10b981; } .btn.green:hover { background: #059669; }
-  .btn.gray { background: #64748b; } .btn.gray:hover { background: #475569; }
-  .btn.red { background: #ef4444; } .btn.red:hover { background: #dc2626; }
-  .btn.orange { background: #f59e0b; } .btn.orange:hover { background: #d97706; }
-  .btn.purple { background: #8b5cf6; } .btn.purple:hover { background: #7c3aed; }
-  .btn.small { padding: 6px 10px; font-size: 12px; }
-  .btn.block { display: block; width: 100%; }
-  .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
-
-  .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
-  .login-box h2 { margin-top: 0; color: #1e3a8a; }
-  .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
-  .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
-  .login-box select:disabled { background: #f8fafc; color: #94a3b8; cursor: wait; }
-
-  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
-  .modal-overlay.hidden { display: none !important; }
-  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 450px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
-  .modal.wide { max-width: 850px; }
-  .modal h3 { font-size: 16px; margin-bottom: 6px; }
-  .modal p { font-size: 13px; color: #64748b; margin-bottom: 12px; }
-  .modal label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; margin-top: 10px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-  .btn-modal { display: inline-block; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #fff; }
-  .btn-modal.gray { background: #64748b; }
-  .btn-modal.red { background: #ef4444; }
-  .btn-modal.green { background: #10b981; }
-  .btn-modal.yellow { background: #eab308; }
-
-  .log-filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
-  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .log-table th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #475569; }
-  .log-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-  .log-table tr:last-child td { border-bottom: none; }
-  .log-empty { text-align: center; color: #94a3b8; padding: 30px; }
-
-  /* Модалка списка машин по статусу */
-  .status-list-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; background:#f8fafc; cursor:pointer; transition:background .15s; flex-wrap:wrap; }
-  .status-list-item:hover { background:#eef2f6; }
-  .status-list-item .sli-main { display:flex; flex-direction:column; gap:2px; }
-  .status-list-item .sli-name { font-weight:800; font-size:14px; color:#0f172a; }
-  .status-list-item .sli-sub { font-size:12px; color:#64748b; }
-  .status-list-item .sli-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .status-list-empty { text-align:center; color:#94a3b8; padding:24px; }
-
-  .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-  .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
-  .builder-card.cats { border-top-color: #10b981; }
-  .builder-card.machines { border-top-color: #f59e0b; }
-  .builder-card.roles { border-top-color: #8b5cf6; }
-  .builder-card.causes { border-top-color: #ef4444; }
-  .builder-card h3 { margin-bottom: 12px; font-size: 15px; }
-  .builder-list { list-style: none; margin-bottom: 12px; max-height: 250px; overflow-y: auto; }
-  .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
-  .builder-add-row { display: flex; gap: 6px; margin-top: 6px; flex-direction: column; }
-  .builder-add-row input, .builder-add-row select { margin-bottom: 0; }
-  .sub-tabs { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; flex-wrap: wrap; }
-  .sub-tab-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; padding: 6px 12px; border-radius: 4px; }
-  .sub-tab-btn.active { background: #e0e7ff; color: #1e3a8a; }
-  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border: 1px solid #e2e8f0; }
-  .moderation-user.approved { border-left-color: #10b981; }
-  .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
-
-  .report-filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
-  .report-filters .filter-group { flex: 1; min-width: 140px; }
-  .date-group { display: flex; gap: 5px; align-items: center; }
-  .date-group input { padding: 8px 5px; text-align: center; }
-  .date-group span { font-weight: 700; color: #64748b; }
-  .status-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
-  .status-filter-btn { border: 2px solid #cbd5e1; background: #fff; color: #64748b; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
-  .status-filter-btn:hover { background: #f1f5f9; }
-  .status-filter-btn.active-all { border-color: #2563eb; background: #eff6ff; color: #1e40af; }
-  .status-filter-btn.active-line { border-color: #10b981; background: #dcfce7; color: #166534; }
-  .status-filter-btn.active-off { border-color: #eab308; background: #fef08a; color: #854d0e; }
-  .status-filter-btn.active-parts { border-color: #ef4444; background: #fee2e2; color: #991b1b; }
-  .status-filter-btn.active-bv { border-color: #64748b; background: #e2e8f0; color: #475569; }
-
-  .report-stats { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-  .report-stat-card { background: #fff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); flex: 1; min-width: 130px; border-left: 5px solid #2563eb; }
-  .report-stat-card.green { border-left-color: #10b981; }
-  .report-stat-card.red { border-left-color: #dc2626; }
-  .report-stat-card.gray { border-left-color: #64748b; }
-  .report-stat-card.yellow { border-left-color: #eab308; }
-  .report-stat-card .num { font-size: 28px; font-weight: 800; color: #1e293b; }
-  .report-stat-card .lbl { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 600; }
-
-  .report-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 13px; }
-  .report-table th { background: #f8fafc; padding: 12px 15px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
-  .report-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-  .report-table tr:last-child td { border-bottom: none; }
-  .report-table tr:hover { background: #f8fafc; cursor: pointer; }
-  .status-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
-  .status-badge.line { background: #dcfce7; color: #166534; }
-  .status-badge.off { background: #fef08a; color: #854d0e; }
-  .status-badge.parts { background: #fee2e2; color: #991b1b; }
-  .status-badge.bv { background: #e2e8f0; color: #475569; }
-
-  /* ВКЛАДКИ ОТЧЕТОВ */
-  .report-tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; }
-  .report-tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 20px; border-radius: 6px 6px 0 0; transition: all .15s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-  .report-tab-btn:hover { background: #f1f5f9; color: #0f172a; }
-  .report-tab-btn.active { background: #fff; color: #2563eb; border-bottom-color: #2563eb; }
-  .kpi-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; color: #fff; font-size: 14px; }
-
-  .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
-  .toast.error { background: #ef4444; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .hidden { display: none !important; }
-  .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
-  .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
-  .pending-alert.hidden { display: none; }
-  .blocked-banner { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 40px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(239,68,68,.15); }
-  .blocked-banner h2 { font-size: 24px; margin-bottom: 12px; color: #991b1b; }
-  .blocked-banner p { font-size: 16px; margin-bottom: 16px; }
-  .danger-zone { margin-top: 20px; padding: 16px; border: 2px dashed #ef4444; border-radius: 10px; background: #fef2f2; text-align: center; }
-  .danger-zone h3 { color: #991b1b; margin-bottom: 8px; font-size: 15px; }
-  .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
-  .danger-zone .btn { margin: 4px; }
-</style>
-</head>
-<body>
-<div class="container">
-
-  <div class="tabs">
-    <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
-    <button class="tab-btn" id="tabReports">📊 Отчёты</button>
-    <button class="tab-btn" id="tabAdmin">🔐 Панель управления</button>
-  </div>
-
-  <!-- ===== ГЛАВНАЯ ===== -->
-  <div id="mainView">
-    <div id="mainLoginBlock" class="login-box">
-      <h2>Вход <span class="project-badge">СПТ</span></h2>
-      <p>Введите данные. При первом входе потребуется подтверждение Главного инженера.<br>
-      <small style="color:#64748b;">Должность «Главный инженер» может быть только у одного пользователя.</small></p>
-      <input type="text" id="loginName" placeholder="Ваше имя" autocomplete="off">
-      <input type="tel" id="loginPhone" placeholder="Телефон" autocomplete="off">
-      <select id="loginCategory">
-        <option value="">— выберите категорию —</option>
-        <option value="SPT">Специалист СПТ</option>
-        <option value="ITR">ИТР ЦТКРС</option>
-      </select>
-      <select id="loginRole" disabled>
-        <option value="">— загрузка должностей... —</option>
-      </select>
-      <button class="btn block" id="loginBtn">Войти</button>
-    </div>
-
-    <div id="mainWorkBlock" class="hidden">
-      <div class="top-bar" id="mainTopBar">
-        <div class="header-left">
-          <div class="user-profile">
-            <div class="user-avatar" id="userAvatar">?</div>
-            <div class="user-info">
-              <div class="user-name" id="userFullName">—</div>
-              <div class="user-meta">Тел: <strong id="userPhone">—</strong> · Служба: <strong id="userService">—</strong></div>
-              <div class="user-badge-role" id="userRoleBadge">—</div>
-            </div>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="stats-container" id="globalStatsBlock">
-            <div class="stats-row">
-              <div class="stat-badge total" title="Всего машин"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
-              <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе — нажмите, чтобы посмотреть список"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
-              <div class="stat-badge parts" id="badgePartsStat" title="Машин в ремонте — нажмите, чтобы посмотреть список"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
-              <div class="stat-badge bv" id="badgeBvStat" title="Машин без водителя — нажмите, чтобы посмотреть список"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
-            </div>
-            <div class="stats-row">
-              <div class="stat-badge total" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge off" id="badgeOffTime" title="Время в сходе — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge parts" id="badgePartsTime" title="Время в ремонте — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge bv" id="badgeBvTime" title="Время в БВ — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-            </div>
-          </div>
-          <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
-          
-          <button class="btn-notify pulse-red" id="notifyBtn" onclick="requestNotificationPermission()">🔔 Включить звук</button>
-
-          <button class="btn gray small" id="logoutBtn">Выйти</button>
-        </div>
-      </div>
-
-      <div id="blockedBanner" class="blocked-banner hidden">
-        <h2>⛔ Доступ заблокирован</h2>
-        <p id="blockedReasonText">Ваш аккаунт находится на проверке у Главного инженера.</p>
-        <p style="font-size:14px; color:#b91c1c; margin-bottom:0;">Действия будут доступны только после подтверждения.</p>
-      </div>
-
-      <div class="grid-wrapper" id="mainGrid"></div>
-    </div>
-  </div>
-
-  <!-- ===== ОТЧЕТЫ ===== -->
-  <div id="reportsView" class="hidden">
-    <h1>📊 Отчёт по технике СПТ</h1>
-    
-    <div class="report-tab-buttons">
-      <button class="report-tab-btn active" id="btnReportJournal">Журнал событий</button>
-      <button class="report-tab-btn" id="btnReportKpi">📈 KPI (Эффективность)</button>
-    </div>
-
-    <!-- Вкладка Журнала -->
-    <div id="reportJournalBlock">
-      <div class="card">
-        <div class="report-filters">
-          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="repDateFrom"><span>—</span><input type="date" id="repDateTo"></div></div>
-          <div class="filter-group"><label class="fld">Категория</label><select id="repCat"><option value="">Все</option></select></div>
-          <div class="filter-group"><label class="fld">Причина</label><select id="repCause"><option value="">Все</option></select></div>
-          <button class="btn" onclick="buildReport()">Сформировать</button>
-          <button class="btn green" onclick="exportExcel()">⬇ В Excel</button>
-        </div>
-        <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">Фильтр по статусу:</div>
-        <div class="status-filter-row" id="reportStatusFilters">
-          <button class="status-filter-btn active-all" data-status="" onclick="setReportStatus('')">Все</button>
-          <button class="status-filter-btn" data-status="line" onclick="setReportStatus('line')">🟢 На линии</button>
-          <button class="status-filter-btn" data-status="off" onclick="setReportStatus('off')">🟡 Сход</button>
-          <button class="status-filter-btn" data-status="parts" onclick="setReportStatus('parts')">🔴 Ож. ремонта</button>
-          <button class="status-filter-btn" data-status="bv" onclick="setReportStatus('bv')">⚪ БВ</button>
-        </div>
-      </div>
-      <div class="report-stats" id="reportStatsRow"></div>
-      <div id="reportContent"><p class="empty">Выберите период и нажмите «Сформировать».</p></div>
-      <div id="reportTotalRow" style="margin-top:15px; text-align:right; font-size:18px; font-weight:800; color:#1e293b; display:none;">
-        Общее время: <span id="reportTotalTime" style="color:#2563eb; font-family:monospace;">0 ч 0 м</span>
-      </div>
-    </div>
-
-    <!-- Вкладка KPI -->
-    <div id="reportKpiBlock" class="hidden">
-      <div class="card">
-        <div class="report-filters">
-          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период для KPI</label><div class="date-group"><input type="date" id="kpiDateFrom"><span>—</span><input type="date" id="kpiDateTo"></div></div>
-          <button class="btn purple" onclick="buildKpiReport()">Рассчитать KPI</button>
-        </div>
-        <p style="font-size:12px; color:#64748b;">KPI (Коэффициент полезного действия) показывает, какой процент времени машина находилась на линии (работала). Все простои (Сходы, Ремонты, БВ) учитываются как потеря времени.</p>
-      </div>
-      <div id="kpiContent"><p class="empty">Выберите период и нажмите «Рассчитать KPI».</p></div>
-    </div>
-  </div>
-
-  <!-- ===== АДМИН ===== -->
-  <div id="adminView" class="hidden">
-    <div id="adminLoginBlock" class="login-box">
-      <h2>Панель Главного инженера</h2>
-      <p>Введите секретный код доступа.</p>
-      <input type="password" id="adminCodeInput" placeholder="Код доступа" autocomplete="off">
-      <button class="btn block red" id="adminLoginBtn">Войти</button>
-    </div>
-    <div id="adminWorkBlock" class="hidden">
-      <div class="top-bar" style="background:#fef2f2; border-left-color:#dc2626;">
-        <h1 style="color:#991b1b;">Панель управления</h1>
-        <button class="btn gray small" id="logoutAdminBtn">Выйти</button>
-      </div>
-      <div class="sub-tabs">
-        <button class="sub-tab-btn active" id="adminTabUsers">👥 Пользователи</button>
-        <button class="sub-tab-btn" id="adminTabBuilder">🛠 Конструктор</button>
-      </div>
-      <div id="adminUsersBlock">
-        <div class="card"><h2>Реестр пользователей</h2>
-          <p style="color:#64748b; font-size:12px; margin-bottom:12px;">Главный инженер может быть только один. Все остальные должности — без ограничений.</p>
-          <div id="moderationList"></div>
-          <div class="danger-zone">
-            <h3>⚠️ Опасная зона</h3>
-            <p>Действия ниже необратимы.</p>
-            <button class="btn orange small" id="resetStatsBtn">🔄 Сбросить общие счётчики</button>
-            <button class="btn red small" id="cleanBrokenUsersBtn">🧹 Очистить битые аккаунты</button>
-            <button class="btn red small" id="deleteAllUsersBtn">🗑 Удалить ВСЕХ пользователей</button>
-          </div>
-        </div>
-      </div>
-      <div id="adminBuilderBlock" class="hidden">
-        <div class="builder-grid">
-          <div class="builder-card cats"><h3>🟢 Категории техники</h3><ul class="builder-list" id="builderCatsList"></ul><div class="builder-add-row"><input type="text" id="newCatName" placeholder="ЦА, ППУ..."><button class="btn green small" id="addCatBtn">+ Добавить</button></div></div>
-          <div class="builder-card machines"><h3>🟠 Машины</h3><ul class="builder-list" id="builderMachinesList"></ul><div class="builder-add-row"><input type="text" id="newMachineNum" placeholder="Номер"><input type="text" id="newMachineModel" placeholder="Модель"><select id="newMachineCat"></select><button class="btn orange small" id="addMachineBtn">+ Добавить</button></div></div>
-          <div class="builder-card roles"><h3>🟣 Должности</h3><ul class="builder-list" id="builderRolesList"></ul><div class="builder-add-row"><input type="text" id="newRoleName" placeholder="Название"><select id="newRoleCat"><option value="SPT">Специалист СПТ</option><option value="ITR">ИТР ЦТКРС</option></select><button class="btn purple small" id="addRoleBtn">+ Добавить</button></div></div>
-          <div class="builder-card causes"><h3>🔴 Причины</h3><ul class="builder-list" id="builderCausesList"></ul><div class="builder-add-row"><input type="text" id="newCauseName" placeholder="ДВС, КПП"><button class="btn red small" id="addCauseBtn">+ Добавить</button></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКИ -->
-<div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div class="log-filter-row"><label style="margin:0; font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto; font-weight:800; color:#1e293b;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
-
-<div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail" placeholder="Например: течь масла..."></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
-
-<div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
-
-<div class="modal-overlay hidden" id="editMachineModal">
-  <div class="modal">
-    <h3>Редактировать машину</h3>
-    <input type="hidden" id="editMachineId">
-    <label>Госномер</label>
-    <input type="text" id="editMachineNum" placeholder="А123ВС186">
-    <label style="margin-top:10px;">Модель</label>
-    <input type="text" id="editMachineModel" placeholder="Урал">
-    <label style="margin-top:10px;">Категория</label>
-    <select id="editMachineCat"></select>
-    <div class="modal-actions">
-      <button class="btn-modal gray" onclick="closeModal('editMachineModal')">Отмена</button>
-      <button class="btn-modal green" onclick="saveEditedMachine()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="addMachineModal">
-  <div class="modal">
-    <h3>Добавить машину</h3>
-    <p id="addMachineAuthText">Введите код администратора для добавления машины.</p>
-    <input type="password" id="addMachineCode" placeholder="Код доступа" style="margin-bottom:10px;">
-    <div id="addMachineFields" class="hidden">
-      <label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186">
-      <label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал">
-      <label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Иванов И.И.">
-      <label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Петров П.П.">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button>
-      <button class="btn-modal green" id="addMachineConfirmBtn" onclick="confirmAddMachineAuth()">Далее</button>
-      <button class="btn-modal green hidden" id="addMachineSaveBtn" onclick="addNewMachine()">Добавить</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="usersCodeModal"><div class="modal"><h3>Подтверждение действия</h3><p>Введите код Главного инженера.</p><input type="password" id="usersCodeInput"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('usersCodeModal')">Отмена</button><button class="btn-modal red" id="confirmUsersCodeBtn">Подтвердить</button></div></div></div>
-
-<div class="modal-overlay hidden" id="chiefEngineerRegModal"><div class="modal"><h3>Регистрация Главного инженера</h3><p>Введите код Главного инженера.</p><input type="password" id="chiefEngineerRegCode"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('chiefEngineerRegModal')">Отмена</button><button class="btn-modal red" id="confirmChiefEngineerRegBtn">Подтвердить</button></div></div></div>
-
-<!-- Модалка списка машин по статусу -->
-<div class="modal-overlay hidden" id="statusListModal">
-  <div class="modal wide">
-    <h3 id="statusListTitle">Машины</h3>
-    <p id="statusListSub">Список машин в выбранном статусе.</p>
-    <div id="statusListContent"></div>
-    <div class="modal-actions">
-      <button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, push, set, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -649,8 +17,8 @@
 
   const ADMIN_CODE = 'admin2483';
   const USERS_CODE = '1104';
-  const CHIEF_ENGINEER_CODE = '1234'; 
-  const ADD_MACHINE_CODE = '1234';    
+  const CHIEF_ENGINEER_CODE = '1234';
+  const ADD_MACHINE_CODE = '1234';
   const CHIEF_ROLE_NAME = 'Главный инженер';
 
   const DEFAULT_CATS = {
@@ -675,15 +43,196 @@
     'r8': { id: 'r8', name: 'Зам. Исполнительного директора', cat: 'ITR' }
   };
 
-  let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {};
+  const DEFAULT_DRIVERS_RAW = `Оздоев Магомед Алиханович|Моторист ЦА-320|90919
+Подавалов Евгений Иванович|Моторист ЦА-320|77666
+Парчиев Ислам Магомедович|Моторист ЦА-320|93661
+Шакиров Ахмадулла Асадуллаевич|Моторист ЦА-320|96152
+Шахидов Хусейн Магомедович|Моторист ЦА-320|86773
+Бадуев Магомед Хусейнович|Моторист ЦА-320|96764
+Мартецкий Владимир Евгеньевич|Моторист ЦА-320|97990
+Баталов Владимир Федорович|Моторист ЦА-320|97989
+Икрамов Жасурбек Хосилбекович|Моторист ЦА-320|97938
+Абдурахманов Хуснидин Хусанбаевич|Моторист ЦА-320|96918
+Хабиров Айгиз Габделахатович|Моторист ЦА-320|83727
+Мухамедьяров Марсель|Моторист ЦА-320|
+Коригов Акрамат Бекханович|Моторист ЦА-320|85568
+Алиев Амир Борисович|Моторист ЦА-320|93679
+Тариев Алик Русланович|Моторист ЦА-320|93423
+Алимагомедов Юсуп Абдулжалилович|Моторист ЦА-320|83069
+Мальсагов Ибрагим Муссаевич|Моторист ЦА-320|92292
+Хаштыров Амирхан Мусиевич|Моторист ЦА-320|83457
+Насиров Зуфар Мурзагалиевич|Моторист ЦА-320|78831
+Камалов Фадис Фирдависович|Моторист ЦА-320|82421
+Мальсагов Махмуд Русланович|Моторист ЦА-320|88179
+Сафаргалин Айрат Сибагатуллович|Моторист ЦА-320|96918
+Алимов Ойбек Зайнабудинович|Моторист ЦА-320 без права управления|96155
+Сайдахмедов Хайрулло Жабборович|Моторист ЦА-320 без права управления|95791
+Сайдулаев Дилшод Сойдолимович|Моторист ЦА-320 без права управления|94917
+Абдувалиев Шерзодбек Мирзажанович|Моторист ЦА-320 без права управления|96221
+Апаев Зильбухар Магомедович|Моторист ЦА-320 без права управления|95795
+Касумов Тамерлан Абдурахманович|Водитель АЦН|97870
+Умархажиев Аслан Исанович|Водитель НЗАС+ АЦН|96766
+Ташуев Шамиль Саид-Магамедович|Водитель АЦН|95635
+Джигеров Расим Бейдулахович|Водитель АЦН|98808
+Рамазанов Рамазан Вахидович|Водитель АЦН|92366
+Нальгиев Зелимхан Магометович|Водитель АЦН|88616
+Яхьяев Хасан Ахмадович|Водитель с/свала+ АЦН|91349
+Магомедов Казим Камилович|Водитель АЦН|91961
+Меджидов Заурбек Шарабутдинович|Водитель АЦН|91346
+Гасанов Виджай Рагимович|Водитель АЦН|84291
+Мальсагов Магомед Абдрахманович|Моторист ЦА-320 без права управления|97868
+Муслимов Тунар Азадович|Водитель АЦН|96596
+Ишмухаметов Айгиз Ильшатович|Водитель АЦН|97905
+Галиакберов Газизьян Фаритович|Водитель АЦН|97906
+Аскеров Темур Айдынович|Водитель АЦН|96232
+Албогачиев Исмаил Русланович|Водитель АЦН|96953
+Лейман Николай Николаевич|Водитель АЦН|98369
+Султыгов Ислам Алиханович|Водитель АЦН|95746
+Чуркин Вадим Александрович|Водитель АЦН|98921
+Моминов Расулжан|Водитель АЦН|95726
+Юнусов Магомед-Эми Алиевич|Водитель АЦН|95758
+Фахрутдинов Ризван Маннурович|Водитель АЦН|98857
+Эшбоев Нодирбек|Водитель АЦН|95600
+Лящук Александр Юрьевич|Водитель АЦН (вода)|88773
+Журавлев Виктор Владимирович|Водитель АЦН (вода)|91371
+Бородин Николай Анатольевич|Водитель АЦН (вода)|87125
+Гордиенко Иван Сергеевич|Водитель АЦН (вода)|93582
+Стругов Александр Валентинович|Водитель АЦН (вода)|93696
+Кузнецов Григорий Андреевич|Водитель АЦН (вода)|80086
+Романов Эрик Александрович|Водитель АЦН (вода)|94569
+Аверьянов Дмитрий Евгеньевич|Машинист ППДУ|96854
+Горда Александр Николаевич|Машинист ППДУ|94541
+Казимагомедов Рамис Магомедрасулович|Машинист ППДУ|88386
+Абдуразаков Шамиль Зулумханович|Машинист ППДУ|86719
+Ураимов Диёрбек Бахтиёр угли|Машинист ППДУ|96790
+Абдуманнопов Сирожиддин Хусанбоевич|Машинист ППДУ|96935
+Арцер Андрей Андреевич|Машинист ППДУ|95166
+Рафиков Нияз Фарвазович|Водитель НЗАС|96707
+Фахрутдинов Маннур Сагирович|Водитель НЗАС|86121
+Черняк Юрий Витальевич|Водитель НЗАС|98900
+Антонов Валерий Петрович|Водитель НЗАС|93651
+Бикбулатов Наиль Талготович|Водитель НЗАС|96294
+Танаев Вечеслав Петрович|Водитель НЗАС|97929
+Окуев Руслан Вахаевич|Водитель с/тягача|92346
+Алексеев Андрей Викторович|Водитель с/тягача|95699
+Балакишиев Мустафа Айдунович|Водитель с/тягача|87093
+Коневский Олег Николаевич|Водитель с/тягача|78260
+Тагильцев Александр Дмитриевич|Водитель с/тягача|86191
+Уруджев Руслан Бахадинович|Водитель с/тягача|82366
+Солтаев Идрис Ризванович|Водитель с/тягача|89638
+Шатний Алексей Анатольевич|Водитель с/тягача|73428
+Гимбатов Петр Степанович|Водитель с/тягача|80766
+Заматханов Руслан Лемаевич|Водитель с/тягача-с/свала|89270
+Генжалиев Рамил Сеферетдинович|Водитель с/тягача|87816
+Евлоев Магомед-Башир Тагирович|Водитель с/тягача|91955
+Кутеров Алексей Николаевич|Водитель с/тягача|98827
+Кутерев Сергей Александрович|Водитель с/тягача|98879
+Варворкин Андрей Георгиевич|Водитель с/тягача|98378
+Мурсалов Анварбег Мамыгагович|Водитель с/тягача|95730
+Иванов Сергей Павлович|Водитель с/тягача|79379
+Литенков Юрий Петрович|Водитель с/тягача|83736
+Чикунов Олег Николаевич|Водитель с/тягача|96821
+Поляков Сергей Александрович|Водитель с/тягача|98386
+Казарезов Сергей Александрович|Водитель с/тягача|83881
+Ашуров Курбан Шихсалахович|Водитель с/тягача|83311
+Абдулвагабов Иса Дациевич|Водитель с/тягача|96839
+Марзиев Муса Хусенович|Водитель с/тягача- с/свала|94524
+Мусаев Идрис Султанович|Водитель с/тягача|90931
+Абдуразаков Рамзан Солтанович|Водитель с/свала|95644
+Бийсултанов Анзор Самаилович|Водитель с/свала|95747
+Азадов Темирлан Чингизович|Водитель с/свала|93992
+Амирханов Умар Амирханович|Водитель с/свала|90900
+Умаров Ислам Ильясович|Водитель с/свала|94040
+Оздарбиев Валид Султанович|Водитель с/свала|96794
+Аларханов Магомед-Эми Халадьевич|Водитель с/свала|96795
+Мусаев Майрудин Исанович|Водитель с/свала|95172
+Уматов Ислам Русланович|Водитель с/свала|
+Багатыров Каирбек Халидович|Водитель с/свала|98698
+Рутигов Юсуп Лом-Алиевич|Водитель с/свала|93162
+Виситов Сулиман Султанович|Водитель с/свала|93982
+Рабадангаджиев Рашид Магомедсаламович|Водитель с/свала|93445
+Галиакберов Ильмир Рахимьянович|Водитель с/свала|79168
+Обухов Михаил Александрович|Машинист А/крана|92365
+Алиев Мурад Борисович|Машинист А/крана|89199
+Павлов Дмитрий Сергеевич|Машинист А/крана|73558
+Абдулгалимов Икрам Абдулгалимович|Машинист А/крана|84012
+Резник Иван Иванович|Машинист А/крана|87503
+Борняков Максим Леонидович|Машинист А/крана|94528
+Антонов Дмитрий Викторович|Машинист А/крана|88150
+Ивлев Сергей Александрович|Машинист А/крана|83778
+Сулейманов Им-Али Маирбекович|Машинист А/крана|86712
+Камбаров Отабек Абдуманнабович|Машинист А/крана|84312
+Телятников Николай Алексеевич|Машинист А/крана|95044
+Ибрагимов Турпал Имампашаевич|Машинист А/крана|98368
+Байрамгулов Фаиль Фанилевич|Машинист А/крана|96589
+Кобелев Дмитрий Владимирович|Машинист А/крана|95652
+Абдурахманов Муроджон Мамирович|Машинист А/крана|83581
+Сулайманов Алишер Махамаджонович|Машинист А/крана|96283
+Гайбулатов Ильман Ибрагимович|Машинист А/крана|98895
+Аманов Фарход Бахтиёржонович|Машинист А/крана|83776
+Худайбердиев Аброрбек|Машинист А/крана|92210
+Пайзулаев Сиражди Вахаевич|Машинист АКН|94009
+Барыкин Павел Сергеевич|Машинист АКН|92847
+Салгириев Усман Мусалимович|Машинист АКН|88146
+Салгириев Усман Мусалимович|Водитель НЗАС+АКН|88146
+Шкоян Армен Ашотович|Машинист ППДУ|95597
+Жилев Иван Александрович|Машинист АКН|96260
+Денисултанов Мовлет Исамутдинович|Машинист АКН|94016
+Генжалиев Раил Сеферетдинович|Машинист АКН|87397
+Обухов Александр Павлович|Машинист КМУ|89637
+Поманисочко Андрей Викторович|Машинист КМУ|96808
+Муйдинжонов Мамурбек Махаматсоли угли|Машинист КМУ|97895
+Романов Иван Сергеевич|Машинист КМУ|98856
+Полников Александр Викторович|Машинист КМУ|89678
+Голублев Сергей Валерьевич|Водитель АТЗ|80490
+Васильев Евгений Юрьевич|Водитель АТЗ|80925
+Астафьев Сергей|Водитель АТЗ|95104
+Глазков Петр Михайлович|Водитель АТЗ|87489
+Бодров Кирил|Водитель АТЗ|94595
+Тайсумов Турпал-Али Хабибулович|Водитель погруз 6 разряда|95121
+Попов Александр Николаевич|Водитель погруз 6 разряда|72069
+Алексеев Александр Алексеевич|Водитель погруз 6 разряда|87132
+Сулейманов Зелимхан Майрбекович|Водитель погруз 6 разряда|90862
+Сулейманов Али Майрбекович|Водитель погруз 6 разряда|93668
+Дадаев Ибрагим Аднанович|Водитель погруз 6 разряда|95762
+Кокарев Алексей Николаевич|Водитель погруз 6 разряда|95692
+Миронов Алексей Вячеславович|Водитель погруз 6 разряда|96853
+Чижов Максим Борисович|Водитель УАЗ грузовой|97853
+Хасбулатов Абдурахман Расулович|Водитель АЦН|97951
+Абдуразаков Артур Рамзанович|Водитель АЦН|96837
+Бекбузаров Батыр Яхьяевич|Водитель УАЗ грузовой|97932
+Магомедов Гусен Шарабутдинович|Водитель УАЗ грузовой|97927
+Мурсалов Мариф Мурсалович|Водитель УАЗ грузовой|96718
+Косеньков Кирилл Владиславович|Водитель УАЗ грузовой|95705
+Шовхалов Турпал-Али Русланович|Водитель УАЗ грузовой|
+Озиев Ада Умарович|Водитель УАЗ грузовой|96897
+Фролов Сергей Алексеевич|Водитель УАЗ грузовой|
+Чоюнбаев Азиз|Водитель УАЗ грузовой|98868
+Соловых Иван Максимович|Водитель УАЗ грузовой|98484
+Абдуразаков Ахмед Алавдинович|Водитель УАЗ грузовой|97924
+Магомадов Муса Умарович|Водитель с/свала|89081
+Батукаев Юсуп Аликович|Водитель УАЗ грузовой|`;
+
+  function buildDefaultDrivers() {
+    const out = {};
+    DEFAULT_DRIVERS_RAW.split('\n').forEach((line, i) => {
+      const parts = line.split('|');
+      if (!parts[0] || !parts[0].trim()) return;
+      const id = 'drv_' + (i + 1);
+      out[id] = { id, name: parts[0].trim(), position: (parts[1] || '').trim(), tabNum: (parts[2] || '').trim() };
+    });
+    return out;
+  }
+  const DEFAULT_DRIVERS = buildDefaultDrivers();
+
+  let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {}, DRIVERS = {};
   let monthlyStats = {}, eventLog = {};
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false, currentRowId = null, currentStatusType = null, editingRowId = null, currentCatForAdd = null;
   let pendingUserAction = null, pendingChiefEngineerReg = null;
   const activeTimers = {};
   let currentLogType = 'total', reportStatusFilter = '', isDataReady = false;
-  
-  let alertedMachineIds = {}; // ID машин, по которым уже отправлен пуш о долгом СХОДЕ
+  let alertedMachineIds = {};
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -699,271 +248,278 @@
   function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
 
   // ============================================================
+  // АВТОКОМПЛИТ ВОДИТЕЛЕЙ — ТОЛЬКО ФИО
+  // ============================================================
+  function driverSearch(query) {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return [];
+    return Object.values(DRIVERS)
+      .filter(d => d && d.name && d.name.toLowerCase().includes(q))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+      .slice(0, 12);
+  }
+  function canonicalDriverName(input) {
+    const raw = String(input.value || '').trim();
+    if (!raw) return '';
+    const exact = Object.values(DRIVERS).find(d => d.name.toLowerCase() === raw.toLowerCase());
+    if (exact) return exact.name;
+    const pref = driverSearch(raw);
+    return pref.length ? pref[0].name : raw;
+  }
+  function attachDriverAutocomplete(input) {
+    if (!input || input.dataset.acBound) return;
+    input.dataset.acBound = '1';
+    input.setAttribute('autocomplete', 'off');
+    const wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    const list = document.createElement('div');
+    list.className = 'ac-list';
+    list.style.cssText = 'display:none; position:absolute; top:100%; left:0; right:0; z-index:2000; background:#fff; border:2px solid #2563eb; border-radius:6px; max-height:240px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,.2); margin-top:2px;';
+    wrap.appendChild(list);
+    let activeIdx = -1;
+    function renderList() {
+      const items = driverSearch(input.value);
+      if (!items.length) { list.style.display = 'none'; list.innerHTML = ''; activeIdx = -1; return; }
+      list.innerHTML = items.map((d, i) =>
+        `<div class="ac-item" data-idx="${i}" data-name="${esc(d.name)}" style="padding:8px 10px; cursor:pointer; font-size:13px; border-bottom:1px solid #e2e8f0; ${i === activeIdx ? 'background:#dbeafe;' : ''}">${esc(d.name)}</div>`
+      ).join('');
+      list.style.display = 'block';
+      list.querySelectorAll('.ac-item').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          input.value = el.dataset.name;
+          list.style.display = 'none';
+          activeIdx = -1;
+          input.dispatchEvent(new Event('change'));
+        });
+      });
+    }
+    input.addEventListener('input', () => { activeIdx = -1; renderList(); });
+    input.addEventListener('focus', () => { if (input.value.trim()) renderList(); });
+    input.addEventListener('blur', () => {
+      setTimeout(() => { list.style.display = 'none'; }, 150);
+      const canon = canonicalDriverName(input);
+      if (canon && canon !== input.value) input.value = canon;
+    });
+    input.addEventListener('keydown', (e) => {
+      const items = list.querySelectorAll('.ac-item');
+      if (list.style.display === 'none' || !items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); renderList(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); renderList(); }
+      else if (e.key === 'Enter') { if (activeIdx >= 0) { e.preventDefault(); input.value = items[activeIdx].dataset.name; list.style.display = 'none'; activeIdx = -1; } }
+      else if (e.key === 'Escape') { list.style.display = 'none'; activeIdx = -1; }
+    });
+  }
+
+  // ============================================================
+  // ПРОВЕРКА КОНФЛИКТОВ ВОДИТЕЛЕЙ
+  // Водитель не может быть на двух РАЗНЫХ машинах в ОДНУ смену,
+  // если обе машины активны (line). Машины в off/parts/bv не блокируют.
+  // Один водитель в driver1 и driver2 одной машины — запрещено.
+  // ============================================================
+  function findShiftConflict(driverName, shiftField, excludeMachineId) {
+    const name = String(driverName || '').trim().toLowerCase();
+    if (!name) return null;
+    for (const [id, m] of Object.entries(MACHINES)) {
+      if (id === excludeMachineId) continue;
+      const otherDriver = String(m[shiftField] || '').trim().toLowerCase();
+      if (otherDriver !== name) continue;
+      const st = m.lastStatus || 'line';
+      // Блокирует только если та машина реально работает (line)
+      if (st === 'line') return { machine: m, field: shiftField };
+    }
+    return null;
+  }
+
+  function checkDriverConflicts(driver1, driver2, excludeMachineId) {
+    const conflicts = [];
+    const d1 = String(driver1 || '').trim();
+    const d2 = String(driver2 || '').trim();
+    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) {
+      conflicts.push({ name: d1, reason: 'указан в обеих сменах на одной машине' });
+      return conflicts;
+    }
+    if (d1) {
+      const c = findShiftConflict(d1, 'driver1', excludeMachineId);
+      if (c) conflicts.push({ name: d1, machine: `${c.machine.num} ${c.machine.model || ''}`, shift: '1-я смена' });
+    }
+    if (d2) {
+      const c = findShiftConflict(d2, 'driver2', excludeMachineId);
+      if (c) conflicts.push({ name: d2, machine: `${c.machine.num} ${c.machine.model || ''}`, shift: '2-я смена' });
+    }
+    return conflicts;
+  }
+
+  // При пересадке водителя — стираем его из других машин в ТОЙ ЖЕ смене,
+  // если та машина в статусе off (сход). Машина остаётся в off.
+  async function clearDriverFromSameShift(driverName, shiftField, excludeMachineId) {
+    const name = String(driverName || '').trim().toLowerCase();
+    if (!name) return;
+    for (const [id, m] of Object.entries(MACHINES)) {
+      if (id === excludeMachineId) continue;
+      const otherDriver = String(m[shiftField] || '').trim().toLowerCase();
+      if (otherDriver !== name) continue;
+      const st = m.lastStatus || 'line';
+      if (st === 'off') {
+        await update(ref(db, `machines/${id}/${shiftField}`), '');
+        MACHINES[id][shiftField] = '';
+      }
+    }
+  }
+
+  // ============================================================
   // УВЕДОМЛЕНИЯ
   // ============================================================
   let audioCtx = null;
   let lastMachineStatuses = {};
   const notifyBtn = $('notifyBtn');
-
   function updateNotifyButtonState() {
-    if (!("Notification" in window)) {
-      notifyBtn.textContent = '🔕 Не поддерживается';
-      notifyBtn.className = 'btn-notify denied';
-      notifyBtn.disabled = true;
-      return;
-    }
-    
-    if (Notification.permission === 'granted') {
-      notifyBtn.textContent = '🔔 Звук вкл';
-      notifyBtn.className = 'btn-notify enabled';
-    } else if (Notification.permission === 'denied') {
-      notifyBtn.textContent = '🔕 Заблокировано';
-      notifyBtn.className = 'btn-notify denied';
-      notifyBtn.title = 'Разрешите уведомления в настройках браузера';
-    } else {
-      notifyBtn.textContent = '🔔 Включить звук';
-      notifyBtn.className = 'btn-notify pulse-red';
-    }
+    if (!("Notification" in window)) { notifyBtn.textContent = '🔕 Не поддерживается'; notifyBtn.className = 'btn-notify denied'; notifyBtn.disabled = true; return; }
+    if (Notification.permission === 'granted') { notifyBtn.textContent = '🔔 Звук вкл'; notifyBtn.className = 'btn-notify enabled'; }
+    else if (Notification.permission === 'denied') { notifyBtn.textContent = '🔕 Заблокировано'; notifyBtn.className = 'btn-notify denied'; notifyBtn.title = 'Разрешите уведомления в настройках браузера'; }
+    else { notifyBtn.textContent = '🔔 Включить звук'; notifyBtn.className = 'btn-notify pulse-red'; }
   }
-
   function playNotificationSound() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+    osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
     gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.5);
-    
+    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
     setTimeout(() => {
-        const osc2 = audioCtx.createOscillator();
-        const gainNode2 = audioCtx.createGain();
-        osc2.connect(gainNode2);
-        gainNode2.connect(audioCtx.destination);
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1100, audioCtx.currentTime); 
-        gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc2.start();
-        osc2.stop(audioCtx.currentTime + 0.5);
+      const osc2 = audioCtx.createOscillator(); const gainNode2 = audioCtx.createGain();
+      osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
+      osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime);
+      gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc2.start(); osc2.stop(audioCtx.currentTime + 0.5);
     }, 600);
   }
-
   window.requestNotificationPermission = function() {
-    if (!("Notification" in window)) {
-      showToast("Ваш браузер не поддерживает уведомления", true);
-      return;
-    }
-    
-    if (Notification.permission === 'granted') {
-      playNotificationSound();
-      showToast('Звук уведомлений активирован');
-      return;
-    }
-
+    if (!("Notification" in window)) { showToast("Ваш браузер не поддерживает уведомления", true); return; }
+    if (Notification.permission === 'granted') { playNotificationSound(); showToast('Звук уведомлений активирован'); return; }
     Notification.requestPermission().then(permission => {
       updateNotifyButtonState();
-      if (permission === 'granted') {
-        showToast('Уведомления включены!');
-        playNotificationSound(); 
-      } else {
-        showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
-      }
+      if (permission === 'granted') { showToast('Уведомления включены!'); playNotificationSound(); }
+      else showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
     });
   };
-
   function showPushNotification(title, body) {
     if (Notification.permission === 'granted') {
-      const options = {
-        body: body,
-        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>',
-        vibrate: [200, 100, 200, 100, 200]
-      };
-      new Notification(title, options);
+      new Notification(title, { body, icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>', vibrate: [200,100,200,100,200] });
     }
   }
-
-  // Пуш о НОВОМ СХОДЕ (только off)
   function checkForNewOffStatus(machinesData) {
     if (!isDataReady || Notification.permission !== 'granted') return;
-    
-    if (Object.keys(lastMachineStatuses).length === 0) {
-      for (const [id, m] of Object.entries(machinesData)) {
-        lastMachineStatuses[id] = m.lastStatus;
-      }
-      return;
-    }
-
-    let hasNewOff = false;
-    let notificationMessage = "";
-
+    if (Object.keys(lastMachineStatuses).length === 0) { for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus; return; }
+    let hasNewOff = false; let notificationMessage = "";
     for (const [id, m] of Object.entries(machinesData)) {
-      const prevStatus = lastMachineStatuses[id];
-      const currStatus = m.lastStatus;
-
-      if (currStatus === 'off' && prevStatus !== 'off') {
-        hasNewOff = true;
-        notificationMessage += `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'}). `;
-      }
+      const prevStatus = lastMachineStatuses[id]; const currStatus = m.lastStatus;
+      if (currStatus === 'off' && prevStatus !== 'off') { hasNewOff = true; notificationMessage += `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'}). `; }
       lastMachineStatuses[id] = currStatus;
     }
-
-    if (hasNewOff) {
-      playNotificationSound();
-      showPushNotification('⚠️ ВНИМАНИЕ: Новый сход!', notificationMessage);
-    }
+    if (hasNewOff) { playNotificationSound(); showPushNotification('⚠️ ВНИМАНИЕ: Новый сход!', notificationMessage); }
   }
-
-  // Пуш о ДОЛГОМ СХОДЕ (только off). Для ремонта (parts) сигналов нет.
   function checkForLongDowntime(machinesData) {
     if (!isDataReady) return;
-    
     const TWO_HOURS = 2 * 60 * 60 * 1000;
-
     for (const [id, m] of Object.entries(machinesData)) {
       if (m.lastStatus === 'off' && m.lastTime) {
         const elapsed = Date.now() - m.lastTime;
-        
         if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
           playNotificationSound();
           showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} стоит в сходе уже более 2 часов! (${m.lastCause || 'Без причины'})`);
           alertedMachineIds[id] = true;
         }
-      } else {
-        if (alertedMachineIds[id]) {
-          delete alertedMachineIds[id];
-        }
-      }
+      } else { if (alertedMachineIds[id]) delete alertedMachineIds[id]; }
     }
   }
-
   updateNotifyButtonState();
 
-  // ============================================================
-  // АВТО-РАССТАНОВКА ПО ВОДИТЕЛЯМ
-  // ============================================================
   function enforceStatusRules() {
     if (!isDataReady || !loggedUser.name || loggedUser.status !== 'approved') return;
-    
     const { isShift1 } = getShiftInfo();
     let changesMade = false;
-
     for (const [id, m] of Object.entries(MACHINES)) {
       if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         const hasDriver = activeDriver && activeDriver.trim() !== '';
         let needsUpdate = false;
-
-        if (!hasDriver && m.lastStatus !== 'bv') {
-          m.lastStatus = 'bv';
-          m.author = 'БВ: ' + loggedUser.name;
-          m.lastTime = Date.now();
-          needsUpdate = true;
-        } else if (hasDriver && m.lastStatus === 'bv') {
-          m.lastStatus = 'line';
-          m.author = 'На линии: ' + loggedUser.name;
-          m.lastTime = 0;
-          needsUpdate = true;
-        }
-
-        if (needsUpdate) {
-          update(ref(db, 'machines/' + id), m).catch(console.error);
-          changesMade = true;
-        }
+        if (!hasDriver && m.lastStatus !== 'bv') { m.lastStatus = 'bv'; m.author = 'БВ: ' + loggedUser.name; m.lastTime = Date.now(); needsUpdate = true; }
+        else if (hasDriver && m.lastStatus === 'bv') { m.lastStatus = 'line'; m.author = 'На линии: ' + loggedUser.name; m.lastTime = 0; needsUpdate = true; }
+        if (needsUpdate) { update(ref(db, 'machines/' + id), m).catch(console.error); changesMade = true; }
       }
     }
-
-    if (changesMade) { renderMainGrid(); }
+    if (changesMade) renderMainGrid();
   }
-
   setInterval(enforceStatusRules, 60000);
 
   // ============================================================
   // СИНХРОНИЗАЦИЯ
   // ============================================================
   onValue(ref(db, 'cats'), snap => { CATS = snap.val() || {}; if(Object.keys(CATS).length === 0) { CATS = DEFAULT_CATS; set(ref(db, 'cats'), CATS); } checkDataReady(); });
-  
-  onValue(ref(db, 'machines'), snap => { 
-    MACHINES = snap.val() || {}; 
-    checkDataReady(); 
-    enforceStatusRules(); 
-    updateTopCounters(); 
-    checkForNewOffStatus(MACHINES); 
-    checkForLongDowntime(MACHINES);
-  });
-  
+  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || {}; checkDataReady(); enforceStatusRules(); updateTopCounters(); checkForNewOffStatus(MACHINES); checkForLongDowntime(MACHINES); });
   onValue(ref(db, 'roles'), snap => {
     ROLES = snap.val() || {};
     const existingNames = new Set(Object.values(ROLES).map(r => r && r.name).filter(Boolean));
-    Object.values(DEFAULT_ROLES).forEach(defRole => {
-      if (!existingNames.has(defRole.name)) {
-        const newRoleId = newId('role');
-        ROLES[newRoleId] = { id: newRoleId, name: defRole.name, cat: defRole.cat };
-        set(ref(db, 'roles/' + newRoleId), ROLES[newRoleId]);
-      }
-    });
+    Object.values(DEFAULT_ROLES).forEach(defRole => { if (!existingNames.has(defRole.name)) { const newRoleId = newId('role'); ROLES[newRoleId] = { id: newRoleId, name: defRole.name, cat: defRole.cat }; set(ref(db, 'roles/' + newRoleId), ROLES[newRoleId]); } });
     Object.entries(ROLES).forEach(([key, r]) => { if (r && (!r.id || r.id !== key)) update(ref(db, 'roles/' + key), { id: key }); });
-    updateRoleSelect();
+    updateRoleSelect(); checkDataReady();
+  });
+  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || {}; if(Object.keys(CAUSES).length === 0) { CAUSES = DEFAULT_CAUSES; set(ref(db, 'causes'), CAUSES); } checkDataReady(); });
+
+  onValue(ref(db, 'drivers'), snap => {
+    DRIVERS = snap.val() || {};
+    if (Object.keys(DRIVERS).length === 0) {
+      DRIVERS = JSON.parse(JSON.stringify(DEFAULT_DRIVERS));
+      set(ref(db, 'drivers'), DRIVERS).catch(console.error);
+    } else {
+      const existingTabs = new Set(Object.values(DRIVERS).map(d => d && d.tabNum).filter(Boolean));
+      const existingNames = new Set(Object.values(DRIVERS).map(d => d && d.name).filter(Boolean));
+      Object.values(DEFAULT_DRIVERS).forEach(d => {
+        if (!d) return;
+        const duplicate = (d.tabNum && existingTabs.has(d.tabNum)) || (!d.tabNum && existingNames.has(d.name));
+        if (!duplicate) { const id = newId('drv'); DRIVERS[id] = { ...d, id }; set(ref(db, 'drivers/' + id), DRIVERS[id]); }
+      });
+    }
     checkDataReady();
+    if (isAdminLoggedIn) renderAdmin();
+    renderDriversTab();
   });
 
-  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || {}; if(Object.keys(CAUSES).length === 0) { CAUSES = DEFAULT_CAUSES; set(ref(db, 'causes'), CAUSES); } checkDataReady(); });
-  
   onValue(ref(db, 'users'), snap => {
     USERS = snap.val() || {};
     if (loggedUser.name && loggedUser.phone) {
       const norm = normPhone(loggedUser.phone);
       const entry = Object.entries(USERS).find(([k,u]) => u && normPhone(u.phone) === norm);
       if (entry) {
-        const [key, u] = entry;
-        let currentStatus = u.status || 'pending';
-        if (loggedUser.roleName === CHIEF_ROLE_NAME) {
-          currentStatus = 'approved';
-          if (u.status !== 'approved') update(ref(db, 'users/' + key), { status: 'approved' }).catch(()=>{});
-        }
+        const [key, u] = entry; let currentStatus = u.status || 'pending';
+        if (loggedUser.roleName === CHIEF_ROLE_NAME) { currentStatus = 'approved'; if (u.status !== 'approved') update(ref(db, 'users/' + key), { status: 'approved' }).catch(()=>{}); }
         loggedUser.status = currentStatus;
         if (!u.id) update(ref(db, 'users/' + key), { id: key }).catch(()=>{});
-      } else {
-        loggedUser.status = 'deleted';
-      }
+      } else loggedUser.status = 'deleted';
     }
-    checkDataReady();
-    if (loggedUser.name) enforceBlockState();
+    checkDataReady(); if (loggedUser.name) enforceBlockState();
   });
-
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || {}; checkDataReady(); });
 
   function enforceBlockState() {
-    const blockBanner = $('blockedBanner');
-    const grid = $('mainGrid');
+    const blockBanner = $('blockedBanner'); const grid = $('mainGrid');
     const isBlocked = loggedUser.status !== 'approved';
     if (isBlocked) {
-      blockBanner.classList.remove('hidden');
-      if (grid) grid.classList.add('hidden');
-      if (loggedUser.status === 'rejected') { $('blockedReasonText').textContent = 'Ваш аккаунт отклонён Главным инженером.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ отклонён'; } 
-      else if (loggedUser.status === 'deleted') { $('blockedReasonText').textContent = 'Ваш аккаунт был удалён из системы.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Аккаунт удалён'; } 
+      blockBanner.classList.remove('hidden'); if (grid) grid.classList.add('hidden');
+      if (loggedUser.status === 'rejected') { $('blockedReasonText').textContent = 'Ваш аккаунт отклонён Главным инженером.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ отклонён'; }
+      else if (loggedUser.status === 'deleted') { $('blockedReasonText').textContent = 'Ваш аккаунт был удалён из системы.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Аккаунт удалён'; }
       else { $('blockedReasonText').textContent = 'Ваш аккаунт находится на проверке у Главного инженера.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ заблокирован'; }
       document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
       for (let key in activeTimers) clearInterval(activeTimers[key]);
-    } else {
-      blockBanner.classList.add('hidden');
-      if (grid) grid.classList.remove('hidden');
-    }
+    } else { blockBanner.classList.add('hidden'); if (grid) grid.classList.remove('hidden'); }
   }
-
   function checkDataReady() {
     if (!isDataReady) {
       isDataReady = true;
@@ -973,114 +529,53 @@
     if (isAdminLoggedIn) renderAdmin();
   }
 
-  // ============================================================
-  // СВОДНЫЕ СЧЕТЧИКИ СВЕРХУ
-  // ============================================================
   function updateTopCounters() {
     if (!isDataReady) return;
     let countOff = 0, countParts = 0, countBv = 0, countTotal = 0;
-    
-    for (const m of Object.values(MACHINES)) {
-      countTotal++;
-      if (m.lastStatus === 'off') countOff++;
-      if (m.lastStatus === 'parts') countParts++;
-      if (m.lastStatus === 'bv') countBv++;
-    }
-
+    for (const m of Object.values(MACHINES)) { countTotal++; if (m.lastStatus === 'off') countOff++; if (m.lastStatus === 'parts') countParts++; if (m.lastStatus === 'bv') countBv++; }
     if ($('statTotalCount')) $('statTotalCount').textContent = countTotal;
     if ($('statOffCount')) $('statOffCount').textContent = countOff;
     if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
     if ($('statBvCount')) $('statBvCount').textContent = countBv;
-
     const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
     if ($('statTotalTime')) $('statTotalTime').textContent = formatMs(stats.total);
     if ($('statOffTime')) $('statOffTime').textContent = formatMs(stats.off);
     if ($('statPartsTime')) $('statPartsTime').textContent = formatMs(stats.parts);
     if ($('statBvTime')) $('statBvTime').textContent = formatMs(stats.bv);
-
-    const badgeOff = $('badgeOffStat');
-    if (badgeOff) {
-      if (countOff > 0) badgeOff.classList.add('animate-pulse');
-      else badgeOff.classList.remove('animate-pulse');
-    }
+    const badgeOff = $('badgeOffStat'); if (badgeOff) { if (countOff > 0) badgeOff.classList.add('animate-pulse'); else badgeOff.classList.remove('animate-pulse'); }
   }
 
-  // ============================================================
-  // МОДАЛКА СПИСКА МАШИН ПО СТАТУСУ
-  // ============================================================
   window.openStatusListModal = function(statusType) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-
     const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
-    const subs = {
-      off: 'Причины схода и время простоя. Клик по строке — история машины.',
-      parts: 'Причины ожидания ремонта и время простоя. Клик по строке — история машины.',
-      bv: 'Машины, у которых нет водителя в текущую смену. Клик по строке — история машины.'
-    };
-
+    const subs = { off: 'Причины схода и время простоя. Клик по строке — история машины.', parts: 'Причины ожидания ремонта и время простоя. Клик по строке — история машины.', bv: 'Машины, у которых нет водителя в текущую смену. Клик по строке — история машины.' };
     const isShift1 = getShiftInfo().isShift1;
-    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType);
-
-    // Сначала самые долгие простои
-    list.sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
-
+    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
     $('statusListTitle').textContent = titles[statusType] || 'Машины';
     $('statusListSub').textContent = subs[statusType] || '';
-
-    if (!list.length) {
-      $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>';
-      $('statusListModal').classList.remove('hidden');
-      return;
-    }
-
+    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
     const html = list.map(m => {
       const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
       const driverText = activeDriver ? activeDriver : 'Нет водителя';
-      let timeText = '—';
-      if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
+      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
       const causeText = m.lastCause ? m.lastCause : 'Без причины';
-      const reasonHtml = (statusType === 'off' || statusType === 'parts')
-        ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>`
-        : '';
-      // machine-ключ в журнале формируется как `${m.num} ${m.model}` — передаём так же
+      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
       const machineLogKey = `${m.num} ${m.model || ''}`;
       return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
-        <div class="sli-main">
-          <span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span>
-          <span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span>
-        </div>
-        <div class="sli-right">
-          ${reasonHtml}
-          <span class="timer-badge">⏱ ${timeText}</span>
-        </div>
+        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
+        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
       </div>`;
     }).join('');
-
-    $('statusListContent').innerHTML = html;
-    $('statusListModal').classList.remove('hidden');
+    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
   };
-
   function bindStatusBadges() {
-    const offBadges = [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean);
-    offBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
-
-    const partsBadges = [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean);
-    partsBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
-
-    const bvBadges = [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean);
-    bvBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
+    [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
+    [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
+    [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
   }
 
-  // ============================================================
-  // ГЛАВНАЯ (РЕНДЕР)
-  // ============================================================
-  function updateClocks() {
-    const { shiftName, timeStr } = getShiftInfo();
-    if ($('shiftName')) $('shiftName').textContent = shiftName;
-    if ($('timeText')) $('timeText').textContent = timeStr;
-  }
+  function updateClocks() { const { shiftName, timeStr } = getShiftInfo(); if ($('shiftName')) $('shiftName').textContent = shiftName; if ($('timeText')) $('timeText').textContent = timeStr; }
   setInterval(updateClocks, 1000);
-
   function updateUserProfileBlock() {
     if (!loggedUser.name) return;
     $('userAvatar').textContent = loggedUser.name.charAt(0).toUpperCase();
@@ -1090,62 +585,40 @@
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
     enforceBlockState();
   }
-
   function renderMainGrid(){
     for (let key in activeTimers) clearInterval(activeTimers[key]);
     for (let key in activeTimers) delete activeTimers[key];
     if (!loggedUser.name || loggedUser.status !== 'approved') return;
-
     let html = '';
     Object.values(CATS).forEach(cat => {
       let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
-      
       catMachines.sort((a, b) => {
-        const getRank = (st) => {
-          if (st === 'line' || !st) return 0;
-          if (st === 'off') return 1;
-          if (st === 'parts') return 2;
-          if (st === 'bv') return 3;
-          return 4;
-        };
-        const rankA = getRank(a.lastStatus);
-        const rankB = getRank(b.lastStatus);
-        if (rankA !== rankB) return rankA - rankB;
-        return 0; 
+        const getRank = (st) => (st === 'line' || !st) ? 0 : st === 'off' ? 1 : st === 'parts' ? 2 : st === 'bv' ? 3 : 4;
+        const rankA = getRank(a.lastStatus); const rankB = getRank(b.lastStatus);
+        return rankA !== rankB ? rankA - rankB : 0;
       });
-
       html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
-      if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; } 
+      if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; }
       else {
         catMachines.forEach((m, idx) => {
-          const st = m.lastStatus || 'line'; 
-          const cause = m.lastCause || '';
-          
+          const st = m.lastStatus || 'line'; const cause = m.lastCause || '';
           let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
-          
           let bottomHtml = '';
           if (st !== 'bv') {
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
             bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? activeDriver : 'Нет')}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
-          
           if ((st === 'off' || st === 'parts') && cause) {
-            // Мигание — ТОЛЬКО на сходе (off). В ремонте (parts) сигналов нет.
             const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
             const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
             bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
-          
           const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
           const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
-
           html += `<div class="row ${rowClass}" id="row-${m.id}">
             <div class="row-top">
-              <div class="row-left">
-                <span class="row-num">${idx + 1}</span>
-                <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
-              </div>
+              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span></div>
               <div class="status-dropdown" onclick="this.classList.toggle('show')">
                 <button class="btn-status ${btnClass}">${btnText} ▾</button>
                 <div class="dropdown-content" onclick="event.stopPropagation()">
@@ -1158,22 +631,17 @@
             </div>
             <div class="row-info-line">${bottomHtml}</div>
           </div>`;
-          
           if ((st === 'off' || st === 'parts') && m.lastTime) {
             setTimeout(() => {
               const timerSpan = $('timer-' + m.id);
-              if (timerSpan) { 
-                activeTimers[m.id] = setInterval(() => { 
+              if (timerSpan) {
+                activeTimers[m.id] = setInterval(() => {
                   const elapsed = Date.now() - m.lastTime;
                   timerSpan.textContent = formatTimer(elapsed);
-                  // Мигание только для сходов (off)
-                  if (st === 'off' && elapsed > (2 * 60 * 60 * 1000)) {
-                    timerSpan.classList.add('blink-red');
-                  } else {
-                    timerSpan.classList.remove('blink-red');
-                  }
-                }, 1000); 
-                timerSpan.textContent = formatTimer(Date.now() - m.lastTime); 
+                  if (st === 'off' && elapsed > (2 * 60 * 60 * 1000)) timerSpan.classList.add('blink-red');
+                  else timerSpan.classList.remove('blink-red');
+                }, 1000);
+                timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
               }
             }, 50);
           }
@@ -1181,54 +649,40 @@
       }
       html += `</div><div class="col-footer"><button class="footer-btn" onclick="openAddMachineModal('${cat.id}')">+ Добавить машину</button></div></div>`;
     });
-    $('mainGrid').innerHTML = html;
-    updateClocks();
-    updateTopCounters();
+    $('mainGrid').innerHTML = html; updateClocks(); updateTopCounters();
   }
-
   document.addEventListener('click', function(event) {
-    if (!event.target.closest('.status-dropdown')) {
-      document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
-        dropdown.classList.remove('show');
-      });
-    }
+    if (!event.target.closest('.status-dropdown')) document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show'));
   });
-  
-  document.addEventListener('scroll', function(event) {
-    document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
-      dropdown.classList.remove('show');
-    });
-  }, true);
+  document.addEventListener('scroll', function() { document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show')); }, true);
 
+  // ============================================================
+  // ВЫВОД НА ЛИНИЮ: нет водителя -> автоматически БВ
+  // ============================================================
   function trySetLine(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
-    
-    const { isShift1 } = getShiftInfo();
-    const activeDriver = isShift1 ? m.driver1 : m.driver2;
-    
+    const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
     if (!activeDriver || activeDriver.trim() === '') {
-      openEditDriverModal(machineId);
-      showToast('Введите водителя, чтобы поставить на линию', true);
+      // Машина в сходе/ремонте без водителя — уводим в БВ
+      setStatus(machineId, 'bv');
+      showToast('Нет водителя — машина переведена в БВ', true);
     } else {
       setStatus(machineId, 'line');
     }
   }
-
   async function setStatus(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
-
+    // Если просят на линию, но активного водителя нет — автоматически БВ
     if (status === 'line') {
-      const { isShift1 } = getShiftInfo();
-      const activeDriver = isShift1 ? m.driver1 : m.driver2;
+      const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
       if (!activeDriver || activeDriver.trim() === '') {
-        return showToast('Нельзя перевести на линию без водителя!', true);
+        status = 'bv';
+        showToast('Нет водителя — машина переведена в БВ', true);
       }
     }
-
     const now = Date.now(); const monthStr = new Date().toISOString().slice(0, 7);
-    
     if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
       const elapsed = now - m.lastTime;
       const statsRef = ref(db, `monthlyStats/${monthStr}`); const statsSnap = await get(statsRef);
@@ -1239,26 +693,15 @@
       if (m.lastStatus === 'bv') stats.bv += elapsed;
       await set(statsRef, stats);
       await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(m.lastTime).toLocaleDateString('ru-RU'), time: new Date(m.lastTime).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: m.lastStatus, cause: m.lastCause || '—', duration: elapsed, author: m.author || 'Неизвестно' });
-    } else if (m.lastStatus === 'line' && status === 'line') {
-      return;
-    } else if (m.lastStatus === 'line' && status !== 'line') {
-      await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
-    }
-
-    if (status === 'line' && m.lastStatus && m.lastStatus !== 'line') {
-      await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
-    }
-
+    } else if (m.lastStatus === 'line' && status === 'line') return;
+    else if (m.lastStatus === 'line' && status !== 'line') await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
+    if (status === 'line' && m.lastStatus && m.lastStatus !== 'line') await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
     m.lastStatus = status; m.lastCause = causeText; m.lastTime = status === 'line' ? 0 : now;
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
-    
-    lastMachineStatuses[machineId] = status;
-    delete alertedMachineIds[machineId]; // сбрасываем флаг долгого схода при смене статуса
-
+    lastMachineStatuses[machineId] = status; delete alertedMachineIds[machineId];
     await update(ref(db, 'machines/' + machineId), m);
   }
-
   function openCauseModal(machineId, status) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentRowId = machineId; currentStatusType = status;
@@ -1269,127 +712,105 @@
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
   }
   function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
-  
-  function openEditDriverModal(machineId) { 
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); 
-    editingRowId = machineId; 
-    const m = MACHINES[machineId]; 
-    if (!m) return; 
-    $('editDriver1').value = m.driver1 || ''; 
-    $('editDriver2').value = m.driver2 || ''; 
-    $('editDriverModal').classList.remove('hidden'); 
+
+  function openEditDriverModal(machineId) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return;
+    $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || '';
+    $('editDriverModal').classList.remove('hidden');
   }
-  
-  async function saveNewDrivers() { 
-    if (!editingRowId) return; 
-    const m = MACHINES[editingRowId]; 
-    if (!m) return; 
-    
-    m.driver1 = $('editDriver1').value.trim(); 
-    m.driver2 = $('editDriver2').value.trim(); 
-    
+
+  async function saveNewDrivers() {
+    if (!editingRowId) return;
+    const m = MACHINES[editingRowId]; if (!m) return;
+    const d1 = canonicalDriverName($('editDriver1'));
+    const d2 = canonicalDriverName($('editDriver2'));
+
+    // Один и тот же человек не может быть в 1 и 2 смене одной машины
+    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) {
+      return showToast('Водитель не может стоять в обеих сменах на одной машине', true);
+    }
+
+    // Конфликты по активным (line) машинам в ту же смену
+    const conflicts = checkDriverConflicts(d1, d2, editingRowId);
+    if (conflicts.length) {
+      const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
+      return showToast('Конфликт: ' + msg, true);
+    }
+
+    // Автоочистка: если водитель пересажен, стереть его из других машин в той же смене (только off)
+    await clearDriverFromSameShift(d1, 'driver1', editingRowId);
+    await clearDriverFromSameShift(d2, 'driver2', editingRowId);
+
+    m.driver1 = d1;
+    m.driver2 = d2;
     enforceStatusRules();
-    
-    await update(ref(db, 'machines/' + editingRowId), m); 
-    closeModal('editDriverModal'); 
+    await update(ref(db, 'machines/' + editingRowId), m);
+    closeModal('editDriverModal');
   }
-  
-  function openAddMachineModal(catId) { 
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); 
-    currentCatForAdd = catId; 
+  function openAddMachineModal(catId) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentCatForAdd = catId;
     $('addMachineCode').value = '';
     $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = '';
-    $('addMachineFields').classList.add('hidden');
-    $('addMachineAuthText').classList.remove('hidden');
-    $('addMachineConfirmBtn').classList.remove('hidden');
-    $('addMachineSaveBtn').classList.add('hidden');
-    $('addMachineModal').classList.remove('hidden'); 
+    $('addMachineFields').classList.add('hidden'); $('addMachineAuthText').classList.remove('hidden');
+    $('addMachineConfirmBtn').classList.remove('hidden'); $('addMachineSaveBtn').classList.add('hidden');
+    $('addMachineModal').classList.remove('hidden');
   }
-
   function confirmAddMachineAuth() {
     if ($('addMachineCode').value !== ADD_MACHINE_CODE) return showToast('Неверный код', true);
-    $('addMachineAuthText').classList.add('hidden');
-    $('addMachineConfirmBtn').classList.add('hidden');
-    $('addMachineSaveBtn').classList.remove('hidden');
-    $('addMachineFields').classList.remove('hidden');
+    $('addMachineAuthText').classList.add('hidden'); $('addMachineConfirmBtn').classList.add('hidden');
+    $('addMachineSaveBtn').classList.remove('hidden'); $('addMachineFields').classList.remove('hidden');
+  }
+  async function addNewMachine() {
+    const num = $('addNum').value.trim(); if (!num) return showToast('Введите номер', true);
+    const d1 = canonicalDriverName($('addDriver1')); const d2 = canonicalDriverName($('addDriver2'));
+    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) return showToast('Водитель не может стоять в обеих сменах', true);
+    const conflicts = checkDriverConflicts(d1, d2, null);
+    if (conflicts.length) {
+      const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
+      return showToast('Конфликт: ' + msg, true);
+    }
+    await clearDriverFromSameShift(d1, 'driver1', null);
+    await clearDriverFromSameShift(d2, 'driver2', null);
+    const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? d1 : d2;
+    const hasDriver = activeDriver !== ''; const st = hasDriver ? 'line' : 'bv';
+    const id = newId('mach');
+    await set(ref(db, 'machines/' + id), { id, num, model: $('addModel').value.trim(), catId: currentCatForAdd, driver1: d1, driver2: d2, lastStatus: st, lastTime: 0, author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name });
+    closeModal('addMachineModal');
   }
 
-  async function addNewMachine() { 
-    const num = $('addNum').value.trim(); 
-    if (!num) return showToast('Введите номер', true); 
-    
-    const d1 = $('addDriver1').value.trim();
-    const d2 = $('addDriver2').value.trim();
-    
-    const { isShift1 } = getShiftInfo();
-    const activeDriver = isShift1 ? d1 : d2;
-    const hasDriver = activeDriver !== '';
-    const st = hasDriver ? 'line' : 'bv';
-
-    const id = newId('mach'); 
-    await set(ref(db, 'machines/' + id), { 
-      id, 
-      num, 
-      model: $('addModel').value.trim(), 
-      catId: currentCatForAdd, 
-      driver1: d1, 
-      driver2: d2, 
-      lastStatus: st, 
-      lastTime: 0, 
-      author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name 
-    }); 
-    closeModal('addMachineModal'); 
-  }
-
-  // ============================================================
-  // РЕДАКТИРОВАНИЕ МАШИН В АДМИНКЕ
-  // ============================================================
   window.openEditMachineModal = function(key) {
-    if (!isAdminLoggedIn) return;
-    const m = MACHINES[key];
-    if (!m) return;
-    $('editMachineId').value = key;
-    $('editMachineNum').value = m.num || '';
-    $('editMachineModel').value = m.model || '';
+    if (!isAdminLoggedIn) return; const m = MACHINES[key]; if (!m) return;
+    $('editMachineId').value = key; $('editMachineNum').value = m.num || ''; $('editMachineModel').value = m.model || '';
     $('editMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
     $('editMachineCat').value = m.catId || '';
     $('editMachineModal').classList.remove('hidden');
   };
-
   window.saveEditedMachine = async function() {
-    const key = $('editMachineId').value;
-    if (!key) return;
-    const num = $('editMachineNum').value.trim();
-    const model = $('editMachineModel').value.trim();
-    const catId = $('editMachineCat').value;
+    const key = $('editMachineId').value; if (!key) return;
+    const num = $('editMachineNum').value.trim(); const model = $('editMachineModel').value.trim(); const catId = $('editMachineCat').value;
     if (!num) return showToast('Введите номер', true);
     await update(ref(db, 'machines/' + key), { num, model, catId });
-    showToast('Машина сохранена');
-    closeModal('editMachineModal');
+    showToast('Машина сохранена'); closeModal('editMachineModal');
   };
 
   // ============================================================
   // ЖУРНАЛ И ОТЧЕТЫ
   // ============================================================
-  $('btnReportJournal').onclick = () => {
-    $('btnReportJournal').classList.add('active');
-    $('btnReportKpi').classList.remove('active');
-    $('reportJournalBlock').classList.remove('hidden');
-    $('reportKpiBlock').classList.add('hidden');
-  };
-  
+  $('btnReportJournal').onclick = () => { $('btnReportJournal').classList.add('active'); $('btnReportKpi').classList.remove('active'); if ($('btnReportDrivers')) $('btnReportDrivers').classList.remove('active'); $('reportJournalBlock').classList.remove('hidden'); $('reportKpiBlock').classList.add('hidden'); if ($('reportDriversBlock')) $('reportDriversBlock').classList.add('hidden'); };
   $('btnReportKpi').onclick = () => {
-    $('btnReportKpi').classList.add('active');
-    $('btnReportJournal').classList.remove('active');
-    $('reportKpiBlock').classList.remove('hidden');
-    $('reportJournalBlock').classList.add('hidden');
-    if (!$('kpiDateFrom').value) {
-      const d = new Date();
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
-      $('kpiDateFrom').value = firstDay.toISOString().slice(0,10);
-      $('kpiDateTo').value = d.toISOString().slice(0,10);
-    }
+    $('btnReportKpi').classList.add('active'); $('btnReportJournal').classList.remove('active'); if ($('btnReportDrivers')) $('btnReportDrivers').classList.remove('active');
+    $('reportKpiBlock').classList.remove('hidden'); $('reportJournalBlock').classList.add('hidden'); if ($('reportDriversBlock')) $('reportDriversBlock').classList.add('hidden');
+    if (!$('kpiDateFrom').value) { const d = new Date(); const firstDay = new Date(d.getFullYear(), d.getMonth(), 1); $('kpiDateFrom').value = firstDay.toISOString().slice(0,10); $('kpiDateTo').value = d.toISOString().slice(0,10); }
   };
+  if ($('btnReportDrivers')) {
+    $('btnReportDrivers').onclick = () => {
+      $('btnReportDrivers').classList.add('active'); $('btnReportJournal').classList.remove('active'); $('btnReportKpi').classList.remove('active');
+      $('reportDriversBlock').classList.remove('hidden'); $('reportJournalBlock').classList.add('hidden'); $('reportKpiBlock').classList.add('hidden');
+      if (!$('drvDateFrom').value) { const d = new Date(); $('drvDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('drvDateTo').value = d.toISOString().slice(0,10); }
+    };
+  }
 
   let logModalMachineFilter = null;
   function showLogModal(type, machineName = null) {
@@ -1403,7 +824,7 @@
   function renderLogTable() {
     const month = $('logMonthSelect').value; const type = currentLogType;
     let filtered = Object.values(eventLog).filter(e => e.month === month);
-    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`; } 
+    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`; }
     else { let title = ''; if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; } else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; } else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; } else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; } else { title = 'Все события'; } $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`; }
     let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0); $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
     if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>'; return; }
@@ -1413,211 +834,185 @@
     });
     $('logModalContent').innerHTML = html + '</tbody></table>';
   }
-
-  function setReportStatus(status) { 
-    reportStatusFilter = status; 
-    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn'); 
-    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`); 
-    if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); } 
-    buildReport(); 
+  function setReportStatus(status) {
+    reportStatusFilter = status;
+    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
+    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
+    if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); }
+    buildReport();
   }
-
   function buildReport() {
     try {
-      const dateFrom = $('repDateFrom').value;
-      const dateTo = $('repDateTo').value;
-      const filterCause = $('repCause').value;
-      const filterCat = $('repCat').value;
-
+      const dateFrom = $('repDateFrom').value; const dateTo = $('repDateTo').value;
+      const filterCause = $('repCause').value; const filterCat = $('repCat').value;
       let filtered = Object.values(eventLog);
-
       if (dateFrom) { const p = dateFrom.split('-'); filtered = filtered.filter(r => r.date && r.date >= `${p[2]}.${p[1]}.${p[0]}`); }
       if (dateTo) { const p = dateTo.split('-'); filtered = filtered.filter(r => r.date && r.date <= `${p[2]}.${p[1]}.${p[0]}`); }
-
       if (reportStatusFilter) filtered = filtered.filter(r => r.status === reportStatusFilter);
       if (filterCause) filtered = filtered.filter(r => r.cause && r.cause.startsWith(filterCause));
       if (filterCat) filtered = filtered.filter(r => { const m = Object.values(MACHINES).find(x => `${x.num} ${x.model}` === r.machine); return m && m.catId === filterCat; });
-
       let totalOff = 0, totalParts = 0, totalBV = 0, totalLine = 0, totalOffMs = 0;
-      filtered.forEach(r => { 
-        const dur = r.duration || 0;
-        if (r.status === 'off') { totalOff++; totalOffMs += dur; } 
-        if (r.status === 'parts') { totalParts++; totalOffMs += dur; } 
-        if (r.status === 'bv') { totalBV++; totalOffMs += dur; } 
-        if (r.status === 'line') { totalLine++; } 
-      });
-
+      filtered.forEach(r => { const dur = r.duration || 0; if (r.status === 'off') { totalOff++; totalOffMs += dur; } if (r.status === 'parts') { totalParts++; totalOffMs += dur; } if (r.status === 'bv') { totalBV++; totalOffMs += dur; } if (r.status === 'line') { totalLine++; } });
       $('reportStatsRow').innerHTML = `
         <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
         <div class="report-stat-card green"><div class="num">${totalLine}</div><div class="lbl">На линии</div></div>
         <div class="report-stat-card yellow"><div class="num">${totalOff}</div><div class="lbl">Сходов</div></div>
         <div class="report-stat-card red"><div class="num">${totalParts}</div><div class="lbl">В ремонте</div></div>
         <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
-        <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>
-      `;
-
-      $('reportTotalRow').style.display = 'block';
-      $('reportTotalTime').textContent = formatMs(totalOffMs);
-
+        <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>`;
+      $('reportTotalRow').style.display = 'block'; $('reportTotalTime').textContent = formatMs(totalOffMs);
       if (!filtered.length) { $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`; return; }
-
       filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
-      
-      $('reportContent').innerHTML = `
-        <table class="report-table">
-          <thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead>
-          <tbody>
-            ${filtered.map(r => `
-              <tr onclick="showLogModal('', '${r.machine}')">
-                <td>${r.date}</td>
-                <td><strong>${esc(r.machine)}</strong></td>
-                <td>${esc(r.driver || '—')}</td>
-                <td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td>
-                <td>${r.time}</td>
-                <td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td>
-                <td>${esc(r.cause)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    } catch(err) {
-      console.error(err);
-      $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка формирования отчета: ${esc(err.message)}</p>`;
-    }
+      $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
+    } catch(err) { console.error(err); $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка формирования отчета: ${esc(err.message)}</p>`; }
   }
-
   function buildKpiReport() {
-    const dateFrom = $('kpiDateFrom').value;
-    const dateTo = $('kpiDateTo').value;
-    
+    const dateFrom = $('kpiDateFrom').value; const dateTo = $('kpiDateTo').value;
     if (!dateFrom || !dateTo) return showToast('Укажите период', true);
-
-    const pFrom = dateFrom.split('-');
-    const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
-    const pTo = dateTo.split('-');
-    const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
-
-    const start = new Date(dateFrom);
-    const end = new Date(dateTo);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+    const pFrom = dateFrom.split('-'); const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
+    const pTo = dateTo.split('-'); const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
+    const start = new Date(dateFrom); const end = new Date(dateTo);
+    const diffTime = Math.abs(end - start); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     const totalPeriodMs = diffDays * 24 * 60 * 60 * 1000;
-
     let machineStats = {};
-
-    Object.values(MACHINES).forEach(m => {
-      machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 };
-    });
-
+    Object.values(MACHINES).forEach(m => { machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 }; });
     Object.values(eventLog).forEach(log => {
       const machineEntry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
-      if (!machineEntry) return;
-
-      const [id, stat] = machineEntry;
-
-      if (log.date >= dFromStr && log.date <= dToStr) {
-        const dur = log.duration || 0;
-        if (log.status === 'off') stat.offMs += dur;
-        if (log.status === 'parts') stat.partsMs += dur;
-        if (log.status === 'bv') stat.bvMs += dur;
-        if (log.status === 'line') stat.lineMs += dur;
-      }
+      if (!machineEntry) return; const [id, stat] = machineEntry;
+      if (log.date >= dFromStr && log.date <= dToStr) { const dur = log.duration || 0; if (log.status === 'off') stat.offMs += dur; if (log.status === 'parts') stat.partsMs += dur; if (log.status === 'bv') stat.bvMs += dur; if (log.status === 'line') stat.lineMs += dur; }
     });
-
-    let html = `
-      <table class="report-table">
-        <thead>
-          <tr>
-            <th>Машина</th>
-            <th>Работа (На линии)</th>
-            <th>Простой (Сход)</th>
-            <th>Ремонт</th>
-            <th>БВ</th>
-            <th>Общее время</th>
-            <th>KPI (Эффективность)</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
+    let html = `<table class="report-table"><thead><tr><th>Машина</th><th>Работа (На линии)</th><th>Простой (Сход)</th><th>Ремонт</th><th>БВ</th><th>Общее время</th><th>KPI (Эффективность)</th></tr></thead><tbody>`;
     const sortedStats = Object.values(machineStats).map(s => {
       const totalKnown = s.lineMs + s.offMs + s.partsMs + s.bvMs;
       const baseMs = Math.max(totalPeriodMs, totalKnown);
       const kpi = baseMs > 0 ? Math.round((s.lineMs / baseMs) * 100) : 0;
       return { ...s, kpi, totalKnown };
     }).sort((a,b) => b.kpi - a.kpi);
-
     sortedStats.forEach(s => {
-      let color = '#ef4444';
-      if (s.kpi >= 80) color = '#10b981';
-      else if (s.kpi >= 50) color = '#eab308';
+      let color = '#ef4444'; if (s.kpi >= 80) color = '#10b981'; else if (s.kpi >= 50) color = '#eab308';
+      html += `<tr><td><strong>${esc(s.num)} ${esc(s.model)}</strong></td><td style="color:#166534; font-weight:600;">${formatMs(s.lineMs)}</td><td style="color:#854d0e;">${formatMs(s.offMs)}</td><td style="color:#991b1b;">${formatMs(s.partsMs)}</td><td style="color:#475569;">${formatMs(s.bvMs)}</td><td>${formatMs(s.totalKnown)}</td><td><span class="kpi-badge" style="background:${color}">${s.kpi}%</span></td></tr>`;
+    });
+    html += `</tbody></table>`; $('kpiContent').innerHTML = html;
+  }
 
-      html += `
-        <tr>
-          <td><strong>${esc(s.num)} ${esc(s.model)}</strong></td>
-          <td style="color:#166534; font-weight:600;">${formatMs(s.lineMs)}</td>
-          <td style="color:#854d0e;">${formatMs(s.offMs)}</td>
-          <td style="color:#991b1b;">${formatMs(s.partsMs)}</td>
-          <td style="color:#475569;">${formatMs(s.bvMs)}</td>
-          <td>${formatMs(s.totalKnown)}</td>
-          <td><span class="kpi-badge" style="background:${color}">${s.kpi}%</span></td>
-        </tr>
-      `;
+  // ============================================================
+  // ОТЧЁТ ПО ВОДИТЕЛЯМ
+  // ============================================================
+  function buildDriversReport() {
+    const dateFrom = $('drvDateFrom').value; const dateTo = $('drvDateTo').value;
+    if (!dateFrom || !dateTo) return showToast('Укажите период', true);
+    const pFrom = dateFrom.split('-'); const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
+    const pTo = dateTo.split('-'); const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
+    const search = ($('drvSearch')?.value || '').trim().toLowerCase();
+
+    const stats = {}; // name -> { off, parts, bv, line, offMs, partsMs, bvMs, lineMs, causes: {cause: ms} }
+
+    function ensure(name) {
+      if (!stats[name]) stats[name] = { off: 0, parts: 0, bv: 0, line: 0, offMs: 0, partsMs: 0, bvMs: 0, lineMs: 0, causes: {} };
+      return stats[name];
+    }
+
+    Object.values(eventLog).forEach(log => {
+      if (!log.date || log.date < dFromStr || log.date > dToStr) return;
+      const drv = String(log.driver || '').trim();
+      if (!drv) return;
+      const s = ensure(drv);
+      const dur = log.duration || 0;
+      if (log.status === 'off') { s.off++; s.offMs += dur; s.causes[log.cause || '—'] = (s.causes[log.cause || '—'] || 0) + dur; }
+      else if (log.status === 'parts') { s.parts++; s.partsMs += dur; s.causes[log.cause || '—'] = (s.causes[log.cause || '—'] || 0) + dur; }
+      else if (log.status === 'bv') { s.bv++; s.bvMs += dur; }
+      else if (log.status === 'line') { s.line++; s.lineMs += dur; }
     });
 
-    html += `</tbody></table>`;
+    let rows = Object.entries(stats).map(([name, s]) => {
+      const totalDowntime = s.offMs + s.partsMs + s.bvMs;
+      const totalWork = s.lineMs;
+      const base = totalWork + totalDowntime;
+      const kpi = base > 0 ? Math.round((totalWork / base) * 100) : 0;
+      return { name, ...s, totalDowntime, totalWork, kpi };
+    });
 
-    $('kpiContent').innerHTML = html;
+    if (search) rows = rows.filter(r => r.name.toLowerCase().includes(search));
+
+    if (!rows.length) {
+      $('driversReportContent').innerHTML = '<p class="empty">Нет данных по водителям за выбранный период</p>';
+      return;
+    }
+
+    rows.sort((a, b) => b.kpi - a.kpi || a.name.localeCompare(b.name, 'ru'));
+
+    let html = `<table class="report-table">
+      <thead>
+        <tr>
+          <th>Водитель</th>
+          <th>Сходов</th>
+          <th>Часы схода</th>
+          <th>Ремонтов</th>
+          <th>Часы ремонта</th>
+          <th>БВ</th>
+          <th>Часы БВ</th>
+          <th>Отработано (на линии)</th>
+          <th>Общий простой</th>
+          <th>KPI</th>
+        </tr>
+      </thead>
+      <tbody>`;
+    rows.forEach(r => {
+      let color = '#ef4444'; if (r.kpi >= 80) color = '#10b981'; else if (r.kpi >= 50) color = '#eab308';
+      const causesStr = Object.entries(r.causes).sort((a, b) => b[1] - a[1]).map(([c, ms]) => `${esc(c)}: ${formatMs(ms)}`).join('<br>') || '—';
+      html += `<tr>
+        <td><strong>${esc(r.name)}</strong><div style="font-size:11px;color:#64748b;margin-top:4px;">${causesStr}</div></td>
+        <td style="color:#854d0e;font-weight:600;">${r.off}</td>
+        <td style="color:#854d0e;">${formatMs(r.offMs)}</td>
+        <td style="color:#991b1b;font-weight:600;">${r.parts}</td>
+        <td style="color:#991b1b;">${formatMs(r.partsMs)}</td>
+        <td style="color:#475569;font-weight:600;">${r.bv}</td>
+        <td style="color:#475569;">${formatMs(r.bvMs)}</td>
+        <td style="color:#166534;font-weight:700;">${formatMs(r.lineMs)}</td>
+        <td style="color:#991b1b;font-weight:700;">${formatMs(r.totalDowntime)}</td>
+        <td><span class="kpi-badge" style="background:${color}">${r.kpi}%</span></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    $('driversReportContent').innerHTML = html;
   }
 
-  function exportExcel() { 
-    const table = document.querySelector('.report-table'); 
-    if (!table) return showToast('Сначала сформируйте отчёт', true); 
-    
-    let csv = '\uFEFF'; 
-    
+  function exportDriversReport() {
+    const table = document.querySelector('#driversReportContent .report-table');
+    if (!table) return showToast('Сначала сформируйте отчёт', true);
+    let csv = '\uFEFF';
+    table.querySelectorAll('tr').forEach(row => {
+      csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n';
+    });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `СПТ_водители_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  function exportExcel() {
+    const table = document.querySelector('.report-table'); if (!table) return showToast('Сначала сформируйте отчёт', true);
+    let csv = '\uFEFF';
     const stats = $('reportStatsRow').innerText.replace(/\n/g, ';');
     csv += `"ИТОГИ:";${stats}\r\n\r\n`;
-    
-    table.querySelectorAll('tr').forEach(row => { 
-      csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; 
-    }); 
-    
+    table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; });
     const totalTime = $('reportTotalTime').innerText;
     csv += `\r\n"Общее накопленное время:";"${totalTime}"\r\n`;
-
-    const a = document.createElement('a'); 
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
-    a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; 
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
 
   // ============================================================
-  // АДМИН
+  // АДМИН + ВОДИТЕЛИ (CRUD)
   // ============================================================
   function renderAdmin() { if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers(); if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder(); }
-  
   window.delCat = async function(key) { if(confirm('Удалить эту категорию? Все машины в ней останутся в базе, но пропадут с экрана.')) await remove(ref(db,'cats/' + key)); };
   window.delMach = async function(key) { if(confirm('Удалить эту машину?')) await remove(ref(db,'machines/' + key)); };
   window.delRole = async function(key) { if(confirm('Удалить эту должность? Пользователи с ней не смогут войти.')) await remove(ref(db,'roles/' + key)); };
   window.delCause = async function(key) { if(confirm('Удалить эту причину?')) await remove(ref(db,'causes/' + key)); };
-
-  window.userAction = function(uid, act) { 
-    if (act === 'delete') {
-      const u = USERS[uid];
-      if (u && u.roleName === CHIEF_ROLE_NAME) {
-        showToast('Нельзя удалить Главного инженера', true);
-        return;
-      }
-    }
-    pendingUserAction = { uid, act }; 
-    $('usersCodeInput').value = ''; 
-    $('usersCodeModal').classList.remove('hidden'); 
-    $('usersCodeInput').focus(); 
+  window.userAction = function(uid, act) {
+    if (act === 'delete') { const u = USERS[uid]; if (u && u.roleName === CHIEF_ROLE_NAME) { showToast('Нельзя удалить Главного инженера', true); return; } }
+    pendingUserAction = { uid, act }; $('usersCodeInput').value = ''; $('usersCodeModal').classList.remove('hidden'); $('usersCodeInput').focus();
   };
-  
-  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.buildKpiReport = buildKpiReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
+  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.buildKpiReport = buildKpiReport; window.buildDriversReport = buildDriversReport; window.exportDriversReport = exportDriversReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
     const sorted = Object.entries(USERS).map(([key, u]) => ({ ...(u || {}), _key: key })).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -1629,38 +1024,25 @@
       const displayPhone = (!u.phone || u.phone === '0') ? '—' : u.phone;
       const chiefBadge = u.roleName === CHIEF_ROLE_NAME ? ' <span style="background:#fef08a; color:#854d0e; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">ГИ (уникальный)</span>' : '';
       const delBtn = u.roleName === CHIEF_ROLE_NAME ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` : `<button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u._key}','delete')">Удалить</button>`;
-      
       return `<div class="moderation-user ${cls}"><div><strong>${esc(displayName)}</strong>${chiefBadge} (${esc(displayPhone)})<br><span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div><div style="display:flex;gap:6px;">${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u._key}','approve')">Одобрить</button>`:''}${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u._key}','reject')">Отклонить</button>`:''}${delBtn}</div></div>`;
     }).join('');
   }
-
   async function cleanBrokenUsers() {
     if (!confirm('Удалить всех битых пользователей?')) return;
     let count = 0;
-    for (const [key, u] of Object.entries(USERS)) {
-      if (!u || !u.name || !u.phone || u.name === '0' || u.phone === '0' || !u.id || u.id !== key) { try { await remove(ref(db, 'users/' + key)); count++; } catch(e) {} }
-    }
+    for (const [key, u] of Object.entries(USERS)) { if (!u || !u.name || !u.phone || u.name === '0' || u.phone === '0' || !u.id || u.id !== key) { try { await remove(ref(db, 'users/' + key)); count++; } catch(e) {} } }
     showToast(`Удалено битых: ${count}`); try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {}
   }
-
   async function deleteAllUsers() {
-    if (!confirm('УДАЛИТЬ ВСЕХ пользователей?')) return;
-    if (!confirm('Точно удалить ВСЕХ?')) return;
+    if (!confirm('УДАЛИТЬ ВСЕХ пользователей?')) return; if (!confirm('Точно удалить ВСЕХ?')) return;
     try { await remove(ref(db, 'users')); showToast('Все пользователи удалены'); localStorage.removeItem('spt_user'); USERS = {}; renderUsers(); } catch(e) { showToast('Ошибка: ' + e.message, true); }
   }
-
   async function resetStats() {
     if (!confirm('Сбросить все общие счётчики (Всего, Сходы, Ремонт, БВ) за текущий месяц?')) return;
     const curMonth = getCurrentMonthStr();
-    try {
-      await update(ref(db, 'monthlyStats/' + curMonth), { total: 0, off: 0, parts: 0, bv: 0 });
-      showToast('Счётчики успешно сброшены');
-      updateClocks(); 
-    } catch (e) {
-      showToast('Ошибка: ' + e.message, true);
-    }
+    try { await update(ref(db, 'monthlyStats/' + curMonth), { total: 0, off: 0, parts: 0, bv: 0 }); showToast('Счётчики успешно сброшены'); updateClocks(); }
+    catch (e) { showToast('Ошибка: ' + e.message, true); }
   }
-
   async function confirmUserAction() {
     if ($('usersCodeInput').value !== USERS_CODE) { showToast('Неверный код', true); $('usersCodeInput').value = ''; $('usersCodeInput').focus(); return; }
     if (!pendingUserAction) { showToast('Нет действия', true); closeModal('usersCodeModal'); return; }
@@ -1670,24 +1052,13 @@
         const target = USERS[uid];
         if (target && target.roleName === CHIEF_ROLE_NAME) { if (findExistingChief(uid)) { showToast('Главный инженер уже есть — второго быть не может', true); return; } }
         await update(ref(db, 'users/' + uid), { status: 'approved' }); showToast('Пользователь одобрен');
-      } else if (act === 'reject') { await update(ref(db, 'users/' + uid), { status: 'rejected' }); showToast('Пользователь отклонен'); } 
+      } else if (act === 'reject') { await update(ref(db, 'users/' + uid), { status: 'rejected' }); showToast('Пользователь отклонен'); }
       else if (act === 'delete') { await remove(ref(db, 'users/' + uid)); showToast('Пользователь удалён'); }
     } catch (e) { showToast('Ошибка: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = 'Подтвердить'; closeModal('usersCodeModal'); pendingUserAction = null; try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {} }
   }
-
   function renderBuilder() {
     $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    
-    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`
-      <li>
-        <span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span>
-        <div style="display:flex;gap:4px;">
-          <button class="btn gray small" onclick="openEditMachineModal('${key}')">✏️</button>
-          <button class="btn red small" onclick="delMach('${key}')">✕</button>
-        </div>
-      </li>
-    `).join('') || '<li class="empty">Пусто</li>';
-
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`<li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><div style="display:flex;gap:4px;"><button class="btn gray small" onclick="openEditMachineModal('${key}')">✏️</button><button class="btn red small" onclick="delMach('${key}')">✕</button></div></li>`).join('') || '<li class="empty">Пусто</li>';
     $('builderRolesList').innerHTML = Object.entries(ROLES).map(([key, r])=>{
       const isChief = r.name === CHIEF_ROLE_NAME;
       const delBtn = isChief ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
@@ -1697,6 +1068,50 @@
     $('newMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   }
   function catName(id) { const c = Object.values(CATS).find(x => x.id === id); return c ? c.name : '—'; }
+
+  // ============================================================
+  // ВКЛАДКА «ВОДИТЕЛИ» (UI)
+  // ============================================================
+  function renderDriversTab() {
+    const container = $('driversList');
+    if (!container) return;
+    const search = ($('driversSearch')?.value || '').trim().toLowerCase();
+    let list = Object.values(DRIVERS).filter(d => d && d.name);
+    if (search) list = list.filter(d => d.name.toLowerCase().includes(search) || (d.tabNum && d.tabNum.includes(search)) || (d.position && d.position.toLowerCase().includes(search)));
+    list.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    if (!list.length) { container.innerHTML = '<p class="empty">Водителей не найдено</p>'; return; }
+    let html = `<table class="report-table"><thead><tr><th>ФИО</th><th>Должность</th><th>Табельный</th><th style="width:110px;">Действия</th></tr></thead><tbody>`;
+    list.forEach(d => {
+      html += `<tr><td><strong>${esc(d.name)}</strong></td><td>${esc(d.position || '—')}</td><td style="font-family:monospace;">${esc(d.tabNum || '—')}</td><td style="white-space:nowrap;"><button class="btn gray small" onclick="openEditDriverRecord('${d.id}')">✏️</button><button class="btn red small" onclick="deleteDriverRecord('${d.id}')">🗑</button></td></tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+  window.renderDriversTab = renderDriversTab;
+  window.openAddDriverRecord = function() {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    $('driverEditId').value = ''; $('driverName').value = ''; $('driverPosition').value = ''; $('driverTabNum').value = '';
+    $('driverModalTitle').textContent = 'Добавить водителя'; $('driverModal').classList.remove('hidden');
+  };
+  window.openEditDriverRecord = function(id) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const d = DRIVERS[id]; if (!d) return;
+    $('driverEditId').value = id; $('driverName').value = d.name || ''; $('driverPosition').value = d.position || ''; $('driverTabNum').value = d.tabNum || '';
+    $('driverModalTitle').textContent = 'Редактировать водителя'; $('driverModal').classList.remove('hidden');
+  };
+  window.saveDriverRecord = async function() {
+    const id = $('driverEditId').value; const name = $('driverName').value.trim(); const position = $('driverPosition').value.trim(); const tabNum = $('driverTabNum').value.trim();
+    if (!name) return showToast('Введите ФИО', true);
+    if (id) { await update(ref(db, 'drivers/' + id), { name, position, tabNum }); showToast('Водитель обновлён'); }
+    else { const nid = newId('drv'); await set(ref(db, 'drivers/' + nid), { id: nid, name, position, tabNum }); showToast('Водитель добавлен'); }
+    closeModal('driverModal');
+  };
+  window.deleteDriverRecord = async function(id) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const d = DRIVERS[id]; if (!d) return;
+    if (!confirm(`Удалить водителя «${d.name}»?`)) return;
+    await remove(ref(db, 'drivers/' + id)); showToast('Водитель удалён');
+  };
 
   // ============================================================
   // СОБЫТИЯ
@@ -1712,50 +1127,40 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('spt_user'); if (savedUser) { try { loggedUser = JSON.parse(savedUser); } catch(e){} }
-
     bindStatusBadges();
+    attachDriverAutocomplete($('editDriver1'));
+    attachDriverAutocomplete($('editDriver2'));
+    attachDriverAutocomplete($('addDriver1'));
+    attachDriverAutocomplete($('addDriver2'));
 
-    $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); enforceStatusRules(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
-    $('tabReports').onclick = () => { $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden'); $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join(''); if (!$('repDateFrom').value) { const d = new Date(); $('repDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('repDateTo').value = d.toISOString().slice(0,10); } };
-    $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
+    $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); if ($('tabDrivers')) $('tabDrivers').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); if ($('driversView')) $('driversView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); enforceStatusRules(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
+    $('tabReports').onclick = () => { $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active'); if ($('tabDrivers')) $('tabDrivers').classList.remove('active'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden'); if ($('driversView')) $('driversView').classList.add('hidden'); $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join(''); if (!$('repDateFrom').value) { const d = new Date(); $('repDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('repDateTo').value = d.toISOString().slice(0,10); } };
+    $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); if ($('tabDrivers')) $('tabDrivers').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); if ($('driversView')) $('driversView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
+    if ($('tabDrivers')) {
+      $('tabDrivers').onclick = () => { $('tabDrivers').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('driversView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); renderDriversTab(); };
+    }
+
     $('loginCategory').onchange = updateRoleSelect;
 
     $('loginBtn').onclick = async () => {
       const name = $('loginName').value.trim(); const phone = $('loginPhone').value.trim(); const cat = $('loginCategory').value;
       const roleSelect = $('loginRole'); const roleId = roleSelect.value;
       if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
-
       let roleObj = ROLES[roleId];
       if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList); }
       if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = { id: roleId, name: roleNameInList, cat: cat }; }
-
       const norm = normPhone(phone);
       const existingEntry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
-
       if (existingEntry) {
         const [key, u] = existingEntry;
         if (u.cat !== cat) return showToast(`Этот номер уже привязан к службе "${u.catLabel}". Вход в другую службу запрещён.`, true);
         if (u.roleId !== roleObj.id) return showToast(`Этот номер уже привязан к должности "${u.roleName}". Смена должности запрещена.`, true);
-        if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') {
-           // ок
-        } else if (roleObj.name === CHIEF_ROLE_NAME) {
-           const otherChief = findExistingChief(key);
-           if (otherChief) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
-        }
+        if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') { /* ок */ }
+        else if (roleObj.name === CHIEF_ROLE_NAME) { const otherChief = findExistingChief(key); if (otherChief) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true); }
       } else {
-        if (roleObj.name === CHIEF_ROLE_NAME) {
-          const existing = findExistingChief();
-          if (existing) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
-        }
+        if (roleObj.name === CHIEF_ROLE_NAME) { const existing = findExistingChief(); if (existing) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true); }
       }
-
-      if (roleObj.name === CHIEF_ROLE_NAME) {
-        pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name };
-        $('chiefEngineerRegCode').value = '';
-        $('chiefEngineerRegModal').classList.remove('hidden');
-        return;
-      }
-
+      if (roleObj.name === CHIEF_ROLE_NAME) { pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name }; $('chiefEngineerRegCode').value = ''; $('chiefEngineerRegModal').classList.remove('hidden'); return; }
       await finishLogin({ name, phone, cat, roleId: roleObj.id, roleName: roleObj.name });
     };
 
@@ -1783,7 +1188,7 @@
     $('logoutAdminBtn').onclick = () => { isAdminLoggedIn = false; $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); $('adminCodeInput').value = ''; };
     $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
     $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
-    
+
     $('resetStatsBtn').onclick = resetStats;
     $('cleanBrokenUsersBtn').onclick = cleanBrokenUsers; $('deleteAllUsersBtn').onclick = deleteAllUsers; $('confirmUsersCodeBtn').onclick = confirmUserAction;
 
@@ -1801,7 +1206,10 @@
     $('addMachineBtn').onclick = async () => { const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value; if (num && catId) { const id = newId('mach'); await set(ref(db, 'machines/' + id), { id, num, model, catId, driver1: '', driver2: '', lastStatus: 'bv', lastTime: 0 }); $('newMachineNum').value = ''; $('newMachineModel').value = ''; } };
     $('addRoleBtn').onclick = async () => { const v = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (v) { if (Object.values(ROLES).some(r => r && r.name === v)) return showToast('Такая должность уже есть', true); const id = newId('role'); await set(ref(db, 'roles/' + id), { id, name: v, cat }); $('newRoleName').value = ''; } };
     $('addCauseBtn').onclick = async () => { const v = $('newCauseName').value.trim(); if (v) { const id = newId('cause'); await set(ref(db, 'causes/' + id), { id, name: v }); $('newCauseName').value = ''; } };
+
+    const searchInput = $('driversSearch');
+    if (searchInput) searchInput.addEventListener('input', renderDriversTab);
+    const drvSearch = $('drvSearch');
+    if (drvSearch) drvSearch.addEventListener('input', () => { if ($('driversReportContent').querySelector('table')) buildDriversReport(); });
   });
 </script>
-</body>
-</html>
