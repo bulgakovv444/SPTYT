@@ -371,7 +371,6 @@
 <body>
 <div class="container">
 
-  <!-- БАННЕР ДЛЯ ЗАПРОСА УВЕДОМЛЕНИЙ -->
   <div id="notificationBanner" class="notif-banner hidden">
     <div>🔔 <strong>Внимание!</strong> Включите уведомления, чтобы не пропустить сходы машин.</div>
     <button onclick="requestNotificationPermission()">Включить уведомления</button>
@@ -632,8 +631,8 @@
   // УВЕДОМЛЕНИЯ
   // ============================================================
   let audioCtx = null;
-  
-  // Создаём звук через Web Audio API (чтобы не зависеть от mp3-файлов)
+  let lastMachineStatuses = {};
+
   function playNotificationSound() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -648,14 +647,13 @@
     gainNode.connect(audioCtx.destination);
     
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Частота
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
     gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
     
     osc.start();
     osc.stop(audioCtx.currentTime + 0.5);
     
-    // Второй писк
     setTimeout(() => {
         const osc2 = audioCtx.createOscillator();
         const gainNode2 = audioCtx.createGain();
@@ -670,7 +668,6 @@
     }, 600);
   }
 
-  // Запрос разрешения на уведомления
   window.requestNotificationPermission = function() {
     if (!("Notification" in window)) {
       showToast("Ваш браузер не поддерживает уведомления", true);
@@ -680,8 +677,7 @@
       if (permission === 'granted') {
         showToast('Уведомления включены!');
         $('notificationBanner').classList.add('hidden');
-        // Принудительно проигрываем звук, чтобы разблокировать аудио-контекст
-        playNotificationSound();
+        playNotificationSound(); // Разблокировка звука
       } else {
         showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
       }
@@ -693,19 +689,15 @@
       const options = {
         body: body,
         icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>',
-        vibrate: [200, 100, 200, 100, 200] // Вибрация для телефонов
+        vibrate: [200, 100, 200, 100, 200]
       };
       new Notification(title, options);
     }
   }
 
-  // Отслеживаем предыдущие статусы, чтобы отправлять уведомление только когда статус СТАЛ "off"
-  let lastMachineStatuses = {};
-
   function checkForNewOffStatus(machinesData) {
     if (!isDataReady || Notification.permission !== 'granted') return;
     
-    // Инициализация при первой загрузке
     if (Object.keys(lastMachineStatuses).length === 0) {
       for (const [id, m] of Object.entries(machinesData)) {
         lastMachineStatuses[id] = m.lastStatus;
@@ -720,7 +712,6 @@
       const prevStatus = lastMachineStatuses[id];
       const currStatus = m.lastStatus;
 
-      // Если статус сменился на 'off' (Сход)
       if (currStatus === 'off' && prevStatus !== 'off') {
         hasNewOff = true;
         notificationMessage += `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'}). `;
@@ -734,7 +725,6 @@
     }
   }
 
-  // Проверяем разрешение при загрузке
   if ("Notification" in window) {
     if (Notification.permission === 'default') {
       $('notificationBanner').classList.remove('hidden');
@@ -793,7 +783,7 @@
     checkDataReady(); 
     enforceStatusRules(); 
     updateTopCounters(); 
-    checkForNewOffStatus(MACHINES); // Проверка на новый сход для уведомлений
+    checkForNewOffStatus(MACHINES); // <--- ВОТ ЭТА СТРОКА БЫЛА ПРОПУЩЕНА
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -898,7 +888,7 @@
   }
 
   // ============================================================
-  // ГЛАВНАЯ (РЕНДЕР) С СОРТИРОВКОЙ И ВЫПАДАЮЩИМ МЕНЮ
+  // ГЛАВНАЯ (РЕНДЕР)
   // ============================================================
   function updateClocks() {
     const { shiftName, timeStr } = getShiftInfo();
@@ -1063,7 +1053,6 @@
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
     
-    // Обновляем lastMachineStatuses, чтобы не выскочило уведомление о своем же сходе
     lastMachineStatuses[machineId] = status;
 
     await update(ref(db, 'machines/' + machineId), m);
