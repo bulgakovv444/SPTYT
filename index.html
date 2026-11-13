@@ -18,8 +18,6 @@
     display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-size: 13px;
   }
   .btn-notify:hover { background: #e2e8f0; }
-  
-  /* Если уведомления не включены - пульсирует */
   .btn-notify.pulse-red {
     border-color: #ef4444; color: #991b1b; background: #fee2e2;
     animation: pulse-red-btn 1.5s infinite;
@@ -29,13 +27,8 @@
     70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
-
-  .btn-notify.enabled {
-    border-color: #10b981; color: #065f46; background: #dcfce7; cursor: default;
-  }
-  .btn-notify.denied {
-    border-color: #ef4444; color: #991b1b; background: #fef2f2;
-  }
+  .btn-notify.enabled { border-color: #10b981; color: #065f46; background: #dcfce7; cursor: default; }
+  .btn-notify.denied { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
 
   .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
@@ -62,10 +55,7 @@
   .user-name { font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; }
   .user-meta { font-size: 12px; color: #64748b; margin-top: 4px; }
   .user-meta strong { color: #1e293b; }
-  .user-badge-role {
-    background: #e0e7ff; color: #3730a3; padding: 3px 8px;
-    border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content;
-  }
+  .user-badge-role { background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content; }
   .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
   
   .stats-container { display: flex; flex-direction: column; gap: 6px; }
@@ -267,6 +257,17 @@
   .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
   .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
   
+  /* МИГАНИЕ ТАЙМЕРА ПРИ ДОЛГОМ ПРОСТОЕ */
+  .timer-badge.blink-red {
+    background: #ef4444; color: #fff; border-color: #991b1b;
+    animation: blink-timer 1s infinite;
+  }
+  @keyframes blink-timer {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
   .author-badge { 
     color: #475569; font-style: italic; font-size: 10px; font-weight: 600; 
     background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 3px; 
@@ -372,6 +373,13 @@
   .status-badge.parts { background: #fee2e2; color: #991b1b; }
   .status-badge.bv { background: #e2e8f0; color: #475569; }
 
+  /* ВКЛАДКИ ОТЧЕТОВ */
+  .report-tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; }
+  .report-tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 20px; border-radius: 6px 6px 0 0; transition: all .15s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .report-tab-btn:hover { background: #f1f5f9; color: #0f172a; }
+  .report-tab-btn.active { background: #fff; color: #2563eb; border-bottom-color: #2563eb; }
+  .kpi-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; color: #fff; font-size: 14px; }
+
   .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; }
   .toast.error { background: #ef4444; }
   .toast.show { opacity: 1; transform: translateY(0); }
@@ -445,7 +453,6 @@
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
           
-          <!-- КНОПКА УВЕДОМЛЕНИЙ -->
           <button class="btn-notify pulse-red" id="notifyBtn" onclick="requestNotificationPermission()">🔔 Включить звук</button>
 
           <button class="btn gray small" id="logoutBtn">Выйти</button>
@@ -465,27 +472,48 @@
   <!-- ===== ОТЧЕТЫ ===== -->
   <div id="reportsView" class="hidden">
     <h1>📊 Отчёт по технике СПТ</h1>
-    <div class="card">
-      <div class="report-filters">
-        <div class="filter-group" style="flex: 1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="repDateFrom"><span>—</span><input type="date" id="repDateTo"></div></div>
-        <div class="filter-group"><label class="fld">Категория</label><select id="repCat"><option value="">Все</option></select></div>
-        <div class="filter-group"><label class="fld">Причина</label><select id="repCause"><option value="">Все</option></select></div>
-        <button class="btn" onclick="buildReport()">Сформировать</button>
-        <button class="btn green" onclick="exportExcel()">⬇ В Excel</button>
+    
+    <div class="report-tab-buttons">
+      <button class="report-tab-btn active" id="btnReportJournal">Журнал событий</button>
+      <button class="report-tab-btn" id="btnReportKpi">📈 KPI (Эффективность)</button>
+    </div>
+
+    <!-- Вкладка Журнала -->
+    <div id="reportJournalBlock">
+      <div class="card">
+        <div class="report-filters">
+          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="repDateFrom"><span>—</span><input type="date" id="repDateTo"></div></div>
+          <div class="filter-group"><label class="fld">Категория</label><select id="repCat"><option value="">Все</option></select></div>
+          <div class="filter-group"><label class="fld">Причина</label><select id="repCause"><option value="">Все</option></select></div>
+          <button class="btn" onclick="buildReport()">Сформировать</button>
+          <button class="btn green" onclick="exportExcel()">⬇ В Excel</button>
+        </div>
+        <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">Фильтр по статусу:</div>
+        <div class="status-filter-row" id="reportStatusFilters">
+          <button class="status-filter-btn active-all" data-status="" onclick="setReportStatus('')">Все</button>
+          <button class="status-filter-btn" data-status="line" onclick="setReportStatus('line')">🟢 На линии</button>
+          <button class="status-filter-btn" data-status="off" onclick="setReportStatus('off')">🟡 Сход</button>
+          <button class="status-filter-btn" data-status="parts" onclick="setReportStatus('parts')">🔴 Ож. ремонта</button>
+          <button class="status-filter-btn" data-status="bv" onclick="setReportStatus('bv')">⚪ БВ</button>
+        </div>
       </div>
-      <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">Фильтр по статусу:</div>
-      <div class="status-filter-row" id="reportStatusFilters">
-        <button class="status-filter-btn active-all" data-status="" onclick="setReportStatus('')">Все</button>
-        <button class="status-filter-btn" data-status="line" onclick="setReportStatus('line')">🟢 На линии</button>
-        <button class="status-filter-btn" data-status="off" onclick="setReportStatus('off')">🟡 Сход</button>
-        <button class="status-filter-btn" data-status="parts" onclick="setReportStatus('parts')">🔴 Ож. ремонта</button>
-        <button class="status-filter-btn" data-status="bv" onclick="setReportStatus('bv')">⚪ БВ</button>
+      <div class="report-stats" id="reportStatsRow"></div>
+      <div id="reportContent"><p class="empty">Выберите период и нажмите «Сформировать».</p></div>
+      <div id="reportTotalRow" style="margin-top:15px; text-align:right; font-size:18px; font-weight:800; color:#1e293b; display:none;">
+        Общее время: <span id="reportTotalTime" style="color:#2563eb; font-family:monospace;">0 ч 0 м</span>
       </div>
     </div>
-    <div class="report-stats" id="reportStatsRow"></div>
-    <div id="reportContent"><p class="empty">Выберите период и нажмите «Сформировать».</p></div>
-    <div id="reportTotalRow" style="margin-top:15px; text-align:right; font-size:18px; font-weight:800; color:#1e293b; display:none;">
-      Общее время: <span id="reportTotalTime" style="color:#2563eb; font-family:monospace;">0 ч 0 м</span>
+
+    <!-- Вкладка KPI -->
+    <div id="reportKpiBlock" class="hidden">
+      <div class="card">
+        <div class="report-filters">
+          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период для KPI</label><div class="date-group"><input type="date" id="kpiDateFrom"><span>—</span><input type="date" id="kpiDateTo"></div></div>
+          <button class="btn purple" onclick="buildKpiReport()">Рассчитать KPI</button>
+        </div>
+        <p style="font-size:12px; color:#64748b;">KPI (Коэффициент полезного действия) показывает, какой процент времени машина находилась на линии (работала). Все простои (Сходы, Ремонты, БВ) учитываются как потеря времени.</p>
+      </div>
+      <div id="kpiContent"><p class="empty">Выберите период и нажмите «Рассчитать KPI».</p></div>
     </div>
   </div>
 
@@ -632,6 +660,8 @@
   let pendingUserAction = null, pendingChiefEngineerReg = null;
   const activeTimers = {};
   let currentLogType = 'total', reportStatusFilter = '', isDataReady = false;
+  
+  let alertedMachineIds = {}; // Храним ID машин, по которым уже отправлен пуш о долгом простое
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -715,7 +745,6 @@
       return;
     }
     
-    // Если уже разрешено - просто проигрываем звук, чтобы разблокировать его
     if (Notification.permission === 'granted') {
       playNotificationSound();
       showToast('Звук уведомлений активирован');
@@ -774,6 +803,35 @@
     }
   }
 
+  // Проверка долгого простоя (больше 2 часов)
+  function checkForLongDowntime(machinesData) {
+    if (!isDataReady) return;
+    
+    const TWO_HOURS = 2 * 60 * 60 * 1000; // 2 часа в миллисекундах
+
+    for (const [id, m] of Object.entries(machinesData)) {
+      // Если машина в сходе или ремонте дольше 2 часов
+      if ((m.lastStatus === 'off' || m.lastStatus === 'parts') && m.lastTime) {
+        const elapsed = Date.now() - m.lastTime;
+        
+        if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
+          // Отправляем пуш
+          playNotificationSound();
+          const causeText = m.lastStatus === 'off' ? 'в сходе' : 'в ремонте';
+          showPushNotification('🚨 ДОЛГИЙ ПРОСТОЙ!', `Машина ${m.num} ${m.model || ''} стоит ${causeText} уже более 2 часов! (${m.lastCause || 'Без причины'})`);
+          
+          // Запоминаем, что по этой машине уже уведомили
+          alertedMachineIds[id] = true;
+        }
+      } else {
+        // Если машина вышла с простоя, сбрасываем флаг
+        if (alertedMachineIds[id]) {
+          delete alertedMachineIds[id];
+        }
+      }
+    }
+  }
+
   updateNotifyButtonState();
 
   // ============================================================
@@ -825,7 +883,8 @@
     checkDataReady(); 
     enforceStatusRules(); 
     updateTopCounters(); 
-    checkForNewOffStatus(MACHINES); // <--- ВОТ ЭТА СТРОКА БЫЛА ПРОПУЩЕНА
+    checkForNewOffStatus(MACHINES); 
+    checkForLongDowntime(MACHINES); // <--- Проверка долгого простоя
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -986,8 +1045,12 @@
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
             bottomHtml += `<span class="driver-badge"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(activeDriver ? activeDriver : 'Нет')}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          
           if ((st === 'off' || st === 'parts') && cause) {
-            bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
+            // Если простой больше 2 часов - добавляем класс для мигания
+            const isLong = m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
+            const timerClass = isLong ? 'timer-badge blink-red' : 'timer-badge';
+            bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
           
@@ -1016,7 +1079,18 @@
           if ((st === 'off' || st === 'parts') && m.lastTime) {
             setTimeout(() => {
               const timerSpan = $('timer-' + m.id);
-              if (timerSpan) { activeTimers[m.id] = setInterval(() => { timerSpan.textContent = formatTimer(Date.now() - m.lastTime); }, 1000); timerSpan.textContent = formatTimer(Date.now() - m.lastTime); }
+              if (timerSpan) { 
+                activeTimers[m.id] = setInterval(() => { 
+                  const elapsed = Date.now() - m.lastTime;
+                  timerSpan.textContent = formatTimer(elapsed);
+                  if (elapsed > (2 * 60 * 60 * 1000)) {
+                    timerSpan.classList.add('blink-red');
+                  } else {
+                    timerSpan.classList.remove('blink-red');
+                  }
+                }, 1000); 
+                timerSpan.textContent = formatTimer(Date.now() - m.lastTime); 
+              }
             }, 50);
           }
         });
@@ -1096,6 +1170,7 @@
     m.author = labels[status] + loggedUser.name;
     
     lastMachineStatuses[machineId] = status;
+    delete alertedMachineIds[machineId]; // Сбрасываем флаг простоя при смене статуса
 
     await update(ref(db, 'machines/' + machineId), m);
   }
@@ -1212,6 +1287,29 @@
   // ============================================================
   // ЖУРНАЛ И ОТЧЕТЫ
   // ============================================================
+  
+  // Переключение вкладок отчетов
+  $('btnReportJournal').onclick = () => {
+    $('btnReportJournal').classList.add('active');
+    $('btnReportKpi').classList.remove('active');
+    $('reportJournalBlock').classList.remove('hidden');
+    $('reportKpiBlock').classList.add('hidden');
+  };
+  
+  $('btnReportKpi').onclick = () => {
+    $('btnReportKpi').classList.add('active');
+    $('btnReportJournal').classList.remove('active');
+    $('reportKpiBlock').classList.remove('hidden');
+    $('reportJournalBlock').classList.add('hidden');
+    // Устанавливаем даты по умолчанию для KPI (месяц)
+    if (!$('kpiDateFrom').value) {
+      const d = new Date();
+      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      $('kpiDateFrom').value = firstDay.toISOString().slice(0,10);
+      $('kpiDateTo').value = d.toISOString().slice(0,10);
+    }
+  };
+
   let logModalMachineFilter = null;
   function showLogModal(type, machineName = null) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
@@ -1308,6 +1406,101 @@
     }
   }
 
+  // KPI
+  function buildKpiReport() {
+    const dateFrom = $('kpiDateFrom').value;
+    const dateTo = $('kpiDateTo').value;
+    
+    if (!dateFrom || !dateTo) return showToast('Укажите период', true);
+
+    const pFrom = dateFrom.split('-');
+    const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
+    const pTo = dateTo.split('-');
+    const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
+
+    // 1. Считаем календарные дни в периоде
+    const start = new Date(dateFrom);
+    const end = new Date(dateTo);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+    const totalPeriodMs = diffDays * 24 * 60 * 60 * 1000; // Общее время периода
+
+    // 2. Собираем данные по каждой машине
+    let machineStats = {}; // { id: { num, model, lineMs, offMs, partsMs, bvMs } }
+
+    // Инициализируем по текущим машинам
+    Object.values(MACHINES).forEach(m => {
+      machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 };
+    });
+
+    // Проходим по журналу и суммируем время
+    Object.values(eventLog).forEach(log => {
+      // Ищем машину по названию (номеру)
+      const machineEntry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
+      if (!machineEntry) return;
+
+      const [id, stat] = machineEntry;
+
+      // Проверяем, попадает ли дата лога в выбранный период
+      if (log.date >= dFromStr && log.date <= dToStr) {
+        const dur = log.duration || 0;
+        if (log.status === 'off') stat.offMs += dur;
+        if (log.status === 'parts') stat.partsMs += dur;
+        if (log.status === 'bv') stat.bvMs += dur;
+        if (log.status === 'line') stat.lineMs += dur; // Время на линии тоже может быть в логах
+      }
+    });
+
+    // 3. Формируем таблицу
+    let html = `
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Машина</th>
+            <th>Работа (На линии)</th>
+            <th>Простой (Сход)</th>
+            <th>Ремонт</th>
+            <th>БВ</th>
+            <th>Общее время</th>
+            <th>KPI (Эффективность)</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    // Сортируем по KPI (от большего к меньшему)
+    const sortedStats = Object.values(machineStats).map(s => {
+      const totalKnown = s.lineMs + s.offMs + s.partsMs + s.bvMs;
+      // Эффективность считаем как: время на линии / общее время периода
+      // (Если общее время периода меньше известного, берем известное, чтобы не было >100%)
+      const baseMs = Math.max(totalPeriodMs, totalKnown);
+      const kpi = baseMs > 0 ? Math.round((s.lineMs / baseMs) * 100) : 0;
+      return { ...s, kpi, totalKnown };
+    }).sort((a,b) => b.kpi - a.kpi);
+
+    sortedStats.forEach(s => {
+      let color = '#ef4444'; // Красный
+      if (s.kpi >= 80) color = '#10b981'; // Зеленый
+      else if (s.kpi >= 50) color = '#eab308'; // Желтый
+
+      html += `
+        <tr>
+          <td><strong>${esc(s.num)} ${esc(s.model)}</strong></td>
+          <td style="color:#166534; font-weight:600;">${formatMs(s.lineMs)}</td>
+          <td style="color:#854d0e;">${formatMs(s.offMs)}</td>
+          <td style="color:#991b1b;">${formatMs(s.partsMs)}</td>
+          <td style="color:#475569;">${formatMs(s.bvMs)}</td>
+          <td>${formatMs(s.totalKnown)}</td>
+          <td><span class="kpi-badge" style="background:${color}">${s.kpi}%</span></td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+
+    $('kpiContent').innerHTML = html;
+  }
+
   function exportExcel() { 
     const table = document.querySelector('.report-table'); 
     if (!table) return showToast('Сначала сформируйте отчёт', true); 
@@ -1354,7 +1547,7 @@
     $('usersCodeInput').focus(); 
   };
   
-  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
+  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.buildKpiReport = buildKpiReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
     const sorted = Object.entries(USERS).map(([key, u]) => ({ ...(u || {}), _key: key })).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
