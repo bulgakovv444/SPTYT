@@ -62,41 +62,125 @@
   }
   .clock-block span { color: #2563eb; }
 
-  .grid-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 15px; align-items: start; }
-  .col { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,.05); overflow: hidden; display: flex; flex-direction: column; }
-  .col-header { background: #f8fafc; color: #1e3a8a; font-weight: 800; font-size: 16px; text-align: center; padding: 10px; border-bottom: 2px solid #cbd5e1; }
-  .col-body { max-height: 600px; overflow-y: auto; }
-  .row { display: flex; flex-direction: column; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; gap: 6px; transition: background 0.2s; }
+  /* ============================================================
+     ОБНОВЛЕННАЯ СЕТКА (3 КОЛОНКИ) И КАРТОЧКИ МАШИН
+     ============================================================ */
+  .grid-wrapper { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+    gap: 12px; 
+    align-items: start; 
+  }
+
+  .col { 
+    background: #fff; 
+    border-radius: 10px; 
+    border: 2px solid #000; 
+    box-shadow: 0 4px 12px rgba(0,0,0,.08); 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+  }
+
+  .col-header { 
+    background: #f1f5f9; 
+    color: #1e293b; 
+    font-weight: 800; 
+    font-size: 15px; 
+    text-align: center; 
+    padding: 10px; 
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #000;
+    text-transform: uppercase;
+  }
+
+  .col-body { 
+    max-height: 600px; 
+    overflow-y: auto; 
+    background: #fff; 
+    padding: 0;
+  }
+
+  .row { 
+    display: flex; 
+    flex-direction: column; 
+    background: #fff;
+    padding: 10px 12px; 
+    border-bottom: 2px solid #000; 
+    gap: 8px; 
+    position: relative;
+  }
   .row:last-child { border-bottom: none; }
-  .row-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; }
-  .row-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .row-num { font-weight: 800; color: #94a3b8; font-size: 13px; width: 14px; text-align: right; }
-  .row-name { font-weight: 700; font-size: 13px; color: #1e293b; }
+
+  .row.st-line { background: #ecfdf5; border-left: 5px solid #10b981; }
+  .row.st-off  { background: #fefce8; border-left: 5px solid #eab308; }
+  .row.st-parts{ background: #fef2f2; border-left: 5px solid #ef4444; }
+  .row.st-bv   { background: #f1f5f9; border-left: 5px solid #64748b; }
+
+  .row-top { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    gap: 6px; 
+    width: 100%; 
+    flex-wrap: wrap; 
+  }
+  
+  .row-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    flex-shrink: 0; 
+  }
+  
+  .row-num { 
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; color: #475569; font-size: 12px; 
+    width: 22px; height: 22px; 
+    background: #e2e8f0; border-radius: 4px; border: 1px solid #cbd5e1;
+    flex-shrink: 0; 
+  }
+  
+  .row-name { 
+    font-weight: 800; font-size: 13px; color: #0f172a; 
+    background: #fff; padding: 3px 6px; border-radius: 6px; border: 2px solid #000;
+    white-space: nowrap;
+  }
+  .row.st-line .row-name { border-color: #10b981; color: #065f46; }
+  .row.st-off .row-name { border-color: #eab308; color: #854d0e; }
+  .row.st-parts .row-name { border-color: #ef4444; color: #991b1b; }
+  .row.st-bv .row-name { border-color: #64748b; color: #334155; }
+
   .row-actions { display: flex; gap: 3px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-  .btn-st { border: 1px solid #cbd5e1; background: #fff; color: #64748b; border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .btn-st { 
+    border: 1px solid #000; 
+    background: #fff; color: #64748b; border-radius: 4px; 
+    padding: 3px 5px; font-size: 9px; font-weight: 700; 
+    cursor: pointer; white-space: nowrap; transition: all .15s; 
+  }
   .btn-st:hover { background: #f1f5f9; }
   .btn-st.active-line { background: #dcfce7; color: #166534; border-color: #10b981; }
   .btn-st.active-off { background: #fef08a; color: #854d0e; border-color: #eab308; }
   .btn-st.active-parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
   .btn-st.active-bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
-  .btn-st:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-  .row-bottom { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-left: 20px; font-size: 11px; }
-  .driver-badge { background: #e0f2fe; color: #0369a1; padding: 1px 5px; border-radius: 4px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; margin-right: 2px; transition: transform .1s; }
-  .edit-driver-btn:hover { transform: scale(1.2); }
-  .no-driver-badge { background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 4px; font-weight: 800; border: 1px solid #eab308; }
-  .reason-badge { background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 4px; font-weight: 700; }
-  .reason-badge.red { background: #fee2e2; color: #b91c1c; }
-  .timer-badge { background: #fecaca; color: #991b1b; padding: 1px 5px; border-radius: 4px; font-weight: 800; font-family: monospace; }
-  .author-badge { color: #475569; font-style: italic; font-size: 11px; font-weight: 600; background: #f1f5f9; padding: 1px 5px; border-radius: 4px;}
-  .row.st-line { background: #dcfce7; }
-  .row.st-off  { background: #fef08a; }
-  .row.st-parts{ background: #fecaca; }
-  .row.st-bv   { background: #e2e8f0; }
-  .col-footer { padding: 8px; background: #f8fafc; border-top: 1px solid #cbd5e1; }
-  .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 1px dashed #10b981; background: #ecfdf5; color: #059669; transition: all 0.15s; }
+
+  .row-bottom { 
+    display: flex; flex-wrap: wrap; gap: 5px; align-items: center; 
+    padding-left: 28px; font-size: 11px; 
+  }
+  
+  .driver-badge { background: #e0f2fe; color: #0369a1; padding: 2px 5px; border-radius: 4px; font-weight: 700; display: flex; align-items: center; gap: 3px; border: 1px solid #7dd3fc; }
+  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; }
+  .no-driver-badge { background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 4px; font-weight: 800; border: 1px solid #eab308; }
+  .reason-badge { background: #fef08a; color: #854d0e; padding: 2px 5px; border-radius: 4px; font-weight: 700; border: 1px solid #fde047; }
+  .reason-badge.red { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+  .timer-badge { background: #fecaca; color: #991b1b; padding: 2px 5px; border-radius: 4px; font-weight: 800; font-family: monospace; border: 1px solid #f87171; }
+  .author-badge { color: #475569; font-style: italic; font-size: 10px; font-weight: 600; background: #f1f5f9; padding: 2px 5px; border-radius: 4px; border: 1px solid #cbd5e1; }
+
+  .col-footer { padding: 8px; background: #f8fafc; border-top: 2px solid #000; }
+  .footer-btn { width: 100%; padding: 8px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 2px dashed #10b981; background: #ecfdf5; color: #059669; transition: all 0.15s; }
   .footer-btn:hover { background: #d1fae5; }
-  .footer-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  /* ============================================================ */
 
   input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
@@ -206,7 +290,7 @@
   .danger-zone { margin-top: 20px; padding: 16px; border: 2px dashed #ef4444; border-radius: 10px; background: #fef2f2; text-align: center; }
   .danger-zone h3 { color: #991b1b; margin-bottom: 8px; font-size: 15px; }
   .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
-  .danger-zone .btn { margin: 0 4px; }
+  .danger-zone .btn { margin: 4px; }
 </style>
 </head>
 <body>
@@ -319,6 +403,7 @@
           <div class="danger-zone">
             <h3>⚠️ Опасная зона</h3>
             <p>Действия ниже необратимы.</p>
+            <button class="btn orange small" id="resetStatsBtn">🔄 Сбросить общие счётчики</button>
             <button class="btn red small" id="cleanBrokenUsersBtn">🧹 Очистить битые аккаунты</button>
             <button class="btn red small" id="deleteAllUsersBtn">🗑 Удалить ВСЕХ пользователей</button>
           </div>
@@ -343,7 +428,24 @@
 
 <div class="modal-overlay hidden" id="editDriverModal"><div class="modal"><h3>Смена водителей</h3><label>Водитель 1 смены</label><input type="text" id="editDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 смены (необязательно)</label><input type="text" id="editDriver2" placeholder="Петров П.П."><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button><button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button></div></div></div>
 
-<div class="modal-overlay hidden" id="addMachineModal"><div class="modal"><h3>Добавить машину</h3><p id="addMachineAuthText">Введите код администратора для добавления машины.</p><input type="password" id="addMachineCode" placeholder="Код 1234" style="margin-bottom:10px;"><div id="addMachineFields" class="hidden"><label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186"><label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал"><label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Иванов И.И."><label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Петров П.П."></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button><button class="btn-modal green" id="addMachineConfirmBtn" onclick="confirmAddMachineAuth()">Далее</button><button class="btn-modal green hidden" id="addMachineSaveBtn" onclick="addNewMachine()">Добавить</button></div></div></div>
+<div class="modal-overlay hidden" id="addMachineModal">
+  <div class="modal">
+    <h3>Добавить машину</h3>
+    <p id="addMachineAuthText">Введите код администратора для добавления машины.</p>
+    <input type="password" id="addMachineCode" placeholder="Код доступа" style="margin-bottom:10px;">
+    <div id="addMachineFields" class="hidden">
+      <label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186">
+      <label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал">
+      <label style="margin-top:10px;">Водитель 1 см</label><input type="text" id="addDriver1" placeholder="Иванов И.И.">
+      <label style="margin-top:10px;">Водитель 2 см</label><input type="text" id="addDriver2" placeholder="Петров П.П.">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('addMachineModal')">Отмена</button>
+      <button class="btn-modal green" id="addMachineConfirmBtn" onclick="confirmAddMachineAuth()">Далее</button>
+      <button class="btn-modal green hidden" id="addMachineSaveBtn" onclick="addNewMachine()">Добавить</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay hidden" id="usersCodeModal"><div class="modal"><h3>Подтверждение действия</h3><p>Введите код Главного инженера.</p><input type="password" id="usersCodeInput"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('usersCodeModal')">Отмена</button><button class="btn-modal red" id="confirmUsersCodeBtn">Подтвердить</button></div></div></div>
 
@@ -370,8 +472,8 @@
 
   const ADMIN_CODE = 'admin2483';
   const USERS_CODE = '1104';
-  const CHIEF_ENGINEER_CODE = '1234'; // <-- ИЗМЕНЕН КОД ГИ
-  const ADD_MACHINE_CODE = '1234';    // <-- КОД ДЛЯ ДОБАВЛЕНИЯ МАШИН
+  const CHIEF_ENGINEER_CODE = '1234'; 
+  const ADD_MACHINE_CODE = '1234';    
   const CHIEF_ROLE_NAME = 'Главный инженер';
 
   const DEFAULT_CATS = {
@@ -493,7 +595,7 @@
   }
 
   // ============================================================
-  // ГЛАВНАЯ
+  // ГЛАВНАЯ (РЕНДЕР)
   // ============================================================
   function updateClocks() {
     const { shiftName, timeStr } = getShiftInfo();
@@ -541,14 +643,23 @@
             bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="timer-badge" id="timer-${m.id}">⏱ 00:00:00</span>`;
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
+          
           html += `<div class="row ${rowClass}" id="row-${m.id}">
-            <div class="row-top"><div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span></div>
-            <div class="row-actions">
-              <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')">На линии</button>
-              <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
-              <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')">Ож. ремонта</button>
-              <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
-            </div></div><div class="row-bottom">${bottomHtml}</div></div>`;
+            <div class="row-top">
+              <div class="row-left">
+                <span class="row-num">${idx + 1}</span>
+                <span class="row-name">${esc(m.num)} ${esc(m.model || '')}</span>
+              </div>
+              <div class="row-actions">
+                <button class="btn-st ${st==='line'?'active-line':''}" onclick="setStatus('${m.id}','line')">На линии</button>
+                <button class="btn-st ${st==='off'?'active-off':''}" onclick="openCauseModal('${m.id}','off')">Сход</button>
+                <button class="btn-st ${st==='parts'?'active-parts':''}" onclick="openCauseModal('${m.id}','parts')">Ож. ремонта</button>
+                <button class="btn-st ${st==='bv'?'active-bv':''}" onclick="setStatus('${m.id}','bv')">БВ</button>
+              </div>
+            </div>
+            <div class="row-bottom">${bottomHtml}</div>
+          </div>`;
+          
           if ((st === 'off' || st === 'parts') && m.lastTime) {
             setTimeout(() => {
               const timerSpan = $('timer-' + m.id);
@@ -597,9 +708,6 @@
   function openEditDriverModal(machineId) { if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return; $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || ''; $('editDriverModal').classList.remove('hidden'); }
   async function saveNewDrivers() { if (!editingRowId) return; const m = MACHINES[editingRowId]; if (!m) return; m.driver1 = $('editDriver1').value.trim(); m.driver2 = $('editDriver2').value.trim(); await update(ref(db, 'machines/' + editingRowId), m); closeModal('editDriverModal'); }
   
-  // ============================================================
-  // ДОБАВЛЕНИЕ МАШИНЫ (С ПАРОЛЕМ)
-  // ============================================================
   function openAddMachineModal(catId) { 
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true); 
     currentCatForAdd = catId; 
@@ -682,7 +790,20 @@
   window.delRole = async function(key) { if(confirm('Удалить эту должность? Пользователи с ней не смогут войти.')) await remove(ref(db,'roles/' + key)); };
   window.delCause = async function(key) { if(confirm('Удалить эту причину?')) await remove(ref(db,'causes/' + key)); };
 
-  window.userAction = function(uid, act) { pendingUserAction = { uid, act }; $('usersCodeInput').value = ''; $('usersCodeModal').classList.remove('hidden'); $('usersCodeInput').focus(); };
+  window.userAction = function(uid, act) { 
+    if (act === 'delete') {
+      const u = USERS[uid];
+      if (u && u.roleName === CHIEF_ROLE_NAME) {
+        showToast('Нельзя удалить Главного инженера', true);
+        return;
+      }
+    }
+    pendingUserAction = { uid, act }; 
+    $('usersCodeInput').value = ''; 
+    $('usersCodeModal').classList.remove('hidden'); 
+    $('usersCodeInput').focus(); 
+  };
+  
   window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
 
   function renderUsers() {
@@ -694,7 +815,9 @@
       const displayName = (!u.name || u.name === '0') ? 'Без имени' : u.name;
       const displayPhone = (!u.phone || u.phone === '0') ? '—' : u.phone;
       const chiefBadge = u.roleName === CHIEF_ROLE_NAME ? ' <span style="background:#fef08a; color:#854d0e; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">ГИ (уникальный)</span>' : '';
-      return `<div class="moderation-user ${cls}"><div><strong>${esc(displayName)}</strong>${chiefBadge} (${esc(displayPhone)})<br><span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div><div style="display:flex;gap:6px;">${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u._key}','approve')">Одобрить</button>`:''}${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u._key}','reject')">Отклонить</button>`:''}<button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u._key}','delete')">Удалить</button></div></div>`;
+      const delBtn = u.roleName === CHIEF_ROLE_NAME ? `<button class="btn gray small" disabled title="Главного инженера удалить нельзя">🔒</button>` : `<button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u._key}','delete')">Удалить</button>`;
+      
+      return `<div class="moderation-user ${cls}"><div><strong>${esc(displayName)}</strong>${chiefBadge} (${esc(displayPhone)})<br><span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div><div style="display:flex;gap:6px;">${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u._key}','approve')">Одобрить</button>`:''}${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u._key}','reject')">Отклонить</button>`:''}${delBtn}</div></div>`;
     }).join('');
   }
 
@@ -711,6 +834,18 @@
     if (!confirm('УДАЛИТЬ ВСЕХ пользователей?')) return;
     if (!confirm('Точно удалить ВСЕХ?')) return;
     try { await remove(ref(db, 'users')); showToast('Все пользователи удалены'); localStorage.removeItem('spt_user'); USERS = {}; renderUsers(); } catch(e) { showToast('Ошибка: ' + e.message, true); }
+  }
+
+  async function resetStats() {
+    if (!confirm('Сбросить все общие счётчики (Всего, Сходы, Ремонт, БВ) за текущий месяц?')) return;
+    const curMonth = getCurrentMonthStr();
+    try {
+      await update(ref(db, 'monthlyStats/' + curMonth), { total: 0, off: 0, parts: 0, bv: 0 });
+      showToast('Счётчики успешно сброшены');
+      updateClocks(); 
+    } catch (e) {
+      showToast('Ошибка: ' + e.message, true);
+    }
   }
 
   async function confirmUserAction() {
@@ -777,7 +912,7 @@
         if (u.cat !== cat) return showToast(`Этот номер уже привязан к службе "${u.catLabel}". Вход в другую службу запрещён.`, true);
         if (u.roleId !== roleObj.id) return showToast(`Этот номер уже привязан к должности "${u.roleName}". Смена должности запрещена.`, true);
         if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') {
-           // он уже ГИ, все ок
+           // ок
         } else if (roleObj.name === CHIEF_ROLE_NAME) {
            const otherChief = findExistingChief(key);
            if (otherChief) return showToast('Главный инженер уже зарегистрирован. Второй быть не может.', true);
@@ -823,6 +958,8 @@
     $('logoutAdminBtn').onclick = () => { isAdminLoggedIn = false; $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); $('adminCodeInput').value = ''; };
     $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
     $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
+    
+    $('resetStatsBtn').onclick = resetStats;
     $('cleanBrokenUsersBtn').onclick = cleanBrokenUsers; $('deleteAllUsersBtn').onclick = deleteAllUsers; $('confirmUsersCodeBtn').onclick = confirmUserAction;
 
     $('confirmChiefEngineerRegBtn').onclick = async () => {
