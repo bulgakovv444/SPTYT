@@ -144,6 +144,7 @@
   .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
   .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; } 
 
+  /* Мигание строки — ТОЛЬКО для сходов (off) */
   .row.st-off { animation: pulse-bg-off 1.5s infinite; }
   @keyframes pulse-bg-off {
     0% { background: #fef9c3; border-left: 6px solid #ca8a04; }
@@ -257,7 +258,7 @@
   .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
   .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
   
-  /* МИГАНИЕ ТАЙМЕРА ПРИ ДОЛГОМ ПРОСТОЕ */
+  /* МИГАНИЕ ТАЙМЕРА — применяется только на сходах (off) */
   .timer-badge.blink-red {
     background: #ef4444; color: #fff; border-color: #991b1b;
     animation: blink-timer 1s infinite;
@@ -320,6 +321,15 @@
   .log-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
   .log-table tr:last-child td { border-bottom: none; }
   .log-empty { text-align: center; color: #94a3b8; padding: 30px; }
+
+  /* Модалка списка машин по статусу */
+  .status-list-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; background:#f8fafc; cursor:pointer; transition:background .15s; flex-wrap:wrap; }
+  .status-list-item:hover { background:#eef2f6; }
+  .status-list-item .sli-main { display:flex; flex-direction:column; gap:2px; }
+  .status-list-item .sli-name { font-weight:800; font-size:14px; color:#0f172a; }
+  .status-list-item .sli-sub { font-size:12px; color:#64748b; }
+  .status-list-item .sli-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .status-list-empty { text-align:center; color:#94a3b8; padding:24px; }
 
   .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
@@ -440,15 +450,15 @@
           <div class="stats-container" id="globalStatsBlock">
             <div class="stats-row">
               <div class="stat-badge total" title="Всего машин"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
-              <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
-              <div class="stat-badge parts" title="Машин в ремонте"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
-              <div class="stat-badge bv" title="Машин без водителя"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
+              <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе — нажмите, чтобы посмотреть список"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
+              <div class="stat-badge parts" id="badgePartsStat" title="Машин в ремонте — нажмите, чтобы посмотреть список"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
+              <div class="stat-badge bv" id="badgeBvStat" title="Машин без водителя — нажмите, чтобы посмотреть список"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
             </div>
             <div class="stats-row">
               <div class="stat-badge total" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge off" title="Время в сходе"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge parts" title="Время в ремонте"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge bv" title="Время в БВ"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge off" id="badgeOffTime" title="Время в сходе — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge parts" id="badgePartsTime" title="Время в ремонте — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge bv" id="badgeBvTime" title="Время в БВ — нажмите, чтобы посмотреть список"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
             </div>
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
@@ -606,6 +616,18 @@
 
 <div class="modal-overlay hidden" id="chiefEngineerRegModal"><div class="modal"><h3>Регистрация Главного инженера</h3><p>Введите код Главного инженера.</p><input type="password" id="chiefEngineerRegCode"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('chiefEngineerRegModal')">Отмена</button><button class="btn-modal red" id="confirmChiefEngineerRegBtn">Подтвердить</button></div></div></div>
 
+<!-- Модалка списка машин по статусу -->
+<div class="modal-overlay hidden" id="statusListModal">
+  <div class="modal wide">
+    <h3 id="statusListTitle">Машины</h3>
+    <p id="statusListSub">Список машин в выбранном статусе.</p>
+    <div id="statusListContent"></div>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -661,7 +683,7 @@
   const activeTimers = {};
   let currentLogType = 'total', reportStatusFilter = '', isDataReady = false;
   
-  let alertedMachineIds = {}; // Храним ID машин, по которым уже отправлен пуш о долгом простое
+  let alertedMachineIds = {}; // ID машин, по которым уже отправлен пуш о долгом СХОДЕ
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -773,6 +795,7 @@
     }
   }
 
+  // Пуш о НОВОМ СХОДЕ (только off)
   function checkForNewOffStatus(machinesData) {
     if (!isDataReady || Notification.permission !== 'granted') return;
     
@@ -803,28 +826,22 @@
     }
   }
 
-  // Проверка долгого простоя (больше 2 часов)
+  // Пуш о ДОЛГОМ СХОДЕ (только off). Для ремонта (parts) сигналов нет.
   function checkForLongDowntime(machinesData) {
     if (!isDataReady) return;
     
-    const TWO_HOURS = 2 * 60 * 60 * 1000; // 2 часа в миллисекундах
+    const TWO_HOURS = 2 * 60 * 60 * 1000;
 
     for (const [id, m] of Object.entries(machinesData)) {
-      // Если машина в сходе или ремонте дольше 2 часов
-      if ((m.lastStatus === 'off' || m.lastStatus === 'parts') && m.lastTime) {
+      if (m.lastStatus === 'off' && m.lastTime) {
         const elapsed = Date.now() - m.lastTime;
         
         if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
-          // Отправляем пуш
           playNotificationSound();
-          const causeText = m.lastStatus === 'off' ? 'в сходе' : 'в ремонте';
-          showPushNotification('🚨 ДОЛГИЙ ПРОСТОЙ!', `Машина ${m.num} ${m.model || ''} стоит ${causeText} уже более 2 часов! (${m.lastCause || 'Без причины'})`);
-          
-          // Запоминаем, что по этой машине уже уведомили
+          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} стоит в сходе уже более 2 часов! (${m.lastCause || 'Без причины'})`);
           alertedMachineIds[id] = true;
         }
       } else {
-        // Если машина вышла с простоя, сбрасываем флаг
         if (alertedMachineIds[id]) {
           delete alertedMachineIds[id];
         }
@@ -835,7 +852,7 @@
   updateNotifyButtonState();
 
   // ============================================================
-  // ФУНКЦИЯ МГНОВЕННОЙ ПРОВЕРКИ И АВТО-РАССТАНОВКИ
+  // АВТО-РАССТАНОВКА ПО ВОДИТЕЛЯМ
   // ============================================================
   function enforceStatusRules() {
     if (!isDataReady || !loggedUser.name || loggedUser.status !== 'approved') return;
@@ -884,7 +901,7 @@
     enforceStatusRules(); 
     updateTopCounters(); 
     checkForNewOffStatus(MACHINES); 
-    checkForLongDowntime(MACHINES); // <--- Проверка долгого простоя
+    checkForLongDowntime(MACHINES);
   });
   
   onValue(ref(db, 'roles'), snap => {
@@ -989,6 +1006,72 @@
   }
 
   // ============================================================
+  // МОДАЛКА СПИСКА МАШИН ПО СТАТУСУ
+  // ============================================================
+  window.openStatusListModal = function(statusType) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+
+    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
+    const subs = {
+      off: 'Причины схода и время простоя. Клик по строке — история машины.',
+      parts: 'Причины ожидания ремонта и время простоя. Клик по строке — история машины.',
+      bv: 'Машины, у которых нет водителя в текущую смену. Клик по строке — история машины.'
+    };
+
+    const isShift1 = getShiftInfo().isShift1;
+    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType);
+
+    // Сначала самые долгие простои
+    list.sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
+
+    $('statusListTitle').textContent = titles[statusType] || 'Машины';
+    $('statusListSub').textContent = subs[statusType] || '';
+
+    if (!list.length) {
+      $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>';
+      $('statusListModal').classList.remove('hidden');
+      return;
+    }
+
+    const html = list.map(m => {
+      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+      const driverText = activeDriver ? activeDriver : 'Нет водителя';
+      let timeText = '—';
+      if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
+      const causeText = m.lastCause ? m.lastCause : 'Без причины';
+      const reasonHtml = (statusType === 'off' || statusType === 'parts')
+        ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>`
+        : '';
+      // machine-ключ в журнале формируется как `${m.num} ${m.model}` — передаём так же
+      const machineLogKey = `${m.num} ${m.model || ''}`;
+      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
+        <div class="sli-main">
+          <span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span>
+          <span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span>
+        </div>
+        <div class="sli-right">
+          ${reasonHtml}
+          <span class="timer-badge">⏱ ${timeText}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    $('statusListContent').innerHTML = html;
+    $('statusListModal').classList.remove('hidden');
+  };
+
+  function bindStatusBadges() {
+    const offBadges = [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean);
+    offBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
+
+    const partsBadges = [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean);
+    partsBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
+
+    const bvBadges = [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean);
+    bvBadges.forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
+  }
+
+  // ============================================================
   // ГЛАВНАЯ (РЕНДЕР)
   // ============================================================
   function updateClocks() {
@@ -1047,9 +1130,9 @@
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
           
           if ((st === 'off' || st === 'parts') && cause) {
-            // Если простой больше 2 часов - добавляем класс для мигания
-            const isLong = m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
-            const timerClass = isLong ? 'timer-badge blink-red' : 'timer-badge';
+            // Мигание — ТОЛЬКО на сходе (off). В ремонте (parts) сигналов нет.
+            const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
+            const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
             bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
@@ -1083,7 +1166,8 @@
                 activeTimers[m.id] = setInterval(() => { 
                   const elapsed = Date.now() - m.lastTime;
                   timerSpan.textContent = formatTimer(elapsed);
-                  if (elapsed > (2 * 60 * 60 * 1000)) {
+                  // Мигание только для сходов (off)
+                  if (st === 'off' && elapsed > (2 * 60 * 60 * 1000)) {
                     timerSpan.classList.add('blink-red');
                   } else {
                     timerSpan.classList.remove('blink-red');
@@ -1170,7 +1254,7 @@
     m.author = labels[status] + loggedUser.name;
     
     lastMachineStatuses[machineId] = status;
-    delete alertedMachineIds[machineId]; // Сбрасываем флаг простоя при смене статуса
+    delete alertedMachineIds[machineId]; // сбрасываем флаг долгого схода при смене статуса
 
     await update(ref(db, 'machines/' + machineId), m);
   }
@@ -1258,7 +1342,7 @@
   }
 
   // ============================================================
-  // ФУНКЦИИ РЕДАКТИРОВАНИЯ МАШИН В АДМИНКЕ
+  // РЕДАКТИРОВАНИЕ МАШИН В АДМИНКЕ
   // ============================================================
   window.openEditMachineModal = function(key) {
     if (!isAdminLoggedIn) return;
@@ -1287,8 +1371,6 @@
   // ============================================================
   // ЖУРНАЛ И ОТЧЕТЫ
   // ============================================================
-  
-  // Переключение вкладок отчетов
   $('btnReportJournal').onclick = () => {
     $('btnReportJournal').classList.add('active');
     $('btnReportKpi').classList.remove('active');
@@ -1301,7 +1383,6 @@
     $('btnReportJournal').classList.remove('active');
     $('reportKpiBlock').classList.remove('hidden');
     $('reportJournalBlock').classList.add('hidden');
-    // Устанавливаем даты по умолчанию для KPI (месяц)
     if (!$('kpiDateFrom').value) {
       const d = new Date();
       const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -1406,7 +1487,6 @@
     }
   }
 
-  // KPI
   function buildKpiReport() {
     const dateFrom = $('kpiDateFrom').value;
     const dateTo = $('kpiDateTo').value;
@@ -1418,40 +1498,33 @@
     const pTo = dateTo.split('-');
     const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
 
-    // 1. Считаем календарные дни в периоде
     const start = new Date(dateFrom);
     const end = new Date(dateTo);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
-    const totalPeriodMs = diffDays * 24 * 60 * 60 * 1000; // Общее время периода
+    const totalPeriodMs = diffDays * 24 * 60 * 60 * 1000;
 
-    // 2. Собираем данные по каждой машине
-    let machineStats = {}; // { id: { num, model, lineMs, offMs, partsMs, bvMs } }
+    let machineStats = {};
 
-    // Инициализируем по текущим машинам
     Object.values(MACHINES).forEach(m => {
       machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 };
     });
 
-    // Проходим по журналу и суммируем время
     Object.values(eventLog).forEach(log => {
-      // Ищем машину по названию (номеру)
       const machineEntry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
       if (!machineEntry) return;
 
       const [id, stat] = machineEntry;
 
-      // Проверяем, попадает ли дата лога в выбранный период
       if (log.date >= dFromStr && log.date <= dToStr) {
         const dur = log.duration || 0;
         if (log.status === 'off') stat.offMs += dur;
         if (log.status === 'parts') stat.partsMs += dur;
         if (log.status === 'bv') stat.bvMs += dur;
-        if (log.status === 'line') stat.lineMs += dur; // Время на линии тоже может быть в логах
+        if (log.status === 'line') stat.lineMs += dur;
       }
     });
 
-    // 3. Формируем таблицу
     let html = `
       <table class="report-table">
         <thead>
@@ -1468,20 +1541,17 @@
         <tbody>
     `;
 
-    // Сортируем по KPI (от большего к меньшему)
     const sortedStats = Object.values(machineStats).map(s => {
       const totalKnown = s.lineMs + s.offMs + s.partsMs + s.bvMs;
-      // Эффективность считаем как: время на линии / общее время периода
-      // (Если общее время периода меньше известного, берем известное, чтобы не было >100%)
       const baseMs = Math.max(totalPeriodMs, totalKnown);
       const kpi = baseMs > 0 ? Math.round((s.lineMs / baseMs) * 100) : 0;
       return { ...s, kpi, totalKnown };
     }).sort((a,b) => b.kpi - a.kpi);
 
     sortedStats.forEach(s => {
-      let color = '#ef4444'; // Красный
-      if (s.kpi >= 80) color = '#10b981'; // Зеленый
-      else if (s.kpi >= 50) color = '#eab308'; // Желтый
+      let color = '#ef4444';
+      if (s.kpi >= 80) color = '#10b981';
+      else if (s.kpi >= 50) color = '#eab308';
 
       html += `
         <tr>
@@ -1642,6 +1712,8 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('spt_user'); if (savedUser) { try { loggedUser = JSON.parse(savedUser); } catch(e){} }
+
+    bindStatusBadges();
 
     $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); enforceStatusRules(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
     $('tabReports').onclick = () => { $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden'); $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join(''); if (!$('repDateFrom').value) { const d = new Date(); $('repDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('repDateTo').value = d.toISOString().slice(0,10); } };
