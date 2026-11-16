@@ -1022,8 +1022,19 @@
     document.querySelectorAll('.status-panel.open').forEach(p => p.classList.remove('open'));
     
     const rect = btnElement.getBoundingClientRect();
-    panel.style.top = (rect.bottom + window.scrollY + 4) + 'px';
-    panel.style.left = (rect.right + window.scrollX - 200) + 'px';
+    // Исправлено: убрали scrollY/scrollX, так как position:fixed привязан к окну
+    let top = rect.bottom + 4;
+    let left = rect.right - 200; // 200px - min-width панели
+    
+    // Не даем панели уйти за край экрана
+    if (left < 10) left = 10;
+    if (top + 250 > window.innerHeight) { // 250px - примерная высота панели
+        top = rect.top - 250 - 4;
+        if (top < 10) top = 10;
+    }
+
+    panel.style.top = top + 'px';
+    panel.style.left = left + 'px';
     panel.classList.add('open');
     panelOpenMachineId = machineId;
   };
@@ -1041,51 +1052,6 @@
   }, true);
 
   // === ОБРАБОТКА СТАТУСА ===
-  window.handleStatusAction = async function(event, machineId, status) {
-    event.stopPropagation();
-    event.preventDefault();
-    const panel = $('status-panel-' + machineId);
-    if (panel) panel.classList.remove('open');
-    panelOpenMachineId = null;
-
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const m = MACHINES[machineId]; if (!m) return;
-    if ((m.lastStatus || 'line') === status) return;
-
-    if (status === 'line') {
-      const { isShift1 } = getShiftInfo();
-      const activeDriver = isShift1 ? m.driver1 : m.driver2;
-      if (!activeDriver || activeDriver.trim() === '') {
-        pendingSetLineMachineId = machineId;
-        $('setLineDriverInput').value = '';
-        $('btnAddNewDriverForLine').style.display = 'none';
-        $('setLineDriverModal').classList.remove('hidden');
-        setTimeout(() => {
-          const inp = $('setLineDriverInput');
-          attachDriverAutocomplete(inp);
-          inp.focus();
-        }, 50);
-        return;
-      }
-      await window.setStatus(machineId, 'line');
-    } else if (status === 'off' || status === 'parts') {
-      window.openCauseModal(machineId, status);
-    } else if (status === 'bv') {
-      $('confirmBvText').textContent = `Перевести машину ${m.num} ${m.model || ''} в статус БВ? Водитель текущей смены будет удалён.`;
-      $('confirmBvModal').classList.remove('hidden');
-    }
-  };
-
-  window.confirmBvYes = async function() {
-    window.closeModal('confirmBvModal');
-    if (!pendingSetLineMachineId) {
-       // Если БВ было вызвано не из модалки, нужно знать ID
-       // Но в нашем случае ID хранится в data-атрибуте или мы можем пробросить его
-    }
-    // У нас нет ID в модалке, поэтому нам нужно его запомнить перед открытием
-    // В handleStatusAction мы не сохранили ID для БВ. Давайте исправим:
-  };
-  // Перепишем handleStatusAction для БВ и confirmBvYes
   window.handleStatusAction = async function(event, machineId, status) {
     event.stopPropagation();
     event.preventDefault();
@@ -1202,10 +1168,13 @@
       }
     }
 
+    // Удаление водителя при БВ (если он есть)
     if (status === 'bv') {
       const field = isShift1 ? 'driver1' : 'driver2';
-      await update(ref(db, `machines/${machineId}/${field}`), '');
-      m[field] = '';
+      if (m[field]) {
+        await update(ref(db, `machines/${machineId}/${field}`), '');
+        m[field] = '';
+      }
     }
 
     const now = Date.now(); const monthStr = getCurrentMonthStr();
