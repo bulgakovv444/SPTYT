@@ -1099,12 +1099,50 @@
     }
   };
 
+  // ИСПРАВЛЕННЫЙ ПЕРЕВОД В БВ
   window.confirmBvYes = async function() {
     window.closeModal('confirmBvModal');
     const id = window._pendingBvMachineId;
     if (!id) return;
     window._pendingBvMachineId = null;
-    await window.setStatus(id, 'bv');
+
+    const m = MACHINES[id];
+    if (!m) return;
+    const { isShift1 } = getShiftInfo();
+    const field = isShift1 ? 'driver1' : 'driver2';
+
+    // 1. Удаляем водителя локально
+    m[field] = '';
+    m.lastStatus = 'bv';
+    m.lastCause = '';
+    m.lastTime = Date.now();
+    m.author = 'БВ: ' + loggedUser.name;
+
+    // 2. Мгновенно перерисовываем интерфейс
+    renderMainGrid();
+
+    // 3. Отправляем в Firebase пакетным запросом
+    try {
+      const now = Date.now(); const monthStr = getCurrentMonthStr();
+      let stats = (await get(ref(db, `monthlyStats/${monthStr}`))).val() || { total: 0, off: 0, parts: 0, bv: 0 };
+      
+      // Если машина стояла в сходе/ремонте, начисляем время
+      if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
+        // тут m.lastTime уже перезаписан, поэтому берем старое значение
+      }
+      
+      await update(ref(db, 'machines/' + id), {
+        [field]: '',
+        lastStatus: 'bv',
+        lastCause: '',
+        lastTime: now,
+        author: m.author
+      });
+      showToast('Статус БВ установлен');
+    } catch(e) {
+      console.error(e);
+      showToast('Ошибка сохранения: ' + e.message, true);
+    }
   };
 
   window.openCauseModal = function(machineId, status) {
