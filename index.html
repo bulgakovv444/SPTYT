@@ -194,7 +194,6 @@
     <button class="tab-btn" id="tabAdmin">🔐 Панель управления</button>
   </div>
 
-  <!-- ===== ГЛАВНАЯ ===== -->
   <div id="mainView">
     <div id="mainLoginBlock" class="login-box">
       <h2>Вход <span class="project-badge">СПТ</span></h2>
@@ -252,7 +251,6 @@
     </div>
   </div>
 
-  <!-- ===== ВОДИТЕЛИ ===== -->
   <div id="driversView" class="hidden">
     <h1>👤 Водители</h1>
     <div class="card">
@@ -264,7 +262,6 @@
     </div>
   </div>
 
-  <!-- ===== ОТЧЕТЫ ===== -->
   <div id="reportsView" class="hidden">
     <h1>📊 Отчёт по технике СПТ</h1>
     <div class="report-tab-buttons">
@@ -319,7 +316,6 @@
     </div>
   </div>
 
-  <!-- ===== АДМИН ===== -->
   <div id="adminView" class="hidden">
     <div id="adminLoginBlock" class="login-box">
       <h2>Панель Главного инженера</h2>
@@ -359,7 +355,6 @@
   </div>
 </div>
 
-<!-- МОДАЛКИ -->
 <div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;background:#f8fafc;padding:10px;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;"><label style="margin:0;font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto;font-weight:800;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
 
 <div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail"></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
@@ -868,6 +863,24 @@
   onValue(ref(db, 'machines'), snap => {
     MACHINES = snap.val() || {};
     checkDataReady();
+    
+    // АВТО-ПЕРЕВОД В БВ, ЕСЛИ НЕТ ВОДИТЕЛЯ
+    const { isShift1 } = getShiftInfo();
+    let changed = false;
+    for (const [id, m] of Object.entries(MACHINES)) {
+      if (m.lastStatus === 'line') {
+        const activeDriver = isShift1 ? m.driver1 : m.driver2;
+        if (!activeDriver || activeDriver.trim() === '') {
+          m.lastStatus = 'bv';
+          m.author = 'БВ (нет водителя): ' + loggedUser.name;
+          m.lastTime = Date.now();
+          update(ref(db, 'machines/' + id), { lastStatus: 'bv', author: m.author, lastTime: m.lastTime }).catch(()=>{});
+          changed = true;
+        }
+      }
+    }
+    if (changed) { renderMainGrid(); return; } // Перерисовываем, чтобы не было мигания
+
     updateTopCounters();
     checkForNewOffStatus(MACHINES);
     checkForLongDowntime(MACHINES);
@@ -1022,13 +1035,11 @@
     document.querySelectorAll('.status-panel.open').forEach(p => p.classList.remove('open'));
     
     const rect = btnElement.getBoundingClientRect();
-    // Исправлено: убрали scrollY/scrollX, так как position:fixed привязан к окну
     let top = rect.bottom + 4;
-    let left = rect.right - 200; // 200px - min-width панели
+    let left = rect.right - 200;
     
-    // Не даем панели уйти за край экрана
     if (left < 10) left = 10;
-    if (top + 250 > window.innerHeight) { // 250px - примерная высота панели
+    if (top + 250 > window.innerHeight) {
         top = rect.top - 250 - 4;
         if (top < 10) top = 10;
     }
@@ -1249,8 +1260,20 @@
       const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
       return showToast('Конфликт: ' + msg, true);
     }
-    m.driver1 = d1; m.driver2 = d2;
-    await update(ref(db, 'machines/' + editingRowId), { driver1: d1, driver2: d2 });
+    
+    // Если водителя удалили и машина была на линии — переводим в БВ
+    const { isShift1 } = getShiftInfo();
+    const activeDriver = isShift1 ? d1 : d2;
+    let newStatus = m.lastStatus;
+    let authorStr = m.author;
+    if (m.lastStatus === 'line' && (!activeDriver || activeDriver.trim() === '')) {
+       newStatus = 'bv';
+       authorStr = 'БВ (нет водителя): ' + loggedUser.name;
+    }
+    
+    m.driver1 = d1; m.driver2 = d2; m.lastStatus = newStatus; m.author = authorStr;
+
+    await update(ref(db, 'machines/' + editingRowId), { driver1: d1, driver2: d2, lastStatus: newStatus, author: authorStr, lastTime: newStatus !== 'line' ? Date.now() : 0 });
     window.closeModal('editDriverModal');
   };
 
