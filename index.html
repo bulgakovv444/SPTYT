@@ -42,31 +42,44 @@
   .clock-block span { color:#2563eb; }
   .grid-wrapper { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; align-items:start; }
   @media (max-width:1200px){ .grid-wrapper{ grid-template-columns:repeat(3,1fr); } }
-  .col { background:#fff; border-radius:8px; border:2px solid #000; overflow:hidden; display:flex; flex-direction:column; }
+  .col { background:#fff; border-radius:8px; border:2px solid #000; overflow:visible; display:flex; flex-direction:column; }
   .col-header { background:#e2e8f0; color:#000; font-weight:900; font-size:20px; text-align:center; padding:4px 8px; border-bottom:2px solid #000; text-transform:uppercase; line-height:1.2; }
   .col-body { max-height:600px; overflow-y:auto; background:#fff; }
-  .row { display:flex; flex-direction:column; padding:8px 10px; border-bottom:2px solid #000; gap:4px; }
+  .row { display:flex; flex-direction:column; padding:8px 10px; border-bottom:2px solid #000; gap:4px; position:relative; }
   .row:last-child { border-bottom:none; }
   .row.st-line { background:#dcfce7; border-left:6px solid #16a34a; }
-  .row.st-off { background:#fef9c3; border-left:6px solid #ca8a04; animation:pulse-bg-off 1.5s infinite; }
+  .row.st-off { background:#fef9c3; border-left:6px solid #ca8a04; }
   .row.st-parts { background:#fee2e2; border-left:6px solid #dc2626; }
   .row.st-bv { background:#cbd5e1; border-left:6px solid #dc2626; }
-  @keyframes pulse-bg-off { 0%{background:#fef9c3;border-left:6px solid #ca8a04;} 50%{background:#fde047;border-left:6px solid #b45309;} 100%{background:#fef9c3;border-left:6px solid #ca8a04;} }
   .row-top { display:flex; justify-content:space-between; align-items:center; gap:4px; width:100%; flex-wrap:wrap; }
   .row-left { display:flex; align-items:center; gap:6px; flex-shrink:0; min-width:0; }
   .row-num { display:flex; align-items:center; justify-content:center; font-weight:900; color:#000; font-size:12px; width:22px; height:22px; background:#fff; border-radius:4px; border:1.5px solid #000; flex-shrink:0; }
   .row-name { font-weight:900; font-size:14px; color:#000; background:#fff; padding:2px 6px; border-radius:4px; border:1.5px solid #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .status-dropdown { position:relative; display:inline-block; flex-shrink:0; }
+  
   .btn-status { border:1px solid #000; border-radius:3px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; }
   .btn-status.line { background:#22c55e; color:#fff; }
   .btn-status.off { background:#eab308; color:#000; }
   .btn-status.parts { background:#ef4444; color:#fff; }
   .btn-status.bv { background:#475569; color:#fff; }
-  .dropdown-content { display:none; position:absolute; background:#fff; min-width:140px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index:10; border:2px solid #000; border-radius:4px; right:0; top:100%; }
-  .dropdown-content button { color:black; padding:8px 12px; display:block; width:100%; text-align:left; border:none; background:none; font-size:12px; font-weight:700; cursor:pointer; border-bottom:1px solid #e2e8f0; }
-  .dropdown-content button:last-child { border-bottom:none; }
-  .dropdown-content button:hover { background-color:#f1f5f9; }
-  .status-dropdown.show .dropdown-content { display:block; }
+  .btn-status:hover { filter:brightness(0.92); }
+
+  /* Панель статусов поверх всего */
+  .status-panel { display:none; position:fixed; z-index:9999; background:#fff; border:2px solid #000; border-radius:6px; box-shadow:0 8px 25px rgba(0,0,0,.3); padding:6px; min-width:200px; }
+  .status-panel.open { display:block; }
+  .status-panel button { display:flex; align-items:center; gap:8px; width:100%; padding:9px 10px; border:none; background:none; text-align:left; font-size:13px; font-weight:700; cursor:pointer; border-radius:4px; margin-bottom:2px; }
+  .status-panel button:last-child { margin-bottom:0; }
+  .status-panel button:hover { background:#f1f5f9; }
+  .status-panel button:active { transform:scale(0.97); }
+  .status-panel button.st-line { color:#166534; }
+  .status-panel button.st-off { color:#854d0e; }
+  .status-panel button.st-parts { color:#991b1b; }
+  .status-panel button.st-bv { color:#334155; }
+  .status-panel button .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .status-panel button.st-line .dot { background:#22c55e; }
+  .status-panel button.st-off .dot { background:#eab308; }
+  .status-panel button.st-parts .dot { background:#ef4444; }
+  .status-panel button.st-bv .dot { background:#475569; }
+
   .row-info-line { display:flex; align-items:center; gap:4px; flex-wrap:wrap; width:100%; padding-left:28px; font-size:11px; }
   .driver-badge { background:#fff; color:#0369a1; padding:2px 5px; border-radius:3px; font-weight:700; display:inline-flex; align-items:center; gap:3px; border:1px solid #000; white-space:nowrap; max-width:160px; overflow:hidden; }
   .driver-badge .driver-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -75,8 +88,7 @@
   .reason-badge { background:#fff; color:#854d0e; padding:2px 5px; border-radius:3px; font-weight:700; border:1px solid #000; white-space:nowrap; }
   .reason-badge.red { background:#fff; color:#b91c1c; }
   .timer-badge { background:#fff; color:#991b1b; padding:2px 5px; border-radius:3px; font-weight:800; font-family:monospace; border:1px solid #000; white-space:nowrap; }
-  .timer-badge.blink-red { background:#ef4444; color:#fff; border-color:#991b1b; animation:blink-timer 1s infinite; }
-  @keyframes blink-timer { 0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
+  .timer-badge.blink-red { background:#ef4444; color:#fff; border-color:#991b1b; }
   .author-badge { color:#475569; font-style:italic; font-size:10px; font-weight:600; background:rgba(255,255,255,0.8); padding:2px 5px; border-radius:3px; border:1px solid #cbd5e1; white-space:nowrap; margin-left:auto; }
   .col-footer { padding:6px; background:#fff; border-top:2px solid #000; }
   .footer-btn { width:100%; padding:6px; font-size:12px; font-weight:800; border-radius:4px; cursor:pointer; border:2px dashed #16a34a; background:#dcfce7; color:#166534; }
@@ -92,7 +104,7 @@
   .login-box h2 { margin-top:0; color:#1e3a8a; }
   .login-box p { color:#64748b; margin-bottom:20px; font-size:14px; }
   .login-box input, .login-box select { margin-bottom:12px; text-align:center; }
-  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; z-index:10000; }
   .modal-overlay.hidden { display:none !important; }
   .modal { background:#fff; border-radius:10px; padding:20px; max-width:450px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,.3); max-height:90vh; overflow-y:auto; }
   .modal.wide { max-width:850px; }
@@ -145,7 +157,7 @@
   .report-tab-buttons { display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #cbd5e1; flex-wrap:wrap; }
   .report-tab-btn { background:none; border:none; font-size:15px; font-weight:600; color:#64748b; cursor:pointer; padding:10px 20px; border-radius:6px 6px 0 0; border-bottom:3px solid transparent; margin-bottom:-2px; }
   .report-tab-btn.active { background:#fff; color:#2563eb; border-bottom-color:#2563eb; }
-  .toast { position:fixed; top:15px; right:15px; background:#10b981; color:#fff; padding:10px 16px; border-radius:6px; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,.15); opacity:0; transform:translateY(-10px); transition:opacity .2s, transform .2s; pointer-events:none; z-index:1001; max-width:90vw; }
+  .toast { position:fixed; top:15px; right:15px; background:#10b981; color:#fff; padding:10px 16px; border-radius:6px; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,.15); opacity:0; transform:translateY(-10px); transition:opacity .2s, transform .2s; pointer-events:none; z-index:10001; max-width:90vw; }
   .toast.error { background:#ef4444; }
   .toast.show { opacity:1; transform:translateY(0); }
   .hidden { display:none !important; }
@@ -378,6 +390,17 @@
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('setLineDriverModal')">Отмена</button>
       <button class="btn-modal green" onclick="confirmSetLineDriver()">На линию</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="confirmBvModal">
+  <div class="modal">
+    <h3>Перевести в БВ?</h3>
+    <p id="confirmBvText">Водитель текущей смены будет удалён.</p>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('confirmBvModal')">Отмена</button>
+      <button class="btn-modal red" onclick="confirmBvYes()">Перевести в БВ</button>
     </div>
   </div>
 </div>
@@ -666,6 +689,7 @@
   let alertedMachineIds = {}, lastMachineStatuses = {};
   let pendingSetLineMachineId = null;
   let sessionRestored = false;
+  let panelOpenMachineId = null;
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -679,7 +703,6 @@
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function shortDriverName(fullName) { const parts = String(fullName || '').trim().split(/\s+/); if (parts.length >= 2) return parts[0] + ' ' + parts[1]; return parts[0] || ''; }
 
-  // === ГЛОБАЛЬНЫЕ ФУНКЦИИ (для onclick) ===
   window.closeModal = function(id) { $(id).classList.add('hidden'); };
 
   // === АВТОКОМПЛИТ ===
@@ -984,99 +1007,148 @@
     enforceBlockState();
   }
 
-  function renderMainGrid(){
-    for (let key in activeTimers) clearInterval(activeTimers[key]);
-    for (let key in activeTimers) delete activeTimers[key];
-    if (!loggedUser.name || loggedUser.status !== 'approved') return;
-    let html = '';
-    Object.values(CATS).forEach(cat => {
-      let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
-      catMachines.sort((a, b) => {
-        const getRank = (st) => (st === 'line' || !st) ? 0 : st === 'off' ? 1 : st === 'parts' ? 2 : st === 'bv' ? 3 : 4;
-        const rankA = getRank(a.lastStatus); const rankB = getRank(b.lastStatus);
-        return rankA !== rankB ? rankA - rankB : 0;
-      });
-      html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
-      if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; }
-      else {
-        catMachines.forEach((m, idx) => {
-          const st = m.lastStatus || 'line'; const cause = m.lastCause || '';
-          let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
-          let bottomHtml = '';
-          if (st !== 'bv') {
-            const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-            const shortName = activeDriver ? shortDriverName(activeDriver) : 'Нет';
-            bottomHtml += `<span class="driver-badge" title="${esc(activeDriver || 'Нет водителя')}"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(shortName)}</span></span>`;
-          } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
-          if ((st === 'off' || st === 'parts') && cause) {
-            const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
-            const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
-            bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
-          }
-          bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
-          const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
-          const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
-          html += `<div class="row ${rowClass}" id="row-${m.id}">
-            <div class="row-top">
-              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name" title="${esc(m.num)} ${esc(m.model || '')}">${esc(m.num)} ${esc(m.model || '')}</span></div>
-              <div class="status-dropdown" onclick="this.classList.toggle('show')">
-                <button class="btn-status ${btnClass}">${btnText} ▾</button>
-                <div class="dropdown-content" onclick="event.stopPropagation()">
-                  <button style="color:#16a34a;" onclick="trySetLine('${m.id}')">🟢 На линии</button>
-                  <button style="color:#ca8a04;" onclick="openCauseModal('${m.id}','off')">🟡 Сход</button>
-                  <button style="color:#dc2626;" onclick="openCauseModal('${m.id}','parts')">🔴 Ож. ремонта</button>
-                  <button style="color:#475569;" onclick="setStatus('${m.id}','bv')">⚪ БВ</button>
-                </div>
-              </div>
-            </div>
-            <div class="row-info-line">${bottomHtml}</div>
-          </div>`;
-          if ((st === 'off' || st === 'parts') && m.lastTime) {
-            setTimeout(() => {
-              const timerSpan = $('timer-' + m.id);
-              if (timerSpan) {
-                activeTimers[m.id] = setInterval(() => {
-                  const elapsed = Date.now() - m.lastTime;
-                  timerSpan.textContent = formatTimer(elapsed);
-                  if (st === 'off' && elapsed > (2 * 60 * 60 * 1000)) timerSpan.classList.add('blink-red');
-                  else timerSpan.classList.remove('blink-red');
-                }, 1000);
-                timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
-              }
-            }, 50);
-          }
-        });
-      }
-      html += `</div><div class="col-footer"><button class="footer-btn" onclick="openAddMachineModal('${cat.id}')">+ Добавить машину</button></div></div>`;
-    });
-    $('mainGrid').innerHTML = html; updateClocks(); updateTopCounters();
-  }
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.status-dropdown')) document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show'));
-  });
-  document.addEventListener('scroll', function() { document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show')); }, true);
-
-  // === ГЛОБАЛЬНЫЕ ОБРАБОТЧИКИ СТАТУСОВ ===
-  window.trySetLine = function(machineId) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const m = MACHINES[machineId]; if (!m) return;
-    const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
-    if (!activeDriver || activeDriver.trim() === '') {
-      pendingSetLineMachineId = machineId;
-      $('setLineDriverInput').value = '';
-      $('btnAddNewDriverForLine').style.display = 'none';
-      $('setLineDriverModal').classList.remove('hidden');
-      setTimeout(() => {
-        const inp = $('setLineDriverInput');
-        attachDriverAutocomplete(inp);
-        inp.focus();
-      }, 50);
+  // === ПАНЕЛЬ СТАТУСОВ (FIXED) ===
+  window.toggleStatusPanel = function(event, machineId, btnElement) {
+    event.stopPropagation();
+    const panel = $('status-panel-' + machineId);
+    if (!panel) return;
+    
+    if (panelOpenMachineId === machineId) {
+      panel.classList.remove('open');
+      panelOpenMachineId = null;
       return;
     }
-    window.setStatus(machineId, 'line');
+    
+    document.querySelectorAll('.status-panel.open').forEach(p => p.classList.remove('open'));
+    
+    const rect = btnElement.getBoundingClientRect();
+    panel.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    panel.style.left = (rect.right + window.scrollX - 200) + 'px';
+    panel.classList.add('open');
+    panelOpenMachineId = machineId;
   };
 
-  window.confirmSetLineDriver = function() {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.status-panel') && !e.target.closest('.btn-status')) {
+      document.querySelectorAll('.status-panel.open').forEach(p => p.classList.remove('open'));
+      panelOpenMachineId = null;
+    }
+  });
+
+  document.addEventListener('scroll', () => {
+    document.querySelectorAll('.status-panel.open').forEach(p => p.classList.remove('open'));
+    panelOpenMachineId = null;
+  }, true);
+
+  // === ОБРАБОТКА СТАТУСА ===
+  window.handleStatusAction = async function(event, machineId, status) {
+    event.stopPropagation();
+    event.preventDefault();
+    const panel = $('status-panel-' + machineId);
+    if (panel) panel.classList.remove('open');
+    panelOpenMachineId = null;
+
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const m = MACHINES[machineId]; if (!m) return;
+    if ((m.lastStatus || 'line') === status) return;
+
+    if (status === 'line') {
+      const { isShift1 } = getShiftInfo();
+      const activeDriver = isShift1 ? m.driver1 : m.driver2;
+      if (!activeDriver || activeDriver.trim() === '') {
+        pendingSetLineMachineId = machineId;
+        $('setLineDriverInput').value = '';
+        $('btnAddNewDriverForLine').style.display = 'none';
+        $('setLineDriverModal').classList.remove('hidden');
+        setTimeout(() => {
+          const inp = $('setLineDriverInput');
+          attachDriverAutocomplete(inp);
+          inp.focus();
+        }, 50);
+        return;
+      }
+      await window.setStatus(machineId, 'line');
+    } else if (status === 'off' || status === 'parts') {
+      window.openCauseModal(machineId, status);
+    } else if (status === 'bv') {
+      $('confirmBvText').textContent = `Перевести машину ${m.num} ${m.model || ''} в статус БВ? Водитель текущей смены будет удалён.`;
+      $('confirmBvModal').classList.remove('hidden');
+    }
+  };
+
+  window.confirmBvYes = async function() {
+    window.closeModal('confirmBvModal');
+    if (!pendingSetLineMachineId) {
+       // Если БВ было вызвано не из модалки, нужно знать ID
+       // Но в нашем случае ID хранится в data-атрибуте или мы можем пробросить его
+    }
+    // У нас нет ID в модалке, поэтому нам нужно его запомнить перед открытием
+    // В handleStatusAction мы не сохранили ID для БВ. Давайте исправим:
+  };
+  // Перепишем handleStatusAction для БВ и confirmBvYes
+  window.handleStatusAction = async function(event, machineId, status) {
+    event.stopPropagation();
+    event.preventDefault();
+    const panel = $('status-panel-' + machineId);
+    if (panel) panel.classList.remove('open');
+    panelOpenMachineId = null;
+
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const m = MACHINES[machineId]; if (!m) return;
+    if ((m.lastStatus || 'line') === status) return;
+
+    if (status === 'line') {
+      const { isShift1 } = getShiftInfo();
+      const activeDriver = isShift1 ? m.driver1 : m.driver2;
+      if (!activeDriver || activeDriver.trim() === '') {
+        pendingSetLineMachineId = machineId;
+        $('setLineDriverInput').value = '';
+        $('btnAddNewDriverForLine').style.display = 'none';
+        $('setLineDriverModal').classList.remove('hidden');
+        setTimeout(() => {
+          const inp = $('setLineDriverInput');
+          attachDriverAutocomplete(inp);
+          inp.focus();
+        }, 50);
+        return;
+      }
+      await window.setStatus(machineId, 'line');
+    } else if (status === 'off' || status === 'parts') {
+      window.openCauseModal(machineId, status);
+    } else if (status === 'bv') {
+      window._pendingBvMachineId = machineId;
+      $('confirmBvText').textContent = `Перевести машину ${m.num} ${m.model || ''} в статус БВ? Водитель текущей смены будет удалён.`;
+      $('confirmBvModal').classList.remove('hidden');
+    }
+  };
+
+  window.confirmBvYes = async function() {
+    window.closeModal('confirmBvModal');
+    const id = window._pendingBvMachineId;
+    if (!id) return;
+    window._pendingBvMachineId = null;
+    await window.setStatus(id, 'bv');
+  };
+
+  window.openCauseModal = function(machineId, status) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentRowId = machineId; currentStatusType = status;
+    $('causeModalTitle').textContent = status === 'off' ? 'Сход с линии' : 'Ожидание ремонта';
+    $('causeModalSub').textContent = status === 'off' ? 'Укажите причину схода.' : 'Укажите, что ждем.';
+    $('confirmCauseBtn').className = status === 'off' ? 'btn-modal yellow' : 'btn-modal red';
+    $('causeSelect').innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+    $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
+  };
+  window.applyCause = function() {
+    if (!currentRowId) return;
+    const cause = $('causeSelect').value;
+    const detail = $('causeDetail').value.trim();
+    if (!cause && !detail) return showToast('Выберите причину', true);
+    window.setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
+    window.closeModal('causeModal');
+  };
+
+  window.confirmSetLineDriver = async function() {
     if (!pendingSetLineMachineId) return showToast('Машина не выбрана', true);
     const name = canonicalDriverName($('setLineDriverInput'));
     if (!name) return showToast('Введите или выберите ФИО водителя', true);
@@ -1097,18 +1169,16 @@
       const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
       return showToast('Конфликт: ' + msg, true);
     }
-    (async () => {
-      try {
-        await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
-        MACHINES[pendingSetLineMachineId][field] = name;
-        await window.setStatus(pendingSetLineMachineId, 'line');
-        window.closeModal('setLineDriverModal');
-        pendingSetLineMachineId = null;
-      } catch(e) {
-        console.error(e);
-        showToast('Ошибка сохранения: ' + e.message, true);
-      }
-    })();
+    try {
+      await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
+      MACHINES[pendingSetLineMachineId][field] = name;
+      await window.setStatus(pendingSetLineMachineId, 'line');
+      window.closeModal('setLineDriverModal');
+      pendingSetLineMachineId = null;
+    } catch(e) {
+      console.error(e);
+      showToast('Ошибка сохранения: ' + e.message, true);
+    }
   };
 
   window.setStatus = async function(machineId, status, causeText = '') {
@@ -1191,24 +1261,6 @@
     });
   };
 
-  window.openCauseModal = function(machineId, status) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    currentRowId = machineId; currentStatusType = status;
-    $('causeModalTitle').textContent = status === 'off' ? 'Сход с линии' : 'Ожидание ремонта';
-    $('causeModalSub').textContent = status === 'off' ? 'Укажите причину схода.' : 'Укажите, что ждем.';
-    $('confirmCauseBtn').className = status === 'off' ? 'btn-modal yellow' : 'btn-modal red';
-    $('causeSelect').innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-    $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
-  };
-  window.applyCause = function() {
-    if (!currentRowId) return;
-    const cause = $('causeSelect').value;
-    const detail = $('causeDetail').value.trim();
-    if (!cause && !detail) return showToast('Выберите причину', true);
-    window.setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
-    window.closeModal('causeModal');
-  };
-
   window.openEditDriverModal = function(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return;
@@ -1278,7 +1330,174 @@
     $('editMachineModal').classList.remove('hidden');
   };
 
-  // === ОТЧЕТЫ ===
+  // === РЕНДЕР ===
+  function renderMainGrid(){
+    for (let key in activeTimers) clearInterval(activeTimers[key]);
+    for (let key in activeTimers) delete activeTimers[key];
+    if (!loggedUser.name || loggedUser.status !== 'approved') return;
+    let html = '';
+    Object.values(CATS).forEach(cat => {
+      let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
+      catMachines.sort((a, b) => {
+        const getRank = (st) => (st === 'line' || !st) ? 0 : st === 'off' ? 1 : st === 'parts' ? 2 : st === 'bv' ? 3 : 4;
+        const rankA = getRank(a.lastStatus); const rankB = getRank(b.lastStatus);
+        return rankA !== rankB ? rankA - rankB : 0;
+      });
+      html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
+      if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; }
+      else {
+        catMachines.forEach((m, idx) => {
+          const st = m.lastStatus || 'line'; const cause = m.lastCause || '';
+          let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
+          let bottomHtml = '';
+          if (st !== 'bv') {
+            const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+            const shortName = activeDriver ? shortDriverName(activeDriver) : 'Нет';
+            bottomHtml += `<span class="driver-badge" title="${esc(activeDriver || 'Нет водителя')}"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(shortName)}</span></span>`;
+          } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          if ((st === 'off' || st === 'parts') && cause) {
+            const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
+            const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
+            bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
+          }
+          bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
+          const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
+          const btnClass = st;
+          html += `<div class="row ${rowClass}" id="row-${m.id}">
+            <div class="row-top">
+              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name" title="${esc(m.num)} ${esc(m.model || '')}">${esc(m.num)} ${esc(m.model || '')}</span></div>
+              <div style="position:relative;">
+                <button class="btn-status ${btnClass}" onclick="toggleStatusPanel(event, '${m.id}', this)">${btnText} ▾</button>
+                <div class="status-panel" id="status-panel-${m.id}">
+                  <button class="st-line" onclick="handleStatusAction(event, '${m.id}', 'line')"><span class="dot"></span>На линии</button>
+                  <button class="st-off" onclick="handleStatusAction(event, '${m.id}', 'off')"><span class="dot"></span>Сход</button>
+                  <button class="st-parts" onclick="handleStatusAction(event, '${m.id}', 'parts')"><span class="dot"></span>Ожидание ремонта</button>
+                  <button class="st-bv" onclick="handleStatusAction(event, '${m.id}', 'bv')"><span class="dot"></span>Без водителя (БВ)</button>
+                </div>
+              </div>
+            </div>
+            <div class="row-info-line">${bottomHtml}</div>
+          </div>`;
+          if ((st === 'off' || st === 'parts') && m.lastTime) {
+            setTimeout(() => {
+              const timerSpan = $('timer-' + m.id);
+              if (timerSpan) {
+                activeTimers[m.id] = setInterval(() => {
+                  const elapsed = Date.now() - m.lastTime;
+                  timerSpan.textContent = formatTimer(elapsed);
+                  if (st === 'off' && elapsed > (2 * 60 * 60 * 1000)) timerSpan.classList.add('blink-red');
+                  else timerSpan.classList.remove('blink-red');
+                }, 1000);
+                timerSpan.textContent = formatTimer(Date.now() - m.lastTime);
+              }
+            }, 50);
+          }
+        });
+      }
+      html += `</div><div class="col-footer"><button class="footer-btn" onclick="openAddMachineModal('${cat.id}')">+ Добавить машину</button></div></div>`;
+    });
+    $('mainGrid').innerHTML = html; updateClocks(); updateTopCounters();
+  }
+
+  // === ВОДИТЕЛИ ===
+  window.renderDriversTab = function() {
+    const search = ($('driversSearch')?.value || '').trim().toLowerCase();
+    let drivers = Object.values(DRIVERS);
+    if (search) drivers = drivers.filter(d => d.name.toLowerCase().includes(search) || (d.position && d.position.toLowerCase().includes(search)) || (d.tabNum && d.tabNum.includes(search)));
+    drivers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    if (!drivers.length) { $('driversList').innerHTML = '<p class="empty">Нет водителей</p>'; return; }
+    $('driversList').innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px;">${drivers.map(d => `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;"><div style="font-weight:800; font-size:14px;">${esc(d.name)}</div><div style="font-size:12px; color:#64748b; margin-top:4px;">${esc(d.position || '—')}</div><div style="font-size:12px; color:#64748b;">Таб. № ${esc(d.tabNum || '—')}</div></div>`).join('')}</div>`;
+  };
+  window.openAddDriverRecord = function() {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    $('driverEditId').value = ''; $('driverName').value = ''; $('driverPosition').value = ''; $('driverTabNum').value = '';
+    $('driverModalTitle').textContent = 'Новый водитель';
+    $('driverModal').classList.remove('hidden');
+  };
+  window.saveDriverRecord = async function() {
+    const name = $('driverName').value.trim();
+    if (!name) return showToast('Введите ФИО', true);
+    const pos = $('driverPosition').value.trim(); const tab = $('driverTabNum').value.trim();
+    const id = $('driverEditId').value;
+    if (id) { await update(ref(db, 'drivers/' + id), { name, position: pos, tabNum: tab }); }
+    else { const newIdVal = newId('drv'); await set(ref(db, 'drivers/' + newIdVal), { id: newIdVal, name, position: pos, tabNum: tab }); }
+    window.closeModal('driverModal');
+    if (window.pendingDriverTarget) {
+      const { inputId } = window.pendingDriverTarget;
+      const input = $(inputId); if (input) { input.value = name; input.dispatchEvent(new Event('change')); }
+      window.pendingDriverTarget = null;
+    }
+  };
+
+  window.openStatusListModal = function(statusType) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
+    const subs = { off: 'Причины схода и время простоя.', parts: 'Причины ожидания ремонта.', bv: 'Машины без водителя в текущую смену.' };
+    const isShift1 = getShiftInfo().isShift1;
+    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
+    $('statusListTitle').textContent = titles[statusType] || 'Машины';
+    $('statusListSub').textContent = subs[statusType] || '';
+    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
+    const html = list.map(m => {
+      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+      const driverText = activeDriver ? activeDriver : 'Нет водителя';
+      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
+      const causeText = m.lastCause ? m.lastCause : 'Без причины';
+      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
+      const machineLogKey = `${m.num} ${m.model || ''}`;
+      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
+        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
+        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
+      </div>`;
+    }).join('');
+    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
+  };
+
+  window.showLogModal = function(type, machineName = null) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentLogType = type; logModalMachineFilter = machineName;
+    const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
+    const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
+    $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
+    $('logModal').classList.remove('hidden'); window.renderLogTable();
+  };
+  let logModalMachineFilter = null;
+  window.renderLogTable = function() {
+    const month = $('logMonthSelect').value; const type = currentLogType;
+    let filtered = Object.values(eventLog).filter(e => e.month === month);
+    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
+    else {
+      let title = '';
+      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+      else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; }
+      else { title = 'Все события'; }
+      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+    }
+    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0);
+    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей</div>'; return; }
+    let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
+    filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
+      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
+    });
+    $('logModalContent').innerHTML = html + '</tbody></table>';
+  };
+
+  window.setReportStatus = function(status) {
+    reportStatusFilter = status;
+    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
+    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
+    if (activeBtn) {
+      if (status === '') activeBtn.classList.add('active-all');
+      else if (status === 'line') activeBtn.classList.add('active-line');
+      else if (status === 'off') activeBtn.classList.add('active-off');
+      else if (status === 'parts') activeBtn.classList.add('active-parts');
+      else if (status === 'bv') activeBtn.classList.add('active-bv');
+    }
+    window.buildReport();
+  };
   window.buildReport = function() {
     try {
       const dateFrom = $('repDateFrom').value; const dateTo = $('repDateTo').value;
@@ -1309,19 +1528,6 @@
       filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
       $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
     } catch(err) { $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка: ${esc(err.message)}</p>`; }
-  };
-  window.setReportStatus = function(status) {
-    reportStatusFilter = status;
-    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
-    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
-    if (activeBtn) {
-      if (status === '') activeBtn.classList.add('active-all');
-      else if (status === 'line') activeBtn.classList.add('active-line');
-      else if (status === 'off') activeBtn.classList.add('active-off');
-      else if (status === 'parts') activeBtn.classList.add('active-parts');
-      else if (status === 'bv') activeBtn.classList.add('active-bv');
-    }
-    window.buildReport();
   };
   window.buildKpiReport = function() {
     const dateFrom = $('kpiDateFrom').value; const dateTo = $('kpiDateTo').value;
@@ -1381,102 +1587,13 @@
   window.exportExcel = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
   window.exportDriversReport = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
 
-  window.showLogModal = function(type, machineName = null) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    currentLogType = type; logModalMachineFilter = machineName;
-    const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
-    const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
-    $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-    $('logModal').classList.remove('hidden'); window.renderLogTable();
-  };
-  let logModalMachineFilter = null;
-  window.renderLogTable = function() {
-    const month = $('logMonthSelect').value; const type = currentLogType;
-    let filtered = Object.values(eventLog).filter(e => e.month === month);
-    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
-    else {
-      let title = '';
-      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
-      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
-      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
-      else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; }
-      else { title = 'Все события'; }
-      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
-    }
-    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0);
-    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
-    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей</div>'; return; }
-    let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
-    filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
-      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
-    });
-    $('logModalContent').innerHTML = html + '</tbody></table>';
+  window.bindStatusBadges = function() {
+    [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
+    [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
+    [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
   };
 
-  // === ВОДИТЕЛИ ===
-  window.renderDriversTab = function() {
-    const search = ($('driversSearch')?.value || '').trim().toLowerCase();
-    let drivers = Object.values(DRIVERS);
-    if (search) drivers = drivers.filter(d => d.name.toLowerCase().includes(search) || (d.position && d.position.toLowerCase().includes(search)) || (d.tabNum && d.tabNum.includes(search)));
-    drivers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-    if (!drivers.length) { $('driversList').innerHTML = '<p class="empty">Нет водителей</p>'; return; }
-    $('driversList').innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px;">${drivers.map(d => `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;"><div style="font-weight:800; font-size:14px;">${esc(d.name)}</div><div style="font-size:12px; color:#64748b; margin-top:4px;">${esc(d.position || '—')}</div><div style="font-size:12px; color:#64748b;">Таб. № ${esc(d.tabNum || '—')}</div></div>`).join('')}</div>`;
-  };
-  window.openAddDriverRecord = function() {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    $('driverEditId').value = ''; $('driverName').value = ''; $('driverPosition').value = ''; $('driverTabNum').value = '';
-    $('driverModalTitle').textContent = 'Новый водитель';
-    $('driverModal').classList.remove('hidden');
-  };
-  window.saveDriverRecord = async function() {
-    const name = $('driverName').value.trim();
-    if (!name) return showToast('Введите ФИО', true);
-    const pos = $('driverPosition').value.trim(); const tab = $('driverTabNum').value.trim();
-    const id = $('driverEditId').value;
-    if (id) { await update(ref(db, 'drivers/' + id), { name, position: pos, tabNum: tab }); }
-    else { const newIdVal = newId('drv'); await set(ref(db, 'drivers/' + newIdVal), { id: newIdVal, name, position: pos, tabNum: tab }); }
-    window.closeModal('driverModal');
-    if (window.pendingDriverTarget) {
-      const { inputId } = window.pendingDriverTarget;
-      const input = $(inputId); if (input) { input.value = name; input.dispatchEvent(new Event('change')); }
-      window.pendingDriverTarget = null;
-    }
-  };
-
-  window.openStatusListModal = function(statusType) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
-    const subs = { off: 'Причины схода и время простоя.', parts: 'Причины ожидания ремонта.', bv: 'Машины без водителя в текущую смену.' };
-    const isShift1 = getShiftInfo().isShift1;
-    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
-    $('statusListTitle').textContent = titles[statusType] || 'Машины';
-    $('statusListSub').textContent = subs[statusType] || '';
-    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
-    const html = list.map(m => {
-      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-      const driverText = activeDriver ? activeDriver : 'Нет водителя';
-      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
-      const causeText = m.lastCause ? m.lastCause : 'Без причины';
-      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
-      const machineLogKey = `${m.num} ${m.model || ''}`;
-      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
-        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
-        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
-      </div>`;
-    }).join('');
-    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
-  };
-
-  // === АВТОКОМПЛИТ ПРИВЯЗКА ===
-  setTimeout(() => {
-    attachDriverAutocomplete($('editDriver1'));
-    attachDriverAutocomplete($('editDriver2'));
-    attachDriverAutocomplete($('addDriver1'));
-    attachDriverAutocomplete($('addDriver2'));
-    attachDriverAutocomplete($('setLineDriverInput'));
-  }, 500);
-
-  // === ВХОД ===
+  // === ВХОД / ВЫХОД ===
   function updateRoleSelect() {
     const cat = $('loginCategory').value;
     const roleSelect = $('loginRole');
@@ -1594,26 +1711,15 @@
 
   // === ИНИЦИАЛИЗАЦИЯ ===
   $('tabMain').click();
-  bindStatusBadges();
+  window.bindStatusBadges();
   setInterval(updateClocks, 1000);
-  setInterval(() => {
-    if (!isDataReady) return;
-    document.querySelectorAll('[id^="timer-"]').forEach(el => {
-      const mId = el.id.replace('timer-', '');
-      const m = MACHINES[mId];
-      if (m && (m.lastStatus === 'off' || m.lastStatus === 'parts') && m.lastTime) {
-        const elapsed = Date.now() - m.lastTime;
-        el.textContent = formatTimer(elapsed);
-        if (m.lastStatus === 'off' && elapsed > 2*60*60*1000) el.classList.add('blink-red');
-      }
-    });
-  }, 1000);
-
-  function bindStatusBadges() {
-    [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
-    [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
-    [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
-  }
+  setTimeout(() => {
+    attachDriverAutocomplete($('setLineDriverInput'));
+    attachDriverAutocomplete($('editDriver1'));
+    attachDriverAutocomplete($('editDriver2'));
+    attachDriverAutocomplete($('addDriver1'));
+    attachDriverAutocomplete($('addDriver2'));
+  }, 500);
 </script>
 </body>
 </html>
