@@ -159,6 +159,7 @@
   .ac-item:hover, .ac-item.active { background:#dbeafe; }
   .ac-wrap { position:relative; }
   .btn-add-driver-in-modal { background:#8b5cf6; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; display:none; margin-top:6px; width:100%; }
+  .kpi-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-weight:800; color:#fff; font-size:14px; }
   @media (max-width:768px){
     body { padding:8px; }
     .grid-wrapper { grid-template-columns:1fr; gap:15px; }
@@ -347,7 +348,7 @@
 </div>
 
 <!-- МОДАЛКИ -->
-<div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div class="log-filter-row"><label style="margin:0; font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto; font-weight:800;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
+<div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;background:#f8fafc;padding:10px;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;"><label style="margin:0;font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto;font-weight:800;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
 
 <div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail"></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
 
@@ -376,7 +377,7 @@
     <button class="btn-add-driver-in-modal" id="btnAddNewDriverForLine" onclick="openAddDriverFromMachine('setLineDriverInput', false)">➕ Создать нового водителя</button>
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('setLineDriverModal')">Отмена</button>
-      <button class="btn-modal green" id="confirmSetLineBtn">На линию</button>
+      <button class="btn-modal green" onclick="confirmSetLineDriver()">На линию</button>
     </div>
   </div>
 </div>
@@ -675,9 +676,11 @@
   function getShiftInfo() { const h = new Date().getHours(); const isShift1 = (h >= 8 && h < 20); return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: new Date().toLocaleTimeString('ru-RU') }; }
   function getMonthName(mStr) { const [y, m] = mStr.split('-'); const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']; return `${months[parseInt(m)-1]} ${y}`; }
   function showToast(msg, isErr){ const t = $('toast'); t.textContent = msg; t.classList.toggle('error', !!isErr); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200); }
-  function closeModal(id) { $(id).classList.add('hidden'); }
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function shortDriverName(fullName) { const parts = String(fullName || '').trim().split(/\s+/); if (parts.length >= 2) return parts[0] + ' ' + parts[1]; return parts[0] || ''; }
+
+  // === ГЛОБАЛЬНЫЕ ФУНКЦИИ (для onclick) ===
+  window.closeModal = function(id) { $(id).classList.add('hidden'); };
 
   // === АВТОКОМПЛИТ ===
   function driverSearch(query) {
@@ -884,7 +887,6 @@
       } else loggedUser.status = 'deleted';
     }
 
-    // Восстановление сессии из localStorage (только один раз)
     if (!loggedUser.name && !sessionRestored) {
       sessionRestored = true;
       const saved = localStorage.getItem('spt_session');
@@ -898,9 +900,7 @@
             loggedUser = { name: u.name, phone: u.phone, cat: u.cat, role: u.role, roleName: u.roleName, status: u.status || 'pending' };
             $('mainLoginBlock').classList.add('hidden');
             $('mainWorkBlock').classList.remove('hidden');
-            updateUserProfileBlock();
-            renderMainGrid();
-            updateTopCounters();
+            updateUserProfileBlock(); renderMainGrid(); updateTopCounters();
           } else {
             localStorage.removeItem('spt_session');
           }
@@ -950,7 +950,6 @@
     const badgeOff = $('badgeOffStat'); if (badgeOff) { if (countOff > 0) badgeOff.classList.add('animate-pulse'); else badgeOff.classList.remove('animate-pulse'); }
   }
 
-  // Обновление счетчиков каждый час
   setInterval(async () => {
     if (!isDataReady) return;
     const now = Date.now(); const monthStr = getCurrentMonthStr();
@@ -1057,6 +1056,7 @@
   });
   document.addEventListener('scroll', function() { document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show')); }, true);
 
+  // === ГЛОБАЛЬНЫЕ ОБРАБОТЧИКИ СТАТУСОВ ===
   window.trySetLine = function(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
@@ -1073,7 +1073,7 @@
       }, 50);
       return;
     }
-    setStatus(machineId, 'line');
+    window.setStatus(machineId, 'line');
   };
 
   window.confirmSetLineDriver = function() {
@@ -1101,8 +1101,8 @@
       try {
         await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
         MACHINES[pendingSetLineMachineId][field] = name;
-        await setStatus(pendingSetLineMachineId, 'line');
-        closeModal('setLineDriverModal');
+        await window.setStatus(pendingSetLineMachineId, 'line');
+        window.closeModal('setLineDriverModal');
         pendingSetLineMachineId = null;
       } catch(e) {
         console.error(e);
@@ -1205,8 +1205,8 @@
     const cause = $('causeSelect').value;
     const detail = $('causeDetail').value.trim();
     if (!cause && !detail) return showToast('Выберите причину', true);
-    setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
-    closeModal('causeModal');
+    window.setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
+    window.closeModal('causeModal');
   };
 
   window.openEditDriverModal = function(machineId) {
@@ -1230,7 +1230,7 @@
     }
     m.driver1 = d1; m.driver2 = d2;
     await update(ref(db, 'machines/' + editingRowId), { driver1: d1, driver2: d2 });
-    closeModal('editDriverModal');
+    window.closeModal('editDriverModal');
   };
 
   window.openAddMachineModal = function(catId) {
@@ -1260,66 +1260,25 @@
       lastStatus: st, lastCause: '', lastTime: 0,
       author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name
     });
-    closeModal('addMachineModal');
+    window.closeModal('addMachineModal');
+  };
+
+  window.saveEditedMachine = async function() {
+    const key = $('editMachineId').value; if (!key) return;
+    const num = $('editMachineNum').value.trim(); const model = $('editMachineModel').value.trim(); const catId = $('editMachineCat').value;
+    if (!num) return showToast('Введите номер', true);
+    await update(ref(db, 'machines/' + key), { num, model, catId });
+    showToast('Машина сохранена'); window.closeModal('editMachineModal');
+  };
+  window.openEditMachineModal = function(key) {
+    if (!isAdminLoggedIn) return; const m = MACHINES[key]; if (!m) return;
+    $('editMachineId').value = key; $('editMachineNum').value = m.num || ''; $('editMachineModel').value = m.model || '';
+    $('editMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    $('editMachineCat').value = m.catId || '';
+    $('editMachineModal').classList.remove('hidden');
   };
 
   // === ОТЧЕТЫ ===
-  $('btnReportJournal').onclick = () => { $('btnReportJournal').classList.add('active'); $('btnReportKpi').classList.remove('active'); $('btnReportDrivers').classList.remove('active'); $('reportJournalBlock').classList.remove('hidden'); $('reportKpiBlock').classList.add('hidden'); $('reportDriversBlock').classList.add('hidden'); };
-  $('btnReportKpi').onclick = () => {
-    $('btnReportKpi').classList.add('active'); $('btnReportJournal').classList.remove('active'); $('btnReportDrivers').classList.remove('active');
-    $('reportKpiBlock').classList.remove('hidden'); $('reportJournalBlock').classList.add('hidden'); $('reportDriversBlock').classList.add('hidden');
-    if (!$('kpiDateFrom').value) { const d = new Date(); $('kpiDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('kpiDateTo').value = d.toISOString().slice(0,10); }
-  };
-  $('btnReportDrivers').onclick = () => {
-    $('btnReportDrivers').classList.add('active'); $('btnReportJournal').classList.remove('active'); $('btnReportKpi').classList.remove('active');
-    $('reportDriversBlock').classList.remove('hidden'); $('reportJournalBlock').classList.add('hidden'); $('reportKpiBlock').classList.add('hidden');
-    if (!$('drvDateFrom').value) { const d = new Date(); $('drvDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('drvDateTo').value = d.toISOString().slice(0,10); }
-  };
-
-  let logModalMachineFilter = null;
-  window.showLogModal = function(type, machineName = null) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    currentLogType = type; logModalMachineFilter = machineName;
-    const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
-    const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
-    $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-    $('logModal').classList.remove('hidden'); window.renderLogTable();
-  };
-  window.renderLogTable = function() {
-    const month = $('logMonthSelect').value; const type = currentLogType;
-    let filtered = Object.values(eventLog).filter(e => e.month === month);
-    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
-    else {
-      let title = '';
-      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
-      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
-      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
-      else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; }
-      else { title = 'Все события'; }
-      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
-    }
-    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0);
-    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
-    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей</div>'; return; }
-    let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
-    filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
-      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
-    });
-    $('logModalContent').innerHTML = html + '</tbody></table>';
-  };
-  window.setReportStatus = function(status) {
-    reportStatusFilter = status;
-    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
-    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
-    if (activeBtn) {
-      if (status === '') activeBtn.classList.add('active-all');
-      else if (status === 'line') activeBtn.classList.add('active-line');
-      else if (status === 'off') activeBtn.classList.add('active-off');
-      else if (status === 'parts') activeBtn.classList.add('active-parts');
-      else if (status === 'bv') activeBtn.classList.add('active-bv');
-    }
-    window.buildReport();
-  };
   window.buildReport = function() {
     try {
       const dateFrom = $('repDateFrom').value; const dateTo = $('repDateTo').value;
@@ -1350,6 +1309,19 @@
       filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
       $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
     } catch(err) { $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка: ${esc(err.message)}</p>`; }
+  };
+  window.setReportStatus = function(status) {
+    reportStatusFilter = status;
+    document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
+    const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
+    if (activeBtn) {
+      if (status === '') activeBtn.classList.add('active-all');
+      else if (status === 'line') activeBtn.classList.add('active-line');
+      else if (status === 'off') activeBtn.classList.add('active-off');
+      else if (status === 'parts') activeBtn.classList.add('active-parts');
+      else if (status === 'bv') activeBtn.classList.add('active-bv');
+    }
+    window.buildReport();
   };
   window.buildKpiReport = function() {
     const dateFrom = $('kpiDateFrom').value; const dateTo = $('kpiDateTo').value;
@@ -1409,6 +1381,38 @@
   window.exportExcel = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
   window.exportDriversReport = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
 
+  window.showLogModal = function(type, machineName = null) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    currentLogType = type; logModalMachineFilter = machineName;
+    const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
+    const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
+    $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
+    $('logModal').classList.remove('hidden'); window.renderLogTable();
+  };
+  let logModalMachineFilter = null;
+  window.renderLogTable = function() {
+    const month = $('logMonthSelect').value; const type = currentLogType;
+    let filtered = Object.values(eventLog).filter(e => e.month === month);
+    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
+    else {
+      let title = '';
+      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+      else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; }
+      else { title = 'Все события'; }
+      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+    }
+    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0);
+    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей</div>'; return; }
+    let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
+    filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
+      html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
+    });
+    $('logModalContent').innerHTML = html + '</tbody></table>';
+  };
+
   // === ВОДИТЕЛИ ===
   window.renderDriversTab = function() {
     const search = ($('driversSearch')?.value || '').trim().toLowerCase();
@@ -1431,12 +1435,36 @@
     const id = $('driverEditId').value;
     if (id) { await update(ref(db, 'drivers/' + id), { name, position: pos, tabNum: tab }); }
     else { const newIdVal = newId('drv'); await set(ref(db, 'drivers/' + newIdVal), { id: newIdVal, name, position: pos, tabNum: tab }); }
-    closeModal('driverModal');
+    window.closeModal('driverModal');
     if (window.pendingDriverTarget) {
       const { inputId } = window.pendingDriverTarget;
       const input = $(inputId); if (input) { input.value = name; input.dispatchEvent(new Event('change')); }
       window.pendingDriverTarget = null;
     }
+  };
+
+  window.openStatusListModal = function(statusType) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
+    const subs = { off: 'Причины схода и время простоя.', parts: 'Причины ожидания ремонта.', bv: 'Машины без водителя в текущую смену.' };
+    const isShift1 = getShiftInfo().isShift1;
+    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
+    $('statusListTitle').textContent = titles[statusType] || 'Машины';
+    $('statusListSub').textContent = subs[statusType] || '';
+    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
+    const html = list.map(m => {
+      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+      const driverText = activeDriver ? activeDriver : 'Нет водителя';
+      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
+      const causeText = m.lastCause ? m.lastCause : 'Без причины';
+      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
+      const machineLogKey = `${m.num} ${m.model || ''}`;
+      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
+        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
+        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
+      </div>`;
+    }).join('');
+    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
   };
 
   // === АВТОКОМПЛИТ ПРИВЯЗКА ===
@@ -1515,7 +1543,7 @@
       const st = u.status || 'pending';
       const bg = st === 'pending' ? '#fef3c7' : st === 'approved' ? '#dcfce7' : '#fef2f2';
       const border = st === 'pending' ? '#f59e0b' : st === 'approved' ? '#10b981' : '#ef4444';
-      return `<div class="moderation-user" style="border-left:4px solid ${border};background:${bg};padding:12px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      return `<div style="border-left:4px solid ${border};background:${bg};padding:12px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
         <div><strong>${esc(u.name)}</strong><br><span style="font-size:12px;color:#64748b;">${esc(u.phone)} · ${esc(u.roleName || u.role || '—')} · ${esc(u.cat || '')}</span></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           ${st !== 'approved' ? `<button class="btn green small" onclick="approveUser('${key}')">✅ Подтвердить</button>` : ''}
@@ -1564,9 +1592,6 @@
   function setActiveTab(id) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); $(id).classList.add('active'); }
   $('driversSearch')?.addEventListener('input', renderDriversTab);
 
-  // === ПРИВЯЗКА КНОПКИ "НА ЛИНИЮ" ===
-  $('confirmSetLineBtn')?.addEventListener('click', window.confirmSetLineDriver);
-
   // === ИНИЦИАЛИЗАЦИЯ ===
   $('tabMain').click();
   bindStatusBadges();
@@ -1589,29 +1614,6 @@
     [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
     [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
   }
-  window.openStatusListModal = function(statusType) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
-    const subs = { off: 'Причины схода и время простоя.', parts: 'Причины ожидания ремонта.', bv: 'Машины без водителя в текущую смену.' };
-    const isShift1 = getShiftInfo().isShift1;
-    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
-    $('statusListTitle').textContent = titles[statusType] || 'Машины';
-    $('statusListSub').textContent = subs[statusType] || '';
-    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
-    const html = list.map(m => {
-      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-      const driverText = activeDriver ? activeDriver : 'Нет водителя';
-      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
-      const causeText = m.lastCause ? m.lastCause : 'Без причины';
-      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
-      const machineLogKey = `${m.num} ${m.model || ''}`;
-      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
-        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
-        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
-      </div>`;
-    }).join('');
-    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
-  };
 </script>
 </body>
 </html>
