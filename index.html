@@ -289,7 +289,6 @@
           <div class="filter-group" style="flex:1.5;"><label class="fld">Период для KPI</label><div class="date-group"><input type="date" id="kpiDateFrom"><span>—</span><input type="date" id="kpiDateTo"></div></div>
           <button class="btn purple" onclick="buildKpiReport()">Рассчитать KPI</button>
         </div>
-        <p style="font-size:12px; color:#64748b;">KPI показывает, какой процент времени машина работала (на линии).</p>
       </div>
       <div id="kpiContent"><p class="empty">Выберите период и нажмите «Рассчитать KPI».</p></div>
     </div>
@@ -350,7 +349,7 @@
 <!-- МОДАЛКИ -->
 <div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div class="log-filter-row"><label style="margin:0; font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto; font-weight:800;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
 
-<div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail" placeholder="Например: течь масла..."></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
+<div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail"></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
 
 <div class="modal-overlay hidden" id="editDriverModal">
   <div class="modal">
@@ -377,7 +376,7 @@
     <button class="btn-add-driver-in-modal" id="btnAddNewDriverForLine" onclick="openAddDriverFromMachine('setLineDriverInput', false)">➕ Создать нового водителя</button>
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('setLineDriverModal')">Отмена</button>
-      <button class="btn-modal green" onclick="confirmSetLineDriver()">На линию</button>
+      <button class="btn-modal green" id="confirmSetLineBtn">На линию</button>
     </div>
   </div>
 </div>
@@ -452,9 +451,6 @@
   const db = getDatabase(app);
 
   const ADMIN_CODE = 'admin2483';
-  const USERS_CODE = '1104';
-  const CHIEF_ENGINEER_CODE = '1234';
-  const ADD_MACHINE_CODE = '1234';
   const CHIEF_ROLE_NAME = 'Главный инженер';
 
   const DEFAULT_CATS = {
@@ -664,11 +660,11 @@
   let monthlyStats = {}, eventLog = {};
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false, currentRowId = null, currentStatusType = null, editingRowId = null, currentCatForAdd = null;
-  let pendingDriverTarget = null;
   const activeTimers = {};
   let currentLogType = 'total', reportStatusFilter = '', isDataReady = false;
   let alertedMachineIds = {}, lastMachineStatuses = {};
   let pendingSetLineMachineId = null;
+  let sessionRestored = false;
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -793,14 +789,6 @@
       gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
       osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-      setTimeout(() => {
-        const osc2 = audioCtx.createOscillator(); const gainNode2 = audioCtx.createGain();
-        osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
-        osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime);
-        gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc2.start(); osc2.stop(audioCtx.currentTime + 0.5);
-      }, 600);
     } catch(e) {}
   }
   window.requestNotificationPermission = function() {
@@ -841,7 +829,7 @@
         const elapsed = Date.now() - m.lastTime;
         if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
           playNotificationSound();
-          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} в сходе > 2 часов! (${m.lastCause || 'Без причины'})`);
+          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} в сходе > 2 часов!`);
           alertedMachineIds[id] = true;
         }
       } else if (alertedMachineIds[id]) delete alertedMachineIds[id];
@@ -895,6 +883,31 @@
         if (!u.id) update(ref(db,'users/'+key), { id: key }).catch(()=>{});
       } else loggedUser.status = 'deleted';
     }
+
+    // Восстановление сессии из localStorage (только один раз)
+    if (!loggedUser.name && !sessionRestored) {
+      sessionRestored = true;
+      const saved = localStorage.getItem('spt_session');
+      if (saved) {
+        try {
+          const { phone } = JSON.parse(saved);
+          const norm = normPhone(phone);
+          const entry = Object.entries(USERS).find(([k,u]) => u && normPhone(u.phone) === norm);
+          if (entry) {
+            const [key, u] = entry;
+            loggedUser = { name: u.name, phone: u.phone, cat: u.cat, role: u.role, roleName: u.roleName, status: u.status || 'pending' };
+            $('mainLoginBlock').classList.add('hidden');
+            $('mainWorkBlock').classList.remove('hidden');
+            updateUserProfileBlock();
+            renderMainGrid();
+            updateTopCounters();
+          } else {
+            localStorage.removeItem('spt_session');
+          }
+        } catch(e) { localStorage.removeItem('spt_session'); }
+      }
+    }
+
     checkDataReady(); if (loggedUser.name) enforceBlockState();
   });
   onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); updateTopCounters(); });
@@ -1044,7 +1057,7 @@
   });
   document.addEventListener('scroll', function() { document.querySelectorAll('.status-dropdown').forEach(d => d.classList.remove('show')); }, true);
 
-  function trySetLine(machineId) {
+  window.trySetLine = function(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
     const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
@@ -1053,16 +1066,20 @@
       $('setLineDriverInput').value = '';
       $('btnAddNewDriverForLine').style.display = 'none';
       $('setLineDriverModal').classList.remove('hidden');
-      setTimeout(() => attachDriverAutocomplete($('setLineDriverInput')), 10);
+      setTimeout(() => {
+        const inp = $('setLineDriverInput');
+        attachDriverAutocomplete(inp);
+        inp.focus();
+      }, 50);
       return;
     }
     setStatus(machineId, 'line');
-  }
+  };
 
-  function confirmSetLineDriver() {
-    if (!pendingSetLineMachineId) return;
+  window.confirmSetLineDriver = function() {
+    if (!pendingSetLineMachineId) return showToast('Машина не выбрана', true);
     const name = canonicalDriverName($('setLineDriverInput'));
-    if (!name) return showToast('Введите ФИО водителя', true);
+    if (!name) return showToast('Введите или выберите ФИО водителя', true);
     const { isShift1 } = getShiftInfo();
     const m = MACHINES[pendingSetLineMachineId];
     if (!m) return;
@@ -1081,16 +1098,20 @@
       return showToast('Конфликт: ' + msg, true);
     }
     (async () => {
-      await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
-      MACHINES[pendingSetLineMachineId][field] = name;
-      await setStatus(pendingSetLineMachineId, 'line');
-      closeModal('setLineDriverModal');
-      pendingSetLineMachineId = null;
+      try {
+        await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
+        MACHINES[pendingSetLineMachineId][field] = name;
+        await setStatus(pendingSetLineMachineId, 'line');
+        closeModal('setLineDriverModal');
+        pendingSetLineMachineId = null;
+      } catch(e) {
+        console.error(e);
+        showToast('Ошибка сохранения: ' + e.message, true);
+      }
     })();
-  }
+  };
 
-  // === СМЕНА СТАТУСА ===
-  async function setStatus(machineId, status, causeText = '') {
+  window.setStatus = async function(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
     const { isShift1 } = getShiftInfo();
@@ -1102,7 +1123,11 @@
         $('setLineDriverInput').value = '';
         $('btnAddNewDriverForLine').style.display = 'none';
         $('setLineDriverModal').classList.remove('hidden');
-        setTimeout(() => attachDriverAutocomplete($('setLineDriverInput')), 10);
+        setTimeout(() => {
+          const inp = $('setLineDriverInput');
+          attachDriverAutocomplete(inp);
+          inp.focus();
+        }, 50);
         return;
       }
     }
@@ -1164,9 +1189,9 @@
       lastTime: m.lastTime, author: m.author,
       driver1: m.driver1, driver2: m.driver2
     });
-  }
+  };
 
-  function openCauseModal(machineId, status) {
+  window.openCauseModal = function(machineId, status) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentRowId = machineId; currentStatusType = status;
     $('causeModalTitle').textContent = status === 'off' ? 'Сход с линии' : 'Ожидание ремонта';
@@ -1174,25 +1199,25 @@
     $('confirmCauseBtn').className = status === 'off' ? 'btn-modal yellow' : 'btn-modal red';
     $('causeSelect').innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
-  }
-  function applyCause() {
+  };
+  window.applyCause = function() {
     if (!currentRowId) return;
     const cause = $('causeSelect').value;
     const detail = $('causeDetail').value.trim();
     if (!cause && !detail) return showToast('Выберите причину', true);
     setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
     closeModal('causeModal');
-  }
+  };
 
-  function openEditDriverModal(machineId) {
+  window.openEditDriverModal = function(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return;
     $('editDriver1').value = m.driver1 || ''; $('editDriver2').value = m.driver2 || '';
     $('btnAddNewDriverFromEdit1').style.display = 'none';
     $('btnAddNewDriverFromEdit2').style.display = 'none';
     $('editDriverModal').classList.remove('hidden');
-  }
-  async function saveNewDrivers() {
+  };
+  window.saveNewDrivers = async function() {
     if (!editingRowId) return;
     const m = MACHINES[editingRowId]; if (!m) return;
     const d1 = canonicalDriverName($('editDriver1'));
@@ -1206,9 +1231,9 @@
     m.driver1 = d1; m.driver2 = d2;
     await update(ref(db, 'machines/' + editingRowId), { driver1: d1, driver2: d2 });
     closeModal('editDriverModal');
-  }
+  };
 
-  function openAddMachineModal(catId) {
+  window.openAddMachineModal = function(catId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentCatForAdd = catId;
     $('addMachineCode').value = '';
@@ -1216,13 +1241,13 @@
     $('addMachineFields').classList.add('hidden'); $('addMachineAuthText').classList.remove('hidden');
     $('addMachineConfirmBtn').classList.remove('hidden'); $('addMachineSaveBtn').classList.add('hidden');
     $('addMachineModal').classList.remove('hidden');
-  }
-  function confirmAddMachineAuth() {
-    if ($('addMachineCode').value !== ADD_MACHINE_CODE) return showToast('Неверный код', true);
+  };
+  window.confirmAddMachineAuth = function() {
+    if ($('addMachineCode').value !== '1234') return showToast('Неверный код', true);
     $('addMachineAuthText').classList.add('hidden'); $('addMachineConfirmBtn').classList.add('hidden');
     $('addMachineSaveBtn').classList.remove('hidden'); $('addMachineFields').classList.remove('hidden');
-  }
-  async function addNewMachine() {
+  };
+  window.addNewMachine = async function() {
     const num = $('addNum').value.trim(); if (!num) return showToast('Введите номер', true);
     const d1 = canonicalDriverName($('addDriver1')); const d2 = canonicalDriverName($('addDriver2'));
     if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) return showToast('Водитель не может стоять в обеих сменах', true);
@@ -1236,21 +1261,6 @@
       author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name
     });
     closeModal('addMachineModal');
-  }
-
-  window.openEditMachineModal = function(key) {
-    if (!isAdminLoggedIn) return; const m = MACHINES[key]; if (!m) return;
-    $('editMachineId').value = key; $('editMachineNum').value = m.num || ''; $('editMachineModel').value = m.model || '';
-    $('editMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-    $('editMachineCat').value = m.catId || '';
-    $('editMachineModal').classList.remove('hidden');
-  };
-  window.saveEditedMachine = async function() {
-    const key = $('editMachineId').value; if (!key) return;
-    const num = $('editMachineNum').value.trim(); const model = $('editMachineModel').value.trim(); const catId = $('editMachineCat').value;
-    if (!num) return showToast('Введите номер', true);
-    await update(ref(db, 'machines/' + key), { num, model, catId });
-    showToast('Машина сохранена'); closeModal('editMachineModal');
   };
 
   // === ОТЧЕТЫ ===
@@ -1273,7 +1283,7 @@
     const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
     const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
     $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-    $('logModal').classList.remove('hidden'); renderLogTable();
+    $('logModal').classList.remove('hidden'); window.renderLogTable();
   };
   window.renderLogTable = function() {
     const month = $('logMonthSelect').value; const type = currentLogType;
@@ -1396,12 +1406,8 @@
     if (!drivers.length) { $('driversReportContent').innerHTML = `<p class="empty">Нет данных</p>`; return; }
     $('driversReportContent').innerHTML = `<table class="report-table"><thead><tr><th>Водитель</th><th>Сходов</th><th>Ремонтов</th><th>БВ</th><th>На линии</th><th>Общий простой</th></tr></thead><tbody>${drivers.map(d => `<tr><td><strong>${esc(d.name)}</strong></td><td>${d.off}</td><td>${d.parts}</td><td>${d.bv}</td><td>${d.line}</td><td style="font-family:monospace;font-weight:600;">${formatMs(d.totalMs)}</td></tr>`).join('')}</tbody></table>`;
   };
-  window.exportExcel = function() {
-    showToast('Функция экспорта будет доступна в следующей версии');
-  };
-  window.exportDriversReport = function() {
-    showToast('Функция экспорта будет доступна в следующей версии');
-  };
+  window.exportExcel = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
+  window.exportDriversReport = function() { showToast('Функция экспорта будет доступна в следующей версии'); };
 
   // === ВОДИТЕЛИ ===
   window.renderDriversTab = function() {
@@ -1463,6 +1469,7 @@
     if (existing) {
       const [key, u] = existing;
       loggedUser = { name: u.name, phone: u.phone, cat: u.cat, role: u.role, roleName: u.roleName, status: u.status || 'pending' };
+      localStorage.setItem('spt_session', JSON.stringify({ phone: u.phone }));
       $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
       updateUserProfileBlock(); renderMainGrid(); updateTopCounters();
     } else {
@@ -1472,6 +1479,7 @@
       const userData = { id, name, phone, cat, role: roleName, roleName, status, createdAt: Date.now() };
       await set(ref(db, 'users/' + id), userData);
       loggedUser = { name, phone, cat, role: roleName, roleName, status };
+      localStorage.setItem('spt_session', JSON.stringify({ phone }));
       $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
       updateUserProfileBlock(); renderMainGrid(); updateTopCounters();
       if (status === 'pending') showToast('Заявка отправлена на подтверждение');
@@ -1479,6 +1487,7 @@
   });
   $('logoutBtn').addEventListener('click', () => {
     loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+    localStorage.removeItem('spt_session');
     $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden');
     $('loginName').value = ''; $('loginPhone').value = ''; $('loginCategory').value = ''; $('loginRole').innerHTML = '<option value="">— загрузка —</option>';
   });
@@ -1504,10 +1513,9 @@
     if (!users.length) { list.innerHTML = '<p class="empty">Нет пользователей</p>'; return; }
     list.innerHTML = users.map(([key, u]) => {
       const st = u.status || 'pending';
-      const cls = st === 'approved' ? 'approved' : st === 'rejected' ? 'rejected' : '';
       const bg = st === 'pending' ? '#fef3c7' : st === 'approved' ? '#dcfce7' : '#fef2f2';
       const border = st === 'pending' ? '#f59e0b' : st === 'approved' ? '#10b981' : '#ef4444';
-      return `<div class="moderation-user ${cls}" style="border-left-color:${border};background:${bg};">
+      return `<div class="moderation-user" style="border-left:4px solid ${border};background:${bg};padding:12px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
         <div><strong>${esc(u.name)}</strong><br><span style="font-size:12px;color:#64748b;">${esc(u.phone)} · ${esc(u.roleName || u.role || '—')} · ${esc(u.cat || '')}</span></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           ${st !== 'approved' ? `<button class="btn green small" onclick="approveUser('${key}')">✅ Подтвердить</button>` : ''}
@@ -1516,23 +1524,18 @@
         </div>
       </div>`;
     }).join('');
-    // Builder
     renderBuilderLists();
   }
   function renderBuilderLists() {
     $('builderCatsList').innerHTML = Object.entries(CATS).map(([k,c]) => `<li><span>${esc(c.name)}</span><button class="btn red small" onclick="deleteCat('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
-    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([k,m]) => `<li><span>${esc(m.num)} ${esc(m.model||'')}</span><div style="display:flex;gap:4px;"><button class="btn purple small" onclick="openEditMachineModal('${k}')">✏️</button><button class="btn red small" onclick="deleteMachine('${k}')">✕</button></div></li>`).join('') || '<li class="empty">Нет</li>';
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([k,m]) => `<li><span>${esc(m.num)} ${esc(m.model||'')}</span><button class="btn red small" onclick="deleteMachine('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
     $('builderRolesList').innerHTML = Object.entries(ROLES).map(([k,r]) => `<li><span>${esc(r.name)} <small style="color:#64748b;">(${r.cat === 'SPT' ? 'СПТ' : 'ИТР'})</small></span><button class="btn red small" onclick="deleteRole('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
     $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([k,c]) => `<li><span>${esc(c.name)}</span><button class="btn red small" onclick="deleteCause('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
     $('newMachineCat').innerHTML = Object.values(CATS).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   }
-
   window.approveUser = async (key) => { await update(ref(db, 'users/' + key), { status: 'approved' }); showToast('Пользователь подтверждён'); };
   window.rejectUser = async (key) => { await update(ref(db, 'users/' + key), { status: 'rejected' }); showToast('Пользователь отклонён'); };
-  window.deleteUser = async (key) => {
-    if (!confirm('Удалить пользователя?')) return;
-    await remove(ref(db, 'users/' + key));
-  };
+  window.deleteUser = async (key) => { if (!confirm('Удалить пользователя?')) return; await remove(ref(db, 'users/' + key)); };
   window.deleteCat = async (key) => { if (!confirm('Удалить категорию?')) return; await remove(ref(db, 'cats/' + key)); };
   window.deleteMachine = async (key) => { if (!confirm('Удалить машину?')) return; await remove(ref(db, 'machines/' + key)); };
   window.deleteRole = async (key) => { if (!confirm('Удалить должность?')) return; await remove(ref(db, 'roles/' + key)); };
@@ -1559,8 +1562,10 @@
   $('tabReports').onclick = () => { setActiveTab('tabReports'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('driversView').classList.add('hidden'); $('adminView').classList.add('hidden'); };
   $('tabAdmin').onclick = () => { setActiveTab('tabAdmin'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('driversView').classList.add('hidden'); $('reportsView').classList.add('hidden'); };
   function setActiveTab(id) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); $(id).classList.add('active'); }
-
   $('driversSearch')?.addEventListener('input', renderDriversTab);
+
+  // === ПРИВЯЗКА КНОПКИ "НА ЛИНИЮ" ===
+  $('confirmSetLineBtn')?.addEventListener('click', window.confirmSetLineDriver);
 
   // === ИНИЦИАЛИЗАЦИЯ ===
   $('tabMain').click();
@@ -1578,6 +1583,35 @@
       }
     });
   }, 1000);
+
+  function bindStatusBadges() {
+    [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
+    [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
+    [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
+  }
+  window.openStatusListModal = function(statusType) {
+    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
+    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
+    const subs = { off: 'Причины схода и время простоя.', parts: 'Причины ожидания ремонта.', bv: 'Машины без водителя в текущую смену.' };
+    const isShift1 = getShiftInfo().isShift1;
+    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
+    $('statusListTitle').textContent = titles[statusType] || 'Машины';
+    $('statusListSub').textContent = subs[statusType] || '';
+    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
+    const html = list.map(m => {
+      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
+      const driverText = activeDriver ? activeDriver : 'Нет водителя';
+      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
+      const causeText = m.lastCause ? m.lastCause : 'Без причины';
+      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
+      const machineLogKey = `${m.num} ${m.model || ''}`;
+      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
+        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
+        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
+      </div>`;
+    }).join('');
+    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
+  };
 </script>
 </body>
 </html>
