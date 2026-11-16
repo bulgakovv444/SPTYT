@@ -6,268 +6,174 @@
 <title>СПТ — Управление техникой</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; -webkit-text-size-adjust: 100%; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #eef2f6; padding: 15px; color: #1f2933; font-size: 14px; }
   h1 { font-size: 22px; margin-bottom: 12px; color: #1e3a8a; }
   h2 { font-size: 16px; margin: 16px 0 10px; }
   .container { max-width: 1600px; margin: 0 auto; }
-
-  /* УВЕДОМЛЕНИЯ */
-  .btn-notify {
-    background: #f8fafc; border: 2px solid #cbd5e1; color: #475569;
-    padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-size: 13px;
-  }
-  .btn-notify:hover { background: #e2e8f0; }
-  .btn-notify.pulse-red { border-color: #ef4444; color: #991b1b; background: #fee2e2; animation: pulse-red-btn 1.5s infinite; }
-  @keyframes pulse-red-btn { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
-  .btn-notify.enabled { border-color: #10b981; color: #065f46; background: #dcfce7; cursor: default; }
-  .btn-notify.denied { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
-
-  /* ВКЛАДКИ */
-  .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; flex-wrap: wrap; align-items: center; }
-  .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all .15s; }
-  .tab-btn:hover { background: #e2e8f0; color: #0f172a; }
-  .tab-btn.active { background: #2563eb; color: #fff; }
-  .project-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-left: 8px; vertical-align: middle; }
-
-  /* ВЕРХНЯЯ ПАНЕЛЬ */
-  .top-bar { background: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-left: 5px solid #2563eb; margin-bottom: 15px; }
-  .header-left { display: flex; align-items: center; gap: 15px; }
-  .user-profile { display: flex; align-items: center; gap: 15px; background: #f8fafc; padding: 10px 20px; border-radius: 10px; border: 1px solid #e2e8f0; min-width: 320px; }
-  .user-avatar { width: 48px; height: 48px; background: #2563eb; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; flex-shrink: 0; }
-  .user-info { display: flex; flex-direction: column; min-width: 0; }
-  .user-name { font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-meta { font-size: 12px; color: #64748b; margin-top: 4px; }
-  .user-meta strong { color: #1e293b; }
-  .user-badge-role { background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-top: 5px; width: fit-content; }
-  .header-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
-  
-  .stats-container { display: flex; flex-direction: column; gap: 6px; }
-  .stats-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .stat-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-  .stat-badge:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-  .stat-badge .icon { font-size: 16px; }
-  .stat-badge .val { font-family: monospace; font-size: 14px; }
-  .stat-badge .lbl { font-size: 11px; opacity: 0.9; }
-  .stat-badge.total { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
-  .stat-badge.off { background: #fef08a; color: #854d0e; border-color: #eab308; }
-  .stat-badge.parts { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
-  .stat-badge.bv { background: #e2e8f0; color: #475569; border-color: #64748b; }
-  .stat-badge.off.animate-pulse { animation: pulse-yellow 1.5s infinite; }
-  @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(234,179,8,.7); } 70% { box-shadow: 0 0 0 8px rgba(234,179,8,0); } 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0); } }
-
-  .clock-block { font-size: 14px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; font-family: monospace; border: 1px solid #cbd5e1; white-space: nowrap; }
-  .clock-block span { color: #2563eb; }
-
-  /* СЕТКА (КОМПЬЮТЕР) */
-  .grid-wrapper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: start; }
-  @media (max-width: 1200px) { .grid-wrapper { grid-template-columns: repeat(3, 1fr); } }
-
-  /* КОЛОНКИ */
-  .col { background: #fff; border-radius: 8px; border: 2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,.1); overflow: hidden; display: flex; flex-direction: column; }
-  .col-header { background: #e2e8f0; color: #000; font-weight: 900; font-size: 20px; text-align: center; padding: 4px 8px; letter-spacing: 1px; border-bottom: 2px solid #000; text-transform: uppercase; line-height: 1.2; }
-  .col-body { max-height: 600px; overflow-y: auto; background: #fff; }
-  .row { display: flex; flex-direction: column; padding: 8px 10px; border-bottom: 2px solid #000; gap: 4px; position: relative; }
-  .row:last-child { border-bottom: none; }
-  .row.st-line { background: #dcfce7; border-left: 6px solid #16a34a; }
-  .row.st-off  { background: #fef9c3; border-left: 6px solid #ca8a04; }
-  .row.st-parts{ background: #fee2e2; border-left: 6px solid #dc2626; }
-  .row.st-bv   { background: #cbd5e1; border-left: 6px solid #dc2626; }
-  .row.st-off { animation: pulse-bg-off 1.5s infinite; }
-  @keyframes pulse-bg-off { 0% { background: #fef9c3; border-left: 6px solid #ca8a04; } 50% { background: #fde047; border-left: 6px solid #b45309; } 100% { background: #fef9c3; border-left: 6px solid #ca8a04; } }
-
-  .row-top { display: flex; justify-content: space-between; align-items: center; gap: 4px; width: 100%; flex-wrap: wrap; }
-  .row-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; min-width: 0; }
-  .row-num { display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 12px; width: 22px; height: 22px; background: #fff; border-radius: 4px; border: 1.5px solid #000; flex-shrink: 0; }
-  .row-name { font-weight: 900; font-size: 14px; color: #000; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1.5px solid #000; white-space: nowrap; letter-spacing: 0.3px; overflow: hidden; text-overflow: ellipsis; }
-
-  .status-dropdown { position: relative; display: inline-block; flex-shrink: 0; }
-  .btn-status { border: 1px solid #000; border-radius: 3px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .15s; white-space: nowrap; }
-  .btn-status:hover { filter: brightness(0.9); }
-  .btn-status.line { background: #22c55e; color: #fff; border-color: #000; }
-  .btn-status.off { background: #eab308; color: #000; border-color: #000; }
-  .btn-status.parts { background: #ef4444; color: #fff; border-color: #000; }
-  .btn-status.bv { background: #475569; color: #fff; border-color: #000; }
-  .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 140px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2); z-index: 10; border: 2px solid #000; border-radius: 4px; right: 0; top: 100%; }
-  .dropdown-content button { color: black; padding: 8px 12px; text-decoration: none; display: block; width: 100%; text-align: left; border: none; background: none; font-size: 12px; font-weight: 700; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
-  .dropdown-content button:last-child { border-bottom: none; }
-  .dropdown-content button:hover { background-color: #f1f5f9; }
-  .status-dropdown.show .dropdown-content { display: block; }
-
-  .row-info-line { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; width: 100%; padding-left: 28px; font-size: 11px; }
-  
-  .driver-badge { background: #fff; color: #0369a1; padding: 2px 5px; border-radius: 3px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; border: 1px solid #000; white-space: nowrap; max-width: 160px; overflow: hidden; }
-  .driver-badge .driver-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .edit-driver-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 0; flex-shrink: 0; }
-  .no-driver-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; border: 1px solid #000; white-space: nowrap; }
-  .reason-badge { background: #fff; color: #854d0e; padding: 2px 5px; border-radius: 3px; font-weight: 700; border: 1px solid #000; white-space: nowrap; }
-  .reason-badge.red { background: #fff; color: #b91c1c; border-color: #000; }
-  .timer-badge { background: #fff; color: #991b1b; padding: 2px 5px; border-radius: 3px; font-weight: 800; font-family: monospace; border: 1px solid #000; white-space: nowrap; }
-  .timer-badge.blink-red { background: #ef4444; color: #fff; border-color: #991b1b; animation: blink-timer 1s infinite; }
-  @keyframes blink-timer { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-  .author-badge { color: #475569; font-style: italic; font-size: 10px; font-weight: 600; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 3px; border: 1px solid #cbd5e1; white-space: nowrap; margin-left: auto; }
-
-  .col-footer { padding: 6px; background: #fff; border-top: 2px solid #000; }
-  .footer-btn { width: 100%; padding: 6px; font-size: 12px; font-weight: 800; border-radius: 4px; cursor: pointer; border: 2px dashed #16a34a; background: #dcfce7; color: #166534; transition: all 0.15s; }
-  .footer-btn:hover { background: #bbf7d0; }
-
-  input, select, textarea { font: inherit; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 6px; background: #fff; width: 100%; font-size: 14px; }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-  textarea { resize: vertical; min-height: 60px; }
-  label.fld { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; }
-
-  .btn { display: inline-block; background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background .15s; text-align: center; }
-  .btn:hover { background: #1d4ed8; }
-  .btn.green { background: #10b981; } .btn.green:hover { background: #059669; }
-  .btn.gray { background: #64748b; } .btn.gray:hover { background: #475569; }
-  .btn.red { background: #ef4444; } .btn.red:hover { background: #dc2626; }
-  .btn.orange { background: #f59e0b; } .btn.orange:hover { background: #d97706; }
-  .btn.purple { background: #8b5cf6; } .btn.purple:hover { background: #7c3aed; }
-  .btn.small { padding: 6px 10px; font-size: 12px; }
-  .btn.block { display: block; width: 100%; }
-  .card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 16px; }
-
-  .login-box { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,.08); max-width: 440px; margin: 0 auto; text-align: center; }
-  .login-box h2 { margin-top: 0; color: #1e3a8a; }
-  .login-box p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
-  .login-box input, .login-box select { margin-bottom: 12px; text-align: center; }
-  .login-box select:disabled { background: #f8fafc; color: #94a3b8; cursor: wait; }
-
-  /* МОДАЛКИ */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
-  .modal-overlay.hidden { display: none !important; }
-  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 450px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
-  .modal.wide { max-width: 850px; }
-  .modal h3 { font-size: 16px; margin-bottom: 6px; }
-  .modal p { font-size: 13px; color: #64748b; margin-bottom: 12px; }
-  .modal label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; font-weight: 600; margin-top: 10px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
-  .btn-modal { display: inline-block; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #fff; flex: 1; text-align: center; }
-  .btn-modal.gray { background: #64748b; }
-  .btn-modal.red { background: #ef4444; }
-  .btn-modal.green { background: #10b981; }
-  .btn-modal.yellow { background: #eab308; }
-  .btn-modal.purple { background: #8b5cf6; }
-
-  .log-filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
-  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; display: block; overflow-x: auto; white-space: nowrap; }
-  .log-table th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #475569; }
-  .log-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-  .log-table tr:last-child td { border-bottom: none; }
-  .log-empty { text-align: center; color: #94a3b8; padding: 30px; }
-
-  .status-list-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; background:#f8fafc; cursor:pointer; transition:background .15s; flex-wrap:wrap; }
-  .status-list-item:hover { background:#eef2f6; }
+  .btn-notify { background:#f8fafc; border:2px solid #cbd5e1; color:#475569; padding:8px 15px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; }
+  .btn-notify.enabled { border-color:#10b981; color:#065f46; background:#dcfce7; cursor:default; }
+  .btn-notify.denied { border-color:#ef4444; color:#991b1b; background:#fef2f2; }
+  .tabs { display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #cbd5e1; padding-bottom:10px; flex-wrap:wrap; align-items:center; }
+  .tab-btn { background:none; border:none; font-size:15px; font-weight:600; color:#64748b; cursor:pointer; padding:8px 12px; border-radius:6px; }
+  .tab-btn.active { background:#2563eb; color:#fff; }
+  .project-badge { display:inline-block; background:#dbeafe; color:#1e40af; font-size:12px; font-weight:700; padding:4px 10px; border-radius:99px; margin-left:8px; vertical-align:middle; }
+  .top-bar { background:#fff; padding:15px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; border-left:5px solid #2563eb; margin-bottom:15px; }
+  .header-left { display:flex; align-items:center; gap:15px; }
+  .user-profile { display:flex; align-items:center; gap:15px; background:#f8fafc; padding:10px 20px; border-radius:10px; border:1px solid #e2e8f0; min-width:320px; }
+  .user-avatar { width:48px; height:48px; background:#2563eb; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; flex-shrink:0; }
+  .user-info { display:flex; flex-direction:column; min-width:0; }
+  .user-name { font-size:16px; font-weight:800; color:#1e293b; }
+  .user-meta { font-size:12px; color:#64748b; margin-top:4px; }
+  .user-badge-role { background:#e0e7ff; color:#3730a3; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; margin-top:5px; width:fit-content; }
+  .header-right { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-left:auto; }
+  .stats-container { display:flex; flex-direction:column; gap:6px; }
+  .stats-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .stat-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; font-weight:800; font-size:13px; border:2px solid transparent; cursor:pointer; white-space:nowrap; }
+  .stat-badge .icon { font-size:16px; }
+  .stat-badge .val { font-family:monospace; font-size:14px; }
+  .stat-badge .lbl { font-size:11px; opacity:0.9; }
+  .stat-badge.total { background:#f1f5f9; color:#1e293b; border-color:#cbd5e1; }
+  .stat-badge.off { background:#fef08a; color:#854d0e; border-color:#eab308; }
+  .stat-badge.parts { background:#fee2e2; color:#991b1b; border-color:#ef4444; }
+  .stat-badge.bv { background:#e2e8f0; color:#475569; border-color:#64748b; }
+  .stat-badge.off.animate-pulse { animation:pulse-yellow 1.5s infinite; }
+  @keyframes pulse-yellow { 0%{box-shadow:0 0 0 0 rgba(234,179,8,.7);} 70%{box-shadow:0 0 0 8px rgba(234,179,8,0);} 100%{box-shadow:0 0 0 0 rgba(234,179,8,0);} }
+  .clock-block { font-size:14px; font-weight:700; color:#1e293b; background:#f1f5f9; padding:8px 15px; border-radius:8px; font-family:monospace; border:1px solid #cbd5e1; white-space:nowrap; }
+  .clock-block span { color:#2563eb; }
+  .grid-wrapper { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; align-items:start; }
+  @media (max-width:1200px){ .grid-wrapper{ grid-template-columns:repeat(3,1fr); } }
+  .col { background:#fff; border-radius:8px; border:2px solid #000; overflow:hidden; display:flex; flex-direction:column; }
+  .col-header { background:#e2e8f0; color:#000; font-weight:900; font-size:20px; text-align:center; padding:4px 8px; border-bottom:2px solid #000; text-transform:uppercase; line-height:1.2; }
+  .col-body { max-height:600px; overflow-y:auto; background:#fff; }
+  .row { display:flex; flex-direction:column; padding:8px 10px; border-bottom:2px solid #000; gap:4px; }
+  .row:last-child { border-bottom:none; }
+  .row.st-line { background:#dcfce7; border-left:6px solid #16a34a; }
+  .row.st-off { background:#fef9c3; border-left:6px solid #ca8a04; animation:pulse-bg-off 1.5s infinite; }
+  .row.st-parts { background:#fee2e2; border-left:6px solid #dc2626; }
+  .row.st-bv { background:#cbd5e1; border-left:6px solid #dc2626; }
+  @keyframes pulse-bg-off { 0%{background:#fef9c3;border-left:6px solid #ca8a04;} 50%{background:#fde047;border-left:6px solid #b45309;} 100%{background:#fef9c3;border-left:6px solid #ca8a04;} }
+  .row-top { display:flex; justify-content:space-between; align-items:center; gap:4px; width:100%; flex-wrap:wrap; }
+  .row-left { display:flex; align-items:center; gap:6px; flex-shrink:0; min-width:0; }
+  .row-num { display:flex; align-items:center; justify-content:center; font-weight:900; color:#000; font-size:12px; width:22px; height:22px; background:#fff; border-radius:4px; border:1.5px solid #000; flex-shrink:0; }
+  .row-name { font-weight:900; font-size:14px; color:#000; background:#fff; padding:2px 6px; border-radius:4px; border:1.5px solid #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .status-dropdown { position:relative; display:inline-block; flex-shrink:0; }
+  .btn-status { border:1px solid #000; border-radius:3px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; }
+  .btn-status.line { background:#22c55e; color:#fff; }
+  .btn-status.off { background:#eab308; color:#000; }
+  .btn-status.parts { background:#ef4444; color:#fff; }
+  .btn-status.bv { background:#475569; color:#fff; }
+  .dropdown-content { display:none; position:absolute; background:#fff; min-width:140px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index:10; border:2px solid #000; border-radius:4px; right:0; top:100%; }
+  .dropdown-content button { color:black; padding:8px 12px; display:block; width:100%; text-align:left; border:none; background:none; font-size:12px; font-weight:700; cursor:pointer; border-bottom:1px solid #e2e8f0; }
+  .dropdown-content button:last-child { border-bottom:none; }
+  .dropdown-content button:hover { background-color:#f1f5f9; }
+  .status-dropdown.show .dropdown-content { display:block; }
+  .row-info-line { display:flex; align-items:center; gap:4px; flex-wrap:wrap; width:100%; padding-left:28px; font-size:11px; }
+  .driver-badge { background:#fff; color:#0369a1; padding:2px 5px; border-radius:3px; font-weight:700; display:inline-flex; align-items:center; gap:3px; border:1px solid #000; white-space:nowrap; max-width:160px; overflow:hidden; }
+  .driver-badge .driver-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .edit-driver-btn { background:none; border:none; cursor:pointer; font-size:11px; padding:0; flex-shrink:0; }
+  .no-driver-badge { background:#fff; color:#991b1b; padding:2px 5px; border-radius:3px; font-weight:800; border:1px solid #000; white-space:nowrap; }
+  .reason-badge { background:#fff; color:#854d0e; padding:2px 5px; border-radius:3px; font-weight:700; border:1px solid #000; white-space:nowrap; }
+  .reason-badge.red { background:#fff; color:#b91c1c; }
+  .timer-badge { background:#fff; color:#991b1b; padding:2px 5px; border-radius:3px; font-weight:800; font-family:monospace; border:1px solid #000; white-space:nowrap; }
+  .timer-badge.blink-red { background:#ef4444; color:#fff; border-color:#991b1b; animation:blink-timer 1s infinite; }
+  @keyframes blink-timer { 0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
+  .author-badge { color:#475569; font-style:italic; font-size:10px; font-weight:600; background:rgba(255,255,255,0.8); padding:2px 5px; border-radius:3px; border:1px solid #cbd5e1; white-space:nowrap; margin-left:auto; }
+  .col-footer { padding:6px; background:#fff; border-top:2px solid #000; }
+  .footer-btn { width:100%; padding:6px; font-size:12px; font-weight:800; border-radius:4px; cursor:pointer; border:2px dashed #16a34a; background:#dcfce7; color:#166534; }
+  input, select, textarea { font:inherit; padding:10px 12px; border:2px solid #cbd5e1; border-radius:6px; background:#fff; width:100%; font-size:14px; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+  textarea { resize:vertical; min-height:60px; }
+  label.fld { font-size:12px; color:#64748b; display:block; margin-bottom:4px; font-weight:600; }
+  .btn { display:inline-block; background:#2563eb; color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; text-align:center; }
+  .btn.green { background:#10b981; } .btn.gray { background:#64748b; } .btn.red { background:#ef4444; } .btn.orange { background:#f59e0b; } .btn.purple { background:#8b5cf6; }
+  .btn.small { padding:6px 10px; font-size:12px; } .btn.block { display:block; width:100%; }
+  .card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); margin-bottom:16px; }
+  .login-box { background:#fff; border-radius:10px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,.08); max-width:440px; margin:0 auto; text-align:center; }
+  .login-box h2 { margin-top:0; color:#1e3a8a; }
+  .login-box p { color:#64748b; margin-bottom:20px; font-size:14px; }
+  .login-box input, .login-box select { margin-bottom:12px; text-align:center; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000; }
+  .modal-overlay.hidden { display:none !important; }
+  .modal { background:#fff; border-radius:10px; padding:20px; max-width:450px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,.3); max-height:90vh; overflow-y:auto; }
+  .modal.wide { max-width:850px; }
+  .modal h3 { font-size:16px; margin-bottom:6px; }
+  .modal p { font-size:13px; color:#64748b; margin-bottom:12px; }
+  .modal label { font-size:12px; color:#64748b; display:block; margin-bottom:4px; font-weight:600; margin-top:10px; }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+  .btn-modal { display:inline-block; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; color:#fff; flex:1; text-align:center; }
+  .btn-modal.gray { background:#64748b; } .btn-modal.red { background:#ef4444; } .btn-modal.green { background:#10b981; } .btn-modal.yellow { background:#eab308; } .btn-modal.purple { background:#8b5cf6; }
+  .log-table { width:100%; border-collapse:collapse; font-size:12px; display:block; overflow-x:auto; white-space:nowrap; }
+  .log-table th { background:#f8fafc; padding:10px; text-align:left; border-bottom:2px solid #cbd5e1; color:#475569; }
+  .log-table td { padding:10px; border-bottom:1px solid #e2e8f0; }
+  .status-list-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; background:#f8fafc; cursor:pointer; flex-wrap:wrap; }
   .status-list-item .sli-main { display:flex; flex-direction:column; gap:2px; }
   .status-list-item .sli-name { font-weight:800; font-size:14px; color:#0f172a; }
   .status-list-item .sli-sub { font-size:12px; color:#64748b; }
   .status-list-item .sli-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .status-list-empty { text-align:center; color:#94a3b8; padding:24px; }
-
-  .builder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-  .builder-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border-top: 4px solid #2563eb; }
-  .builder-card.cats { border-top-color: #10b981; }
-  .builder-card.machines { border-top-color: #f59e0b; }
-  .builder-card.roles { border-top-color: #8b5cf6; }
-  .builder-card.causes { border-top-color: #ef4444; }
-  .builder-card h3 { margin-bottom: 12px; font-size: 15px; }
-  .builder-list { list-style: none; margin-bottom: 12px; max-height: 250px; overflow-y: auto; }
-  .builder-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; margin-bottom: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
-  .builder-add-row { display: flex; gap: 6px; margin-top: 6px; flex-direction: column; }
-  .builder-add-row input, .builder-add-row select { margin-bottom: 0; }
-  .sub-tabs { display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; flex-wrap: wrap; }
-  .sub-tab-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; padding: 6px 12px; border-radius: 4px; }
-  .sub-tab-btn.active { background: #e0e7ff; color: #1e3a8a; }
-  .moderation-user { background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #f59e0b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border: 1px solid #e2e8f0; }
-  .moderation-user.approved { border-left-color: #10b981; }
-  .moderation-user.rejected { border-left-color: #ef4444; opacity: 0.6; }
-
-  /* ОТЧЕТЫ */
-  .report-filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
-  .report-filters .filter-group { flex: 1; min-width: 140px; }
-  .date-group { display: flex; gap: 5px; align-items: center; }
-  .date-group input { padding: 8px 5px; text-align: center; }
-  .date-group span { font-weight: 700; color: #64748b; }
-  .status-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
-  .status-filter-btn { border: 2px solid #cbd5e1; background: #fff; color: #64748b; padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
-  .status-filter-btn:hover { background: #f1f5f9; }
-  .status-filter-btn.active-all { border-color: #2563eb; background: #eff6ff; color: #1e40af; }
-  .status-filter-btn.active-line { border-color: #10b981; background: #dcfce7; color: #166534; }
-  .status-filter-btn.active-off { border-color: #eab308; background: #fef08a; color: #854d0e; }
-  .status-filter-btn.active-parts { border-color: #ef4444; background: #fee2e2; color: #991b1b; }
-  .status-filter-btn.active-bv { border-color: #64748b; background: #e2e8f0; color: #475569; }
-
-  .report-stats { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-  .report-stat-card { background: #fff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); flex: 1; min-width: 130px; border-left: 5px solid #2563eb; }
-  .report-stat-card.green { border-left-color: #10b981; }
-  .report-stat-card.red { border-left-color: #dc2626; }
-  .report-stat-card.gray { border-left-color: #64748b; }
-  .report-stat-card.yellow { border-left-color: #eab308; }
-  .report-stat-card .num { font-size: 28px; font-weight: 800; color: #1e293b; }
-  .report-stat-card .lbl { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 600; }
-
-  .report-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 13px; display: block; overflow-x: auto; white-space: nowrap; }
-  .report-table th { background: #f8fafc; padding: 12px 15px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
-  .report-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-  .report-table tr:last-child td { border-bottom: none; }
-  .report-table tr:hover { background: #f8fafc; cursor: pointer; }
-  .status-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
-  .status-badge.line { background: #dcfce7; color: #166534; }
-  .status-badge.off { background: #fef08a; color: #854d0e; }
-  .status-badge.parts { background: #fee2e2; color: #991b1b; }
-  .status-badge.bv { background: #e2e8f0; color: #475569; }
-
-  .report-tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; flex-wrap: wrap; }
-  .report-tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; padding: 10px 20px; border-radius: 6px 6px 0 0; transition: all .15s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-  .report-tab-btn:hover { background: #f1f5f9; color: #0f172a; }
-  .report-tab-btn.active { background: #fff; color: #2563eb; border-bottom-color: #2563eb; }
-  .kpi-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 800; color: #fff; font-size: 14px; }
-
-  .toast { position: fixed; top: 15px; right: 15px; background: #10b981; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15); opacity: 0; transform: translateY(-10px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1001; max-width: 90vw; }
-  .toast.error { background: #ef4444; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .hidden { display: none !important; }
-  .empty { color: #64748b; font-size: 14px; padding: 12px 0; text-align: center; }
-  .pending-alert { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 15px; }
-  .pending-alert.hidden { display: none; }
-  .blocked-banner { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 40px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(239,68,68,.15); }
-  .blocked-banner h2 { font-size: 24px; margin-bottom: 12px; color: #991b1b; }
-  .blocked-banner p { font-size: 16px; margin-bottom: 16px; }
-  .danger-zone { margin-top: 20px; padding: 16px; border: 2px dashed #ef4444; border-radius: 10px; background: #fef2f2; text-align: center; }
-  .danger-zone h3 { color: #991b1b; margin-bottom: 8px; font-size: 15px; }
-  .danger-zone p { color: #64748b; font-size: 12px; margin-bottom: 12px; }
-  .danger-zone .btn { margin: 4px; }
-
-  .ac-list { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 2px solid #2563eb; border-radius: 6px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,.2); margin-top: 2px; }
-  .ac-item { padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
-  .ac-item:last-child { border-bottom: none; }
-  .ac-item:hover, .ac-item.active { background: #dbeafe; }
-  .ac-wrap { position: relative; }
-  
-  .btn-add-driver-in-modal { background: #8b5cf6; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; display: none; margin-top: 6px; width: 100%; transition: background .15s; }
-  .btn-add-driver-in-modal:hover { background: #7c3aed; }
-
-  /* === МОБИЛЬНАЯ АДАПТАЦИЯ (ТОЛЬКО ДЛЯ ТЕЛЕФОНОВ) === */
-  @media (max-width: 768px) {
-    body { padding: 8px; }
-    .grid-wrapper { grid-template-columns: 1fr; gap: 15px; }
-    .top-bar { padding: 10px; flex-direction: column; gap: 15px; }
-    .header-right { flex-direction: column; align-items: stretch; gap: 10px; margin-left: 0; width: 100%; }
-    .clock-block { text-align: center; }
-    .btn-notify, #logoutBtn { width: 100%; justify-content: center; }
-    .col-body { max-height: none; overflow-y: visible; }
-    .stats-container { flex-direction: row; overflow-x: auto; padding-bottom: 5px; }
-    .stats-row { flex-direction: row; flex-wrap: nowrap; }
-    .report-filters { flex-direction: column; align-items: stretch; }
-    .date-group { flex-direction: column; }
-    .date-group span { display: none; }
-    .tab-btn { width: 100%; text-align: center; }
+  .builder-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+  .builder-card { background:#fff; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); border-top:4px solid #2563eb; }
+  .builder-card.cats { border-top-color:#10b981; } .builder-card.machines { border-top-color:#f59e0b; } .builder-card.roles { border-top-color:#8b5cf6; } .builder-card.causes { border-top-color:#ef4444; }
+  .builder-card h3 { margin-bottom:12px; font-size:15px; }
+  .builder-list { list-style:none; margin-bottom:12px; max-height:250px; overflow-y:auto; }
+  .builder-list li { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border-radius:6px; margin-bottom:6px; font-size:13px; border:1px solid #e2e8f0; }
+  .builder-add-row { display:flex; gap:6px; margin-top:6px; flex-direction:column; }
+  .builder-add-row input, .builder-add-row select { margin-bottom:0; }
+  .sub-tabs { display:flex; gap:10px; margin-bottom:16px; border-bottom:1px solid #cbd5e1; padding-bottom:8px; flex-wrap:wrap; }
+  .sub-tab-btn { background:none; border:none; font-size:14px; font-weight:600; color:#64748b; cursor:pointer; padding:6px 12px; border-radius:4px; }
+  .sub-tab-btn.active { background:#e0e7ff; color:#1e3a8a; }
+  .report-filters { display:flex; gap:15px; flex-wrap:wrap; align-items:flex-end; margin-bottom:15px; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; }
+  .report-filters .filter-group { flex:1; min-width:140px; }
+  .date-group { display:flex; gap:5px; align-items:center; }
+  .status-filter-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:5px; }
+  .status-filter-btn { border:2px solid #cbd5e1; background:#fff; color:#64748b; padding:6px 14px; border-radius:99px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  .status-filter-btn.active-all { border-color:#2563eb; background:#eff6ff; color:#1e40af; }
+  .status-filter-btn.active-line { border-color:#10b981; background:#dcfce7; color:#166534; }
+  .status-filter-btn.active-off { border-color:#eab308; background:#fef08a; color:#854d0e; }
+  .status-filter-btn.active-parts { border-color:#ef4444; background:#fee2e2; color:#991b1b; }
+  .status-filter-btn.active-bv { border-color:#64748b; background:#e2e8f0; color:#475569; }
+  .report-stats { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
+  .report-stat-card { background:#fff; border-radius:8px; padding:15px 20px; box-shadow:0 1px 4px rgba(0,0,0,.06); flex:1; min-width:130px; border-left:5px solid #2563eb; }
+  .report-stat-card.green { border-left-color:#10b981; } .report-stat-card.red { border-left-color:#dc2626; } .report-stat-card.gray { border-left-color:#64748b; } .report-stat-card.yellow { border-left-color:#eab308; }
+  .report-stat-card .num { font-size:28px; font-weight:800; color:#1e293b; }
+  .report-stat-card .lbl { font-size:13px; color:#64748b; margin-top:4px; font-weight:600; }
+  .report-table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); font-size:13px; display:block; overflow-x:auto; white-space:nowrap; }
+  .report-table th { background:#f8fafc; padding:12px 15px; text-align:left; font-weight:700; color:#1e293b; border-bottom:2px solid #cbd5e1; }
+  .report-table td { padding:12px 15px; border-bottom:1px solid #e2e8f0; }
+  .status-badge { display:inline-block; padding:4px 10px; border-radius:99px; font-size:12px; font-weight:700; white-space:nowrap; }
+  .status-badge.line { background:#dcfce7; color:#166534; } .status-badge.off { background:#fef08a; color:#854d0e; } .status-badge.parts { background:#fee2e2; color:#991b1b; } .status-badge.bv { background:#e2e8f0; color:#475569; }
+  .report-tab-buttons { display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #cbd5e1; flex-wrap:wrap; }
+  .report-tab-btn { background:none; border:none; font-size:15px; font-weight:600; color:#64748b; cursor:pointer; padding:10px 20px; border-radius:6px 6px 0 0; border-bottom:3px solid transparent; margin-bottom:-2px; }
+  .report-tab-btn.active { background:#fff; color:#2563eb; border-bottom-color:#2563eb; }
+  .toast { position:fixed; top:15px; right:15px; background:#10b981; color:#fff; padding:10px 16px; border-radius:6px; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,.15); opacity:0; transform:translateY(-10px); transition:opacity .2s, transform .2s; pointer-events:none; z-index:1001; max-width:90vw; }
+  .toast.error { background:#ef4444; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .hidden { display:none !important; }
+  .empty { color:#64748b; font-size:14px; padding:12px 0; text-align:center; }
+  .blocked-banner { background:#fee2e2; border:2px solid #ef4444; color:#991b1b; padding:40px; border-radius:12px; text-align:center; margin-bottom:20px; }
+  .blocked-banner h2 { font-size:24px; margin-bottom:12px; color:#991b1b; }
+  .danger-zone { margin-top:20px; padding:16px; border:2px dashed #ef4444; border-radius:10px; background:#fef2f2; text-align:center; }
+  .danger-zone h3 { color:#991b1b; margin-bottom:8px; font-size:15px; }
+  .ac-list { display:none; position:absolute; top:100%; left:0; right:0; z-index:2000; background:#fff; border:2px solid #2563eb; border-radius:6px; max-height:240px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,.2); margin-top:2px; }
+  .ac-item { padding:8px 10px; cursor:pointer; font-size:13px; border-bottom:1px solid #e2e8f0; color:#0f172a; }
+  .ac-item:hover, .ac-item.active { background:#dbeafe; }
+  .ac-wrap { position:relative; }
+  .btn-add-driver-in-modal { background:#8b5cf6; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; display:none; margin-top:6px; width:100%; }
+  @media (max-width:768px){
+    body { padding:8px; }
+    .grid-wrapper { grid-template-columns:1fr; gap:15px; }
+    .top-bar { padding:10px; flex-direction:column; gap:15px; }
+    .header-right { flex-direction:column; align-items:stretch; gap:10px; margin-left:0; width:100%; }
+    .col-body { max-height:none; overflow-y:visible; }
+    .stats-container { flex-direction:row; overflow-x:auto; padding-bottom:5px; }
+    .stats-row { flex-direction:row; flex-wrap:nowrap; }
+    .report-filters { flex-direction:column; align-items:stretch; }
+    .tab-btn { width:100%; text-align:center; }
   }
 </style>
 </head>
 <body>
 <div class="container">
-
   <div class="tabs">
     <button class="tab-btn" id="tabMain">🚜 Вывод ТС</button>
     <button class="tab-btn" id="tabDrivers">👤 Водители</button>
@@ -279,8 +185,7 @@
   <div id="mainView">
     <div id="mainLoginBlock" class="login-box">
       <h2>Вход <span class="project-badge">СПТ</span></h2>
-      <p>Введите данные. При первом входе потребуется подтверждение Главного инженера.<br>
-      <small style="color:#64748b;">Должность «Главный инженер» может быть только у одного пользователя.</small></p>
+      <p>Введите данные. При первом входе потребуется подтверждение Главного инженера.</p>
       <input type="text" id="loginName" placeholder="Ваше имя" autocomplete="off">
       <input type="tel" id="loginPhone" placeholder="Телефон" autocomplete="off">
       <select id="loginCategory">
@@ -288,9 +193,7 @@
         <option value="SPT">Специалист СПТ</option>
         <option value="ITR">ИТР ЦТКРС</option>
       </select>
-      <select id="loginRole" disabled>
-        <option value="">— загрузка должностей... —</option>
-      </select>
+      <select id="loginRole" disabled><option value="">— загрузка должностей... —</option></select>
       <button class="btn block" id="loginBtn">Войти</button>
     </div>
 
@@ -330,7 +233,6 @@
       <div id="blockedBanner" class="blocked-banner hidden">
         <h2>⛔ Доступ заблокирован</h2>
         <p id="blockedReasonText">Ваш аккаунт находится на проверке у Главного инженера.</p>
-        <p style="font-size:14px; color:#b91c1c; margin-bottom:0;">Действия будут доступны только после подтверждения.</p>
       </div>
 
       <div class="grid-wrapper" id="mainGrid"></div>
@@ -361,7 +263,7 @@
     <div id="reportJournalBlock">
       <div class="card">
         <div class="report-filters">
-          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="repDateFrom"><span>—</span><input type="date" id="repDateTo"></div></div>
+          <div class="filter-group" style="flex:1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="repDateFrom"><span>—</span><input type="date" id="repDateTo"></div></div>
           <div class="filter-group"><label class="fld">Категория</label><select id="repCat"><option value="">Все</option></select></div>
           <div class="filter-group"><label class="fld">Причина</label><select id="repCause"><option value="">Все</option></select></div>
           <button class="btn" onclick="buildReport()">Сформировать</button>
@@ -384,10 +286,10 @@
     <div id="reportKpiBlock" class="hidden">
       <div class="card">
         <div class="report-filters">
-          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период для KPI</label><div class="date-group"><input type="date" id="kpiDateFrom"><span>—</span><input type="date" id="kpiDateTo"></div></div>
+          <div class="filter-group" style="flex:1.5;"><label class="fld">Период для KPI</label><div class="date-group"><input type="date" id="kpiDateFrom"><span>—</span><input type="date" id="kpiDateTo"></div></div>
           <button class="btn purple" onclick="buildKpiReport()">Рассчитать KPI</button>
         </div>
-        <p style="font-size:12px; color:#64748b;">KPI показывает, какой процент времени машина работала (на линии). Все простои — потеря времени.</p>
+        <p style="font-size:12px; color:#64748b;">KPI показывает, какой процент времени машина работала (на линии).</p>
       </div>
       <div id="kpiContent"><p class="empty">Выберите период и нажмите «Рассчитать KPI».</p></div>
     </div>
@@ -395,12 +297,11 @@
     <div id="reportDriversBlock" class="hidden">
       <div class="card">
         <div class="report-filters">
-          <div class="filter-group" style="flex: 1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="drvDateFrom"><span>—</span><input type="date" id="drvDateTo"></div></div>
+          <div class="filter-group" style="flex:1.5;"><label class="fld">Период</label><div class="date-group"><input type="date" id="drvDateFrom"><span>—</span><input type="date" id="drvDateTo"></div></div>
           <div class="filter-group"><label class="fld">Поиск по ФИО</label><input type="text" id="drvSearch" placeholder="Иванов..."></div>
           <button class="btn" onclick="buildDriversReport()">Сформировать</button>
           <button class="btn green" onclick="exportDriversReport()">⬇ В Excel</button>
         </div>
-        <p style="font-size:12px; color:#64748b;">Сходы, ремонты, БВ по каждому водителю, часы по причинам, отработанное время и KPI.</p>
       </div>
       <div id="driversReportContent"><p class="empty">Выберите период и нажмите «Сформировать».</p></div>
     </div>
@@ -411,7 +312,7 @@
     <div id="adminLoginBlock" class="login-box">
       <h2>Панель Главного инженера</h2>
       <p>Введите секретный код доступа.</p>
-      <input type="password" id="adminCodeInput" placeholder="Код доступа" autocomplete="off">
+      <input type="password" id="adminCodeInput" placeholder="Код доступа">
       <button class="btn block red" id="adminLoginBtn">Войти</button>
     </div>
     <div id="adminWorkBlock" class="hidden">
@@ -425,11 +326,9 @@
       </div>
       <div id="adminUsersBlock">
         <div class="card"><h2>Реестр пользователей</h2>
-          <p style="color:#64748b; font-size:12px; margin-bottom:12px;">Главный инженер может быть только один.</p>
           <div id="moderationList"></div>
           <div class="danger-zone">
             <h3>⚠️ Опасная зона</h3>
-            <p>Действия ниже необратимы.</p>
             <button class="btn orange small" id="resetStatsBtn">🔄 Сбросить общие счётчики</button>
             <button class="btn red small" id="cleanBrokenUsersBtn">🧹 Очистить битые аккаунты</button>
             <button class="btn red small" id="deleteAllUsersBtn">🗑 Удалить ВСЕХ пользователей</button>
@@ -449,7 +348,7 @@
 </div>
 
 <!-- МОДАЛКИ -->
-<div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div class="log-filter-row"><label style="margin:0; font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto; font-weight:800; color:#1e293b;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
+<div class="modal-overlay hidden" id="logModal"><div class="modal wide"><h3 id="logModalTitle">Журнал</h3><div class="log-filter-row"><label style="margin:0; font-weight:600;">Период:</label><select id="logMonthSelect" onchange="renderLogTable()"></select><div id="logTotalSum" style="margin-left:auto; font-weight:800;"></div></div><div id="logModalContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('logModal')">Закрыть</button></div></div></div>
 
 <div class="modal-overlay hidden" id="causeModal"><div class="modal"><h3 id="causeModalTitle">Сход</h3><p id="causeModalSub">Укажите причину.</p><label>Причина</label><select id="causeSelect"></select><label>Уточнение</label><textarea id="causeDetail" placeholder="Например: течь масла..."></textarea><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('causeModal')">Отмена</button><button class="btn-modal" id="confirmCauseBtn" onclick="applyCause()">Подтвердить</button></div></div></div>
 
@@ -459,14 +358,26 @@
     <label>Водитель 1 смены</label>
     <input type="text" id="editDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
     <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromEdit1" onclick="openAddDriverFromMachine('editDriver1', false)">➕ Создать нового водителя</button>
-    
     <label style="margin-top:10px;">Водитель 2 смены (необязательно)</label>
     <input type="text" id="editDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
     <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromEdit2" onclick="openAddDriverFromMachine('editDriver2', true)">➕ Создать нового водителя</button>
-    
     <div class="modal-actions">
       <button class="btn-modal gray" onclick="closeModal('editDriverModal')">Отмена</button>
       <button class="btn-modal yellow" onclick="saveNewDrivers()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="setLineDriverModal">
+  <div class="modal">
+    <h3>Назначить водителя</h3>
+    <p>Чтобы перевести машину на линию, выберите водителя на текущую смену.</p>
+    <label>ФИО водителя</label>
+    <input type="text" id="setLineDriverInput" placeholder="Начните вводить ФИО..." autocomplete="off">
+    <button class="btn-add-driver-in-modal" id="btnAddNewDriverForLine" onclick="openAddDriverFromMachine('setLineDriverInput', false)">➕ Создать нового водителя</button>
+    <div class="modal-actions">
+      <button class="btn-modal gray" onclick="closeModal('setLineDriverModal')">Отмена</button>
+      <button class="btn-modal green" onclick="confirmSetLineDriver()">На линию</button>
     </div>
   </div>
 </div>
@@ -475,8 +386,8 @@
   <div class="modal">
     <h3>Редактировать машину</h3>
     <input type="hidden" id="editMachineId">
-    <label>Госномер</label><input type="text" id="editMachineNum" placeholder="А123ВС186">
-    <label style="margin-top:10px;">Модель</label><input type="text" id="editMachineModel" placeholder="Урал">
+    <label>Госномер</label><input type="text" id="editMachineNum">
+    <label style="margin-top:10px;">Модель</label><input type="text" id="editMachineModel">
     <label style="margin-top:10px;">Категория</label><select id="editMachineCat"></select>
     <div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('editMachineModal')">Отмена</button><button class="btn-modal green" onclick="saveEditedMachine()">Сохранить</button></div>
   </div>
@@ -490,11 +401,9 @@
     <div id="addMachineFields" class="hidden">
       <label>Госномер</label><input type="text" id="addNum" placeholder="А123ВС186">
       <label style="margin-top:10px;">Модель</label><input type="text" id="addModel" placeholder="Урал">
-      
       <label style="margin-top:10px;">Водитель 1 см</label>
       <input type="text" id="addDriver1" placeholder="Начните вводить ФИО..." autocomplete="off">
       <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd1" onclick="openAddDriverFromMachine('addDriver1', false)">➕ Создать нового водителя</button>
-      
       <label style="margin-top:10px;">Водитель 2 см</label>
       <input type="text" id="addDriver2" placeholder="Начните вводить ФИО..." autocomplete="off">
       <button class="btn-add-driver-in-modal" id="btnAddNewDriverFromAdd2" onclick="openAddDriverFromMachine('addDriver2', true)">➕ Создать нового водителя</button>
@@ -506,12 +415,6 @@
     </div>
   </div>
 </div>
-
-<div class="modal-overlay hidden" id="usersCodeModal"><div class="modal"><h3>Подтверждение действия</h3><p>Введите код Главного инженера.</p><input type="password" id="usersCodeInput"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('usersCodeModal')">Отмена</button><button class="btn-modal red" id="confirmUsersCodeBtn">Подтвердить</button></div></div></div>
-
-<div class="modal-overlay hidden" id="chiefEngineerRegModal"><div class="modal"><h3>Регистрация Главного инженера</h3><p>Введите код Главного инженера.</p><input type="password" id="chiefEngineerRegCode"><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('chiefEngineerRegModal')">Отмена</button><button class="btn-modal red" id="confirmChiefEngineerRegBtn">Подтвердить</button></div></div></div>
-
-<div class="modal-overlay hidden" id="statusListModal"><div class="modal wide"><h3 id="statusListTitle">Машины</h3><p id="statusListSub">Список машин в выбранном статусе.</p><div id="statusListContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button></div></div></div>
 
 <div class="modal-overlay hidden" id="driverModal">
   <div class="modal">
@@ -526,6 +429,8 @@
     </div>
   </div>
 </div>
+
+<div class="modal-overlay hidden" id="statusListModal"><div class="modal wide"><h3 id="statusListTitle">Машины</h3><p id="statusListSub">Список машин в выбранном статусе.</p><div id="statusListContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button></div></div></div>
 
 <div class="toast" id="toast"></div>
 
@@ -573,7 +478,6 @@
     'r7': { id: 'r7', name: 'Ведущий инженер', cat: 'ITR' },
     'r8': { id: 'r8', name: 'Зам. Исполнительного директора', cat: 'ITR' }
   };
-
   const DEFAULT_DRIVERS_RAW = `Оздоев Магомед Алиханович|Моторист ЦА-320|90919
 Подавалов Евгений Иванович|Моторист ЦА-320|77666
 Парчиев Ислам Магомедович|Моторист ЦА-320|93661
@@ -760,10 +664,11 @@
   let monthlyStats = {}, eventLog = {};
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
   let isAdminLoggedIn = false, currentRowId = null, currentStatusType = null, editingRowId = null, currentCatForAdd = null;
-  let pendingUserAction = null, pendingChiefEngineerReg = null;
+  let pendingDriverTarget = null;
   const activeTimers = {};
   let currentLogType = 'total', reportStatusFilter = '', isDataReady = false;
-  let alertedMachineIds = {};
+  let alertedMachineIds = {}, lastMachineStatuses = {};
+  let pendingSetLineMachineId = null;
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -772,26 +677,17 @@
   function formatMs(ms) { const t = Math.floor(ms / 60000); return `${Math.floor(t / 60)} ч ${t % 60} м`; }
   function formatTimer(ms) { const s = Math.floor(ms / 1000); return `⏱ ${String(Math.floor(s / 3600)).padStart(2,'0')}:${String(Math.floor((s % 3600) / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`; }
   function getShiftInfo() { const h = new Date().getHours(); const isShift1 = (h >= 8 && h < 20); return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: new Date().toLocaleTimeString('ru-RU') }; }
-  function getMonthName(mStr) { const [y, m] = mStr.split('-'); const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']; return `${months[parseInt(m) - 1]} ${y}`; }
+  function getMonthName(mStr) { const [y, m] = mStr.split('-'); const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']; return `${months[parseInt(m)-1]} ${y}`; }
   function showToast(msg, isErr){ const t = $('toast'); t.textContent = msg; t.classList.toggle('error', !!isErr); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200); }
   function closeModal(id) { $(id).classList.add('hidden'); }
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
-  function findExistingChief(excludeKey = null) { return Object.entries(USERS).find(([k, u]) => k !== excludeKey && u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved'); }
+  function shortDriverName(fullName) { const parts = String(fullName || '').trim().split(/\s+/); if (parts.length >= 2) return parts[0] + ' ' + parts[1]; return parts[0] || ''; }
 
-  function shortDriverName(fullName) {
-    const parts = String(fullName || '').trim().split(/\s+/);
-    if (parts.length >= 2) return parts[0] + ' ' + parts[1];
-    return parts[0] || '';
-  }
-
-  // === АВТОКОМПЛИТ ТОЛЬКО ФИО ===
+  // === АВТОКОМПЛИТ ===
   function driverSearch(query) {
     const q = String(query || '').trim().toLowerCase();
     if (!q) return [];
-    return Object.values(DRIVERS)
-      .filter(d => d && d.name && d.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
-      .slice(0, 12);
+    return Object.values(DRIVERS).filter(d => d && d.name && d.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name, 'ru')).slice(0, 12);
   }
   function canonicalDriverName(input) {
     const raw = String(input.value || '').trim();
@@ -801,70 +697,42 @@
     const pref = driverSearch(raw);
     return pref.length ? pref[0].name : raw;
   }
-  
   function attachDriverAutocomplete(input) {
     if (!input || input.dataset.acBound) return;
     input.dataset.acBound = '1';
     input.setAttribute('autocomplete', 'off');
-    
-    const wrap = document.createElement('div');
-    wrap.className = 'ac-wrap';
-    input.parentNode.insertBefore(wrap, input);
-    wrap.appendChild(input);
-    
-    const list = document.createElement('div');
-    list.className = 'ac-list';
-    wrap.appendChild(list);
-    
+    const wrap = document.createElement('div'); wrap.className = 'ac-wrap';
+    input.parentNode.insertBefore(wrap, input); wrap.appendChild(input);
+    const list = document.createElement('div'); list.className = 'ac-list'; wrap.appendChild(list);
     let activeIdx = -1;
-    
     let createBtnId = '';
     if (input.id === 'editDriver1') createBtnId = 'btnAddNewDriverFromEdit1';
     else if (input.id === 'editDriver2') createBtnId = 'btnAddNewDriverFromEdit2';
     else if (input.id === 'addDriver1') createBtnId = 'btnAddNewDriverFromAdd1';
     else if (input.id === 'addDriver2') createBtnId = 'btnAddNewDriverFromAdd2';
-    
+    else if (input.id === 'setLineDriverInput') createBtnId = 'btnAddNewDriverForLine';
     function updateCreateBtn() {
-      const btn = $(createBtnId);
-      if (!btn) return;
+      const btn = $(createBtnId); if (!btn) return;
       const raw = input.value.trim();
-      if (raw.length > 1 && !Object.values(DRIVERS).some(d => d.name.toLowerCase() === raw.toLowerCase())) {
-        btn.style.display = 'block';
-      } else {
-        btn.style.display = 'none';
-      }
+      if (raw.length > 1 && !Object.values(DRIVERS).some(d => d.name.toLowerCase() === raw.toLowerCase())) btn.style.display = 'block';
+      else btn.style.display = 'none';
     }
-
     function renderList() {
       const items = driverSearch(input.value);
-      if (!items.length) { 
-        list.style.display = 'none'; 
-        list.innerHTML = ''; 
-        activeIdx = -1; 
-        updateCreateBtn();
-        return; 
-      }
-      list.innerHTML = items.map((d, i) =>
-        `<div class="ac-item ${i === activeIdx ? 'active' : ''}" data-idx="${i}" data-name="${esc(d.name)}">${esc(d.name)}</div>`
-      ).join('');
+      if (!items.length) { list.style.display = 'none'; list.innerHTML = ''; activeIdx = -1; updateCreateBtn(); return; }
+      list.innerHTML = items.map((d, i) => `<div class="ac-item ${i === activeIdx ? 'active' : ''}" data-idx="${i}" data-name="${esc(d.name)}">${esc(d.name)}</div>`).join('');
       list.style.display = 'block';
       list.querySelectorAll('.ac-item').forEach(el => {
         el.addEventListener('mousedown', e => {
-          e.preventDefault();
-          input.value = el.dataset.name;
-          list.style.display = 'none';
-          activeIdx = -1;
+          e.preventDefault(); input.value = el.dataset.name; list.style.display = 'none'; activeIdx = -1;
           if ($(createBtnId)) $(createBtnId).style.display = 'none';
           input.dispatchEvent(new Event('change'));
         });
       });
     }
-    
     input.addEventListener('input', () => { activeIdx = -1; renderList(); });
     input.addEventListener('focus', () => { if (input.value.trim()) renderList(); });
-    input.addEventListener('blur', () => {
-      setTimeout(() => { list.style.display = 'none'; }, 200);
-    });
+    input.addEventListener('blur', () => { setTimeout(() => { list.style.display = 'none'; }, 200); });
     input.addEventListener('keydown', (e) => {
       const items = list.querySelectorAll('.ac-item');
       if (list.style.display === 'none' || !items.length) return;
@@ -876,18 +744,15 @@
   }
 
   window.openAddDriverFromMachine = function(inputId, isShift2) {
-    const input = $(inputId);
-    const name = input.value.trim();
-    $('driverEditId').value = '';
-    $('driverName').value = name;
-    $('driverPosition').value = '';
-    $('driverTabNum').value = '';
+    const input = $(inputId); const name = input.value.trim();
+    $('driverEditId').value = ''; $('driverName').value = name;
+    $('driverPosition').value = ''; $('driverTabNum').value = '';
     $('driverModalTitle').textContent = 'Новый водитель';
     window.pendingDriverTarget = { inputId, isShift2 };
     $('driverModal').classList.remove('hidden');
   };
 
-  // === КОНФЛИКТЫ ВОДИТЕЛЕЙ ===
+  // === КОНФЛИКТЫ ===
   function findShiftConflict(driverName, shiftField, excludeMachineId) {
     const name = String(driverName || '').trim().toLowerCase();
     if (!name) return null;
@@ -902,116 +767,72 @@
   }
   function checkDriverConflicts(driver1, driver2, excludeMachineId) {
     const conflicts = [];
-    const d1 = String(driver1 || '').trim();
-    const d2 = String(driver2 || '').trim();
-    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) {
-      conflicts.push({ name: d1, reason: 'указан в обеих сменах на одной машине' });
-      return conflicts;
-    }
+    const d1 = String(driver1 || '').trim(); const d2 = String(driver2 || '').trim();
+    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) { conflicts.push({ name: d1, reason: 'указан в обеих сменах на одной машине' }); return conflicts; }
     if (d1) { const c = findShiftConflict(d1, 'driver1', excludeMachineId); if (c) conflicts.push({ name: d1, machine: `${c.machine.num} ${c.machine.model || ''}`, shift: '1-я смена' }); }
     if (d2) { const c = findShiftConflict(d2, 'driver2', excludeMachineId); if (c) conflicts.push({ name: d2, machine: `${c.machine.num} ${c.machine.model || ''}`, shift: '2-я смена' }); }
     return conflicts;
   }
-  async function clearDriverFromSameShift(driverName, shiftField, excludeMachineId) {
-    const name = String(driverName || '').trim().toLowerCase();
-    if (!name) return;
-    for (const [id, m] of Object.entries(MACHINES)) {
-      if (id === excludeMachineId) continue;
-      const otherDriver = String(m[shiftField] || '').trim().toLowerCase();
-      if (otherDriver !== name) continue;
-      const st = m.lastStatus || 'line';
-      if (st === 'off') { await update(ref(db, `machines/${id}/${shiftField}`), ''); MACHINES[id][shiftField] = ''; }
-    }
-  }
 
-  // === УВЕДОМЛЕНИЯ (ИСПРАВЛЕННЫЕ) ===
+  // === УВЕДОМЛЕНИЯ ===
   let audioCtx = null;
-  let lastMachineStatuses = {};
   const notifyBtn = $('notifyBtn');
-  
   function updateNotifyButtonState() {
     if (!("Notification" in window)) { notifyBtn.textContent = '🔕 Не поддерживается'; notifyBtn.className = 'btn-notify denied'; notifyBtn.disabled = true; return; }
     if (Notification.permission === 'granted') { notifyBtn.textContent = '🔔 Звук вкл'; notifyBtn.className = 'btn-notify enabled'; }
     else if (Notification.permission === 'denied') { notifyBtn.textContent = '🔕 Заблокировано'; notifyBtn.className = 'btn-notify denied'; }
     else { notifyBtn.textContent = '🔔 Включить звук'; notifyBtn.className = 'btn-notify pulse-red'; }
   }
-  
   function playNotificationSound() {
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator(); 
-      const gainNode = audioCtx.createGain();
+      const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
       osc.connect(gainNode); gainNode.connect(audioCtx.destination);
       osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
       osc.start(); osc.stop(audioCtx.currentTime + 0.5);
       setTimeout(() => {
-        const osc2 = audioCtx.createOscillator(); 
-        const gainNode2 = audioCtx.createGain();
+        const osc2 = audioCtx.createOscillator(); const gainNode2 = audioCtx.createGain();
         osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
         osc2.type = 'sine'; osc2.frequency.setValueAtTime(1100, audioCtx.currentTime);
         gainNode2.gain.setValueAtTime(0.5, audioCtx.currentTime);
         gainNode2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
         osc2.start(); osc2.stop(audioCtx.currentTime + 0.5);
       }, 600);
-    } catch(e) { console.error("Audio error:", e); }
+    } catch(e) {}
   }
-  
   window.requestNotificationPermission = function() {
     if (!("Notification" in window)) { showToast("Ваш браузер не поддерживает уведомления", true); return; }
-    if (Notification.permission === 'granted') { playNotificationSound(); showToast('Звук уведомлений активирован'); return; }
+    if (Notification.permission === 'granted') { playNotificationSound(); showToast('Звук активирован'); return; }
     Notification.requestPermission().then(permission => {
       updateNotifyButtonState();
       if (permission === 'granted') { showToast('Уведомления включены!'); playNotificationSound(); }
-      else showToast('Вы отклонили уведомления. Вы можете пропустить сход!', true);
+      else showToast('Вы отклонили уведомления', true);
     });
   };
-  
   function showPushNotification(title, body) {
     if (Notification.permission !== 'granted') return;
-    if (!document.hidden) return; // Не спамим, если вкладка активна
-    
-    try {
-      const options = { 
-        body: body, 
-        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚠️</text></svg>', 
-        vibrate: [200,100,200,100,200],
-        tag: 'spt-alert-' + Date.now(),
-        renotify: true
-      };
-      new Notification(title, options);
-    } catch (e) { console.error("Push error:", e); }
+    if (!document.hidden) return;
+    try { new Notification(title, { body, vibrate: [200,100,200], tag: 'spt-alert-' + Date.now(), renotify: true }); } catch(e) {}
   }
-  
   function checkForNewOffStatus(machinesData) {
     if (!isDataReady) return;
-    if (Object.keys(lastMachineStatuses).length === 0) { 
-      for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus; 
-      return; 
-    }
-    
+    if (Object.keys(lastMachineStatuses).length === 0) { for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus; return; }
     let newOffMachines = [];
     for (const [id, m] of Object.entries(machinesData)) {
-      const prevStatus = lastMachineStatuses[id]; 
-      const currStatus = m.lastStatus;
-      if (currStatus === 'off' && prevStatus !== 'off') { 
-        newOffMachines.push(m);
-      }
+      const prevStatus = lastMachineStatuses[id]; const currStatus = m.lastStatus;
+      if (currStatus === 'off' && prevStatus !== 'off') newOffMachines.push(m);
       lastMachineStatuses[id] = currStatus;
     }
-    
     if (newOffMachines.length > 0) {
       playNotificationSound();
       newOffMachines.forEach((m, index) => {
-        setTimeout(() => {
-          showPushNotification('⚠️ Новый сход!', `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'})`);
-        }, index * 500);
+        setTimeout(() => showPushNotification('⚠️ Новый сход!', `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'})`), index * 500);
       });
     }
   }
-  
   function checkForLongDowntime(machinesData) {
     if (!isDataReady) return;
     const TWO_HOURS = 2 * 60 * 60 * 1000;
@@ -1020,62 +841,47 @@
         const elapsed = Date.now() - m.lastTime;
         if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
           playNotificationSound();
-          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} стоит в сходе уже более 2 часов! (${m.lastCause || 'Без причины'})`);
+          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} в сходе > 2 часов! (${m.lastCause || 'Без причины'})`);
           alertedMachineIds[id] = true;
         }
-      } else { 
-        if (alertedMachineIds[id]) delete alertedMachineIds[id]; 
-      }
+      } else if (alertedMachineIds[id]) delete alertedMachineIds[id];
     }
   }
   updateNotifyButtonState();
 
-  function enforceStatusRules() {
-    if (!isDataReady || !loggedUser.name || loggedUser.status !== 'approved') return;
-    const { isShift1 } = getShiftInfo();
-    let changesMade = false;
-    for (const [id, m] of Object.entries(MACHINES)) {
-      if (m.lastStatus !== 'off' && m.lastStatus !== 'parts') {
-        const activeDriver = isShift1 ? m.driver1 : m.driver2;
-        const hasDriver = activeDriver && activeDriver.trim() !== '';
-        let needsUpdate = false;
-        if (!hasDriver && m.lastStatus !== 'bv') { m.lastStatus = 'bv'; m.author = 'БВ: ' + loggedUser.name; m.lastTime = Date.now(); needsUpdate = true; }
-        else if (hasDriver && m.lastStatus === 'bv') { m.lastStatus = 'line'; m.author = 'На линии: ' + loggedUser.name; m.lastTime = 0; needsUpdate = true; }
-        if (needsUpdate) { update(ref(db, 'machines/' + id), m).catch(console.error); changesMade = true; }
-      }
-    }
-    if (changesMade) renderMainGrid();
-  }
-  setInterval(enforceStatusRules, 60000);
-
   // === СИНХРОНИЗАЦИЯ ===
-  onValue(ref(db, 'cats'), snap => { CATS = snap.val() || {}; if(Object.keys(CATS).length === 0) { CATS = DEFAULT_CATS; set(ref(db, 'cats'), CATS); } checkDataReady(); });
-  onValue(ref(db, 'machines'), snap => { MACHINES = snap.val() || {}; checkDataReady(); enforceStatusRules(); updateTopCounters(); checkForNewOffStatus(MACHINES); checkForLongDowntime(MACHINES); });
+  onValue(ref(db, 'cats'), snap => { CATS = snap.val() || {}; if(Object.keys(CATS).length===0){ CATS = DEFAULT_CATS; set(ref(db,'cats'), CATS); } checkDataReady(); });
+  onValue(ref(db, 'machines'), snap => {
+    MACHINES = snap.val() || {};
+    checkDataReady();
+    updateTopCounters();
+    checkForNewOffStatus(MACHINES);
+    checkForLongDowntime(MACHINES);
+    if (isDataReady) renderMainGrid();
+  });
   onValue(ref(db, 'roles'), snap => {
     ROLES = snap.val() || {};
     const existingNames = new Set(Object.values(ROLES).map(r => r && r.name).filter(Boolean));
-    Object.values(DEFAULT_ROLES).forEach(defRole => { if (!existingNames.has(defRole.name)) { const newRoleId = newId('role'); ROLES[newRoleId] = { id: newRoleId, name: defRole.name, cat: defRole.cat }; set(ref(db, 'roles/' + newRoleId), ROLES[newRoleId]); } });
-    Object.entries(ROLES).forEach(([key, r]) => { if (r && (!r.id || r.id !== key)) update(ref(db, 'roles/' + key), { id: key }); });
+    Object.values(DEFAULT_ROLES).forEach(defRole => {
+      if (!existingNames.has(defRole.name)) { const newRoleId = newId('role'); ROLES[newRoleId] = { id: newRoleId, name: defRole.name, cat: defRole.cat }; set(ref(db,'roles/'+newRoleId), ROLES[newRoleId]); }
+    });
+    Object.entries(ROLES).forEach(([key, r]) => { if (r && (!r.id || r.id !== key)) update(ref(db,'roles/'+key), { id: key }); });
     updateRoleSelect(); checkDataReady();
   });
-  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || {}; if(Object.keys(CAUSES).length === 0) { CAUSES = DEFAULT_CAUSES; set(ref(db, 'causes'), CAUSES); } checkDataReady(); });
+  onValue(ref(db, 'causes'), snap => { CAUSES = snap.val() || {}; if(Object.keys(CAUSES).length===0){ CAUSES=DEFAULT_CAUSES; set(ref(db,'causes'),CAUSES); } checkDataReady(); });
   onValue(ref(db, 'drivers'), snap => {
     DRIVERS = snap.val() || {};
-    if (Object.keys(DRIVERS).length === 0) {
-      DRIVERS = JSON.parse(JSON.stringify(DEFAULT_DRIVERS));
-      set(ref(db, 'drivers'), DRIVERS).catch(console.error);
-    } else {
+    if (Object.keys(DRIVERS).length === 0) { DRIVERS = JSON.parse(JSON.stringify(DEFAULT_DRIVERS)); set(ref(db,'drivers'), DRIVERS).catch(()=>{}); }
+    else {
       const existingTabs = new Set(Object.values(DRIVERS).map(d => d && d.tabNum).filter(Boolean));
       const existingNames = new Set(Object.values(DRIVERS).map(d => d && d.name).filter(Boolean));
       Object.values(DEFAULT_DRIVERS).forEach(d => {
         if (!d) return;
         const duplicate = (d.tabNum && existingTabs.has(d.tabNum)) || (!d.tabNum && existingNames.has(d.name));
-        if (!duplicate) { const id = newId('drv'); DRIVERS[id] = { ...d, id }; set(ref(db, 'drivers/' + id), DRIVERS[id]); }
+        if (!duplicate) { const id = newId('drv'); DRIVERS[id] = { ...d, id }; set(ref(db,'drivers/'+id), DRIVERS[id]); }
       });
     }
-    checkDataReady();
-    if (isAdminLoggedIn) renderAdmin();
-    renderDriversTab();
+    checkDataReady(); if (isAdminLoggedIn) renderAdmin(); renderDriversTab();
   });
   onValue(ref(db, 'users'), snap => {
     USERS = snap.val() || {};
@@ -1084,14 +890,14 @@
       const entry = Object.entries(USERS).find(([k,u]) => u && normPhone(u.phone) === norm);
       if (entry) {
         const [key, u] = entry; let currentStatus = u.status || 'pending';
-        if (loggedUser.roleName === CHIEF_ROLE_NAME) { currentStatus = 'approved'; if (u.status !== 'approved') update(ref(db, 'users/' + key), { status: 'approved' }).catch(()=>{}); }
+        if (loggedUser.roleName === CHIEF_ROLE_NAME) { currentStatus = 'approved'; if (u.status !== 'approved') update(ref(db,'users/'+key), { status: 'approved' }).catch(()=>{}); }
         loggedUser.status = currentStatus;
-        if (!u.id) update(ref(db, 'users/' + key), { id: key }).catch(()=>{});
+        if (!u.id) update(ref(db,'users/'+key), { id: key }).catch(()=>{});
       } else loggedUser.status = 'deleted';
     }
     checkDataReady(); if (loggedUser.name) enforceBlockState();
   });
-  onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); });
+  onValue(ref(db, 'monthlyStats'), snap => { monthlyStats = snap.val() || {}; checkDataReady(); updateTopCounters(); });
   onValue(ref(db, 'eventLog'), snap => { eventLog = snap.val() || {}; checkDataReady(); });
 
   function enforceBlockState() {
@@ -1099,9 +905,9 @@
     const isBlocked = loggedUser.status !== 'approved';
     if (isBlocked) {
       blockBanner.classList.remove('hidden'); if (grid) grid.classList.add('hidden');
-      if (loggedUser.status === 'rejected') { $('blockedReasonText').textContent = 'Ваш аккаунт отклонён Главным инженером.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ отклонён'; }
-      else if (loggedUser.status === 'deleted') { $('blockedReasonText').textContent = 'Ваш аккаунт был удалён из системы.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Аккаунт удалён'; }
-      else { $('blockedReasonText').textContent = 'Ваш аккаунт находится на проверке у Главного инженера.'; $('blockedBanner').querySelector('h2').textContent = '⛔ Доступ заблокирован'; }
+      if (loggedUser.status === 'rejected') { $('blockedReasonText').textContent = 'Ваш аккаунт отклонён.'; blockBanner.querySelector('h2').textContent = '⛔ Доступ отклонён'; }
+      else if (loggedUser.status === 'deleted') { $('blockedReasonText').textContent = 'Ваш аккаунт удалён.'; blockBanner.querySelector('h2').textContent = '⛔ Аккаунт удалён'; }
+      else { $('blockedReasonText').textContent = 'Ваш аккаунт на проверке.'; blockBanner.querySelector('h2').textContent = '⛔ Доступ заблокирован'; }
       document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
       for (let key in activeTimers) clearInterval(activeTimers[key]);
     } else { blockBanner.classList.add('hidden'); if (grid) grid.classList.remove('hidden'); }
@@ -1109,7 +915,7 @@
   function checkDataReady() {
     if (!isDataReady) {
       isDataReady = true;
-      if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); enforceStatusRules(); }
+      if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); $('tabMain').click(); }
     }
     if (loggedUser.name && !$('mainWorkBlock').classList.contains('hidden')) { updateUserProfileBlock(); renderMainGrid(); updateClocks(); updateTopCounters(); }
     if (isAdminLoggedIn) renderAdmin();
@@ -1131,34 +937,28 @@
     const badgeOff = $('badgeOffStat'); if (badgeOff) { if (countOff > 0) badgeOff.classList.add('animate-pulse'); else badgeOff.classList.remove('animate-pulse'); }
   }
 
-  window.openStatusListModal = function(statusType) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
-    const subs = { off: 'Причины схода и время простоя. Клик по строке — история машины.', parts: 'Причины ожидания ремонта и время простоя. Клик по строке — история машины.', bv: 'Машины без водителя в текущую смену. Клик по строке — история машины.' };
-    const isShift1 = getShiftInfo().isShift1;
-    const list = Object.values(MACHINES).filter(m => (m.lastStatus || 'line') === statusType).sort((a, b) => (a.lastTime || 0) - (b.lastTime || 0));
-    $('statusListTitle').textContent = titles[statusType] || 'Машины';
-    $('statusListSub').textContent = subs[statusType] || '';
-    if (!list.length) { $('statusListContent').innerHTML = '<div class="status-list-empty">Машин в этом статусе нет</div>'; $('statusListModal').classList.remove('hidden'); return; }
-    const html = list.map(m => {
-      const activeDriver = isShift1 ? (m.driver1 || '') : (m.driver2 || '');
-      const driverText = activeDriver ? activeDriver : 'Нет водителя';
-      let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
-      const causeText = m.lastCause ? m.lastCause : 'Без причины';
-      const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
-      const machineLogKey = `${m.num} ${m.model || ''}`;
-      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
-        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
-        <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
-      </div>`;
-    }).join('');
-    $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
-  };
-  function bindStatusBadges() {
-    [$('badgeOffStat'), $('badgeOffTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('off')));
-    [$('badgePartsStat'), $('badgePartsTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('parts')));
-    [$('badgeBvStat'), $('badgeBvTime')].filter(Boolean).forEach(el => el.addEventListener('click', () => window.openStatusListModal('bv')));
-  }
+  // Обновление счетчиков каждый час
+  setInterval(async () => {
+    if (!isDataReady) return;
+    const now = Date.now(); const monthStr = getCurrentMonthStr();
+    let stats = (await get(ref(db, `monthlyStats/${monthStr}`))).val() || { total: 0, off: 0, parts: 0, bv: 0 };
+    let changed = false;
+    for (const m of Object.values(MACHINES)) {
+      if ((m.lastStatus === 'off' || m.lastStatus === 'parts' || m.lastStatus === 'bv') && m.lastTime) {
+        const elapsed = now - (m._lastHourTick || m.lastTime);
+        if (elapsed > 0) {
+          stats.total += elapsed;
+          if (m.lastStatus === 'off') stats.off += elapsed;
+          if (m.lastStatus === 'parts') stats.parts += elapsed;
+          if (m.lastStatus === 'bv') stats.bv += elapsed;
+          m._lastHourTick = now;
+          await update(ref(db, 'machines/' + m.id), { _lastHourTick: now });
+          changed = true;
+        }
+      }
+    }
+    if (changed) await set(ref(db, `monthlyStats/${monthStr}`), stats);
+  }, 60 * 60 * 1000);
 
   function updateClocks() { const { shiftName, timeStr } = getShiftInfo(); if ($('shiftName')) $('shiftName').textContent = shiftName; if ($('timeText')) $('timeText').textContent = timeStr; }
   setInterval(updateClocks, 1000);
@@ -1171,6 +971,7 @@
     $('userRoleBadge').textContent = loggedUser.roleName || '—';
     enforceBlockState();
   }
+
   function renderMainGrid(){
     for (let key in activeTimers) clearInterval(activeTimers[key]);
     for (let key in activeTimers) delete activeTimers[key];
@@ -1195,7 +996,6 @@
             const shortName = activeDriver ? shortDriverName(activeDriver) : 'Нет';
             bottomHtml += `<span class="driver-badge" title="${esc(activeDriver || 'Нет водителя')}"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(shortName)}</span></span>`;
           } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
-          
           if ((st === 'off' || st === 'parts') && cause) {
             const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
             const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
@@ -1204,7 +1004,6 @@
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
           const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
           const btnClass = st === 'line' ? 'line' : st === 'off' ? 'off' : st === 'parts' ? 'parts' : 'bv';
-          
           html += `<div class="row ${rowClass}" id="row-${m.id}">
             <div class="row-top">
               <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name" title="${esc(m.num)} ${esc(m.model || '')}">${esc(m.num)} ${esc(m.model || '')}</span></div>
@@ -1249,36 +1048,124 @@
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
     const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
-    if (!activeDriver || activeDriver.trim() === '') { setStatus(machineId, 'bv'); showToast('Нет водителя — машина переведена в БВ', true); }
-    else setStatus(machineId, 'line');
+    if (!activeDriver || activeDriver.trim() === '') {
+      pendingSetLineMachineId = machineId;
+      $('setLineDriverInput').value = '';
+      $('btnAddNewDriverForLine').style.display = 'none';
+      $('setLineDriverModal').classList.remove('hidden');
+      setTimeout(() => attachDriverAutocomplete($('setLineDriverInput')), 10);
+      return;
+    }
+    setStatus(machineId, 'line');
   }
+
+  function confirmSetLineDriver() {
+    if (!pendingSetLineMachineId) return;
+    const name = canonicalDriverName($('setLineDriverInput'));
+    if (!name) return showToast('Введите ФИО водителя', true);
+    const { isShift1 } = getShiftInfo();
+    const m = MACHINES[pendingSetLineMachineId];
+    if (!m) return;
+    const field = isShift1 ? 'driver1' : 'driver2';
+    const other = isShift1 ? m.driver2 : m.driver1;
+    if (other && other.trim().toLowerCase() === name.trim().toLowerCase()) {
+      return showToast('Водитель уже назначен на эту машину в другой смене', true);
+    }
+    const conflicts = checkDriverConflicts(
+      isShift1 ? name : m.driver1,
+      isShift1 ? m.driver2 : name,
+      pendingSetLineMachineId
+    );
+    if (conflicts.length) {
+      const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
+      return showToast('Конфликт: ' + msg, true);
+    }
+    (async () => {
+      await update(ref(db, 'machines/' + pendingSetLineMachineId), { [field]: name });
+      MACHINES[pendingSetLineMachineId][field] = name;
+      await setStatus(pendingSetLineMachineId, 'line');
+      closeModal('setLineDriverModal');
+      pendingSetLineMachineId = null;
+    })();
+  }
+
+  // === СМЕНА СТАТУСА ===
   async function setStatus(machineId, status, causeText = '') {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const m = MACHINES[machineId]; if (!m) return;
+    const { isShift1 } = getShiftInfo();
+
     if (status === 'line') {
-      const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? m.driver1 : m.driver2;
-      if (!activeDriver || activeDriver.trim() === '') { status = 'bv'; showToast('Нет водителя — машина переведена в БВ', true); }
+      const activeDriver = isShift1 ? m.driver1 : m.driver2;
+      if (!activeDriver || activeDriver.trim() === '') {
+        pendingSetLineMachineId = machineId;
+        $('setLineDriverInput').value = '';
+        $('btnAddNewDriverForLine').style.display = 'none';
+        $('setLineDriverModal').classList.remove('hidden');
+        setTimeout(() => attachDriverAutocomplete($('setLineDriverInput')), 10);
+        return;
+      }
     }
-    const now = Date.now(); const monthStr = new Date().toISOString().slice(0, 7);
+
+    if (status === 'bv') {
+      const field = isShift1 ? 'driver1' : 'driver2';
+      await update(ref(db, `machines/${machineId}/${field}`), '');
+      m[field] = '';
+    }
+
+    const now = Date.now(); const monthStr = getCurrentMonthStr();
+    let stats = (await get(ref(db, `monthlyStats/${monthStr}`))).val() || { total: 0, off: 0, parts: 0, bv: 0 };
+
     if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
       const elapsed = now - m.lastTime;
-      const statsRef = ref(db, `monthlyStats/${monthStr}`); const statsSnap = await get(statsRef);
-      let stats = statsSnap.val() || { total: 0, off: 0, parts: 0, bv: 0 };
       stats.total += elapsed;
       if (m.lastStatus === 'off') stats.off += elapsed;
       if (m.lastStatus === 'parts') stats.parts += elapsed;
       if (m.lastStatus === 'bv') stats.bv += elapsed;
-      await set(statsRef, stats);
-      await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(m.lastTime).toLocaleDateString('ru-RU'), time: new Date(m.lastTime).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: m.lastStatus, cause: m.lastCause || '—', duration: elapsed, author: m.author || 'Неизвестно' });
-    } else if (m.lastStatus === 'line' && status === 'line') return;
-    else if (m.lastStatus === 'line' && status !== 'line') await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
-    if (status === 'line' && m.lastStatus && m.lastStatus !== 'line') await push(ref(db, 'eventLog'), { month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'), time: new Date(now).toLocaleTimeString('ru-RU'), machine: `${m.num} ${m.model}`, driver: getShiftInfo().isShift1 ? m.driver1 : m.driver2, status: 'line', cause: '—', duration: 0, author: loggedUser.name });
-    m.lastStatus = status; m.lastCause = causeText; m.lastTime = status === 'line' ? 0 : now;
+      await push(ref(db, 'eventLog'), {
+        month: monthStr, date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
+        time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
+        machine: `${m.num} ${m.model || ''}`,
+        driver: isShift1 ? m.driver1 : m.driver2,
+        status: m.lastStatus, cause: m.lastCause || '—',
+        duration: elapsed, author: m.author || 'Неизвестно'
+      });
+    } else if (m.lastStatus === 'line' && status !== 'line') {
+      await push(ref(db, 'eventLog'), {
+        month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'),
+        time: new Date(now).toLocaleTimeString('ru-RU'),
+        machine: `${m.num} ${m.model || ''}`,
+        driver: isShift1 ? m.driver1 : m.driver2,
+        status: 'line', cause: '—', duration: 0, author: loggedUser.name
+      });
+    }
+    if (status === 'line' && m.lastStatus && m.lastStatus !== 'line') {
+      await push(ref(db, 'eventLog'), {
+        month: monthStr, date: new Date(now).toLocaleDateString('ru-RU'),
+        time: new Date(now).toLocaleTimeString('ru-RU'),
+        machine: `${m.num} ${m.model || ''}`,
+        driver: isShift1 ? m.driver1 : m.driver2,
+        status: 'line', cause: '—', duration: 0, author: loggedUser.name
+      });
+    }
+
+    await set(ref(db, `monthlyStats/${monthStr}`), stats);
+
+    m.lastStatus = status;
+    m.lastCause = causeText;
+    m.lastTime = status === 'line' ? 0 : now;
     const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
     m.author = labels[status] + loggedUser.name;
-    lastMachineStatuses[machineId] = status; delete alertedMachineIds[machineId];
-    await update(ref(db, 'machines/' + machineId), m);
+    lastMachineStatuses[machineId] = status;
+    delete alertedMachineIds[machineId];
+
+    await update(ref(db, 'machines/' + machineId), {
+      lastStatus: m.lastStatus, lastCause: m.lastCause,
+      lastTime: m.lastTime, author: m.author,
+      driver1: m.driver1, driver2: m.driver2
+    });
   }
+
   function openCauseModal(machineId, status) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentRowId = machineId; currentStatusType = status;
@@ -1288,8 +1175,15 @@
     $('causeSelect').innerHTML = Object.values(CAUSES).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
     $('causeDetail').value = ''; $('causeModal').classList.remove('hidden');
   }
-  function applyCause() { if (!currentRowId) return; const cause = $('causeSelect').value; const detail = $('causeDetail').value.trim(); if (!cause && !detail) return showToast('Выберите причину', true); setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : '')); closeModal('causeModal'); }
-  
+  function applyCause() {
+    if (!currentRowId) return;
+    const cause = $('causeSelect').value;
+    const detail = $('causeDetail').value.trim();
+    if (!cause && !detail) return showToast('Выберите причину', true);
+    setStatus(currentRowId, currentStatusType, cause + (detail ? ` (${detail})` : ''));
+    closeModal('causeModal');
+  }
+
   function openEditDriverModal(machineId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     editingRowId = machineId; const m = MACHINES[machineId]; if (!m) return;
@@ -1303,20 +1197,17 @@
     const m = MACHINES[editingRowId]; if (!m) return;
     const d1 = canonicalDriverName($('editDriver1'));
     const d2 = canonicalDriverName($('editDriver2'));
-    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) return showToast('Водитель не может стоять в обеих сменах на одной машине', true);
+    if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) return showToast('Водитель не может стоять в обеих сменах', true);
     const conflicts = checkDriverConflicts(d1, d2, editingRowId);
     if (conflicts.length) {
       const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
       return showToast('Конфликт: ' + msg, true);
     }
-    await clearDriverFromSameShift(d1, 'driver1', editingRowId);
-    await clearDriverFromSameShift(d2, 'driver2', editingRowId);
     m.driver1 = d1; m.driver2 = d2;
-    enforceStatusRules();
-    await update(ref(db, 'machines/' + editingRowId), m);
+    await update(ref(db, 'machines/' + editingRowId), { driver1: d1, driver2: d2 });
     closeModal('editDriverModal');
   }
-  
+
   function openAddMachineModal(catId) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentCatForAdd = catId;
@@ -1324,8 +1215,6 @@
     $('addNum').value = ''; $('addModel').value = ''; $('addDriver1').value = ''; $('addDriver2').value = '';
     $('addMachineFields').classList.add('hidden'); $('addMachineAuthText').classList.remove('hidden');
     $('addMachineConfirmBtn').classList.remove('hidden'); $('addMachineSaveBtn').classList.add('hidden');
-    $('btnAddNewDriverFromAdd1').style.display = 'none';
-    $('btnAddNewDriverFromAdd2').style.display = 'none';
     $('addMachineModal').classList.remove('hidden');
   }
   function confirmAddMachineAuth() {
@@ -1337,17 +1226,15 @@
     const num = $('addNum').value.trim(); if (!num) return showToast('Введите номер', true);
     const d1 = canonicalDriverName($('addDriver1')); const d2 = canonicalDriverName($('addDriver2'));
     if (d1 && d2 && d1.toLowerCase() === d2.toLowerCase()) return showToast('Водитель не может стоять в обеих сменах', true);
-    const conflicts = checkDriverConflicts(d1, d2, null);
-    if (conflicts.length) {
-      const msg = conflicts.map(c => c.reason ? `${c.name}: ${c.reason}` : `${c.name} уже на линии на машине ${c.machine} (${c.shift})`).join('; ');
-      return showToast('Конфликт: ' + msg, true);
-    }
-    await clearDriverFromSameShift(d1, 'driver1', null);
-    await clearDriverFromSameShift(d2, 'driver2', null);
     const { isShift1 } = getShiftInfo(); const activeDriver = isShift1 ? d1 : d2;
     const hasDriver = activeDriver !== ''; const st = hasDriver ? 'line' : 'bv';
     const id = newId('mach');
-    await set(ref(db, 'machines/' + id), { id, num, model: $('addModel').value.trim(), catId: currentCatForAdd, driver1: d1, driver2: d2, lastStatus: st, lastTime: 0, author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name });
+    await set(ref(db, 'machines/' + id), {
+      id, num, model: $('addModel').value.trim(),
+      catId: currentCatForAdd, driver1: d1, driver2: d2,
+      lastStatus: st, lastCause: '', lastTime: 0,
+      author: (st === 'line' ? 'На линии: ' : 'БВ: ') + loggedUser.name
+    });
     closeModal('addMachineModal');
   }
 
@@ -1371,7 +1258,7 @@
   $('btnReportKpi').onclick = () => {
     $('btnReportKpi').classList.add('active'); $('btnReportJournal').classList.remove('active'); $('btnReportDrivers').classList.remove('active');
     $('reportKpiBlock').classList.remove('hidden'); $('reportJournalBlock').classList.add('hidden'); $('reportDriversBlock').classList.add('hidden');
-    if (!$('kpiDateFrom').value) { const d = new Date(); const firstDay = new Date(d.getFullYear(), d.getMonth(), 1); $('kpiDateFrom').value = firstDay.toISOString().slice(0,10); $('kpiDateTo').value = d.toISOString().slice(0,10); }
+    if (!$('kpiDateFrom').value) { const d = new Date(); $('kpiDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('kpiDateTo').value = d.toISOString().slice(0,10); }
   };
   $('btnReportDrivers').onclick = () => {
     $('btnReportDrivers').classList.add('active'); $('btnReportJournal').classList.remove('active'); $('btnReportKpi').classList.remove('active');
@@ -1380,35 +1267,50 @@
   };
 
   let logModalMachineFilter = null;
-  function showLogModal(type, machineName = null) {
+  window.showLogModal = function(type, machineName = null) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     currentLogType = type; logModalMachineFilter = machineName;
     const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
     const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
     $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
     $('logModal').classList.remove('hidden'); renderLogTable();
-  }
-  function renderLogTable() {
+  };
+  window.renderLogTable = function() {
     const month = $('logMonthSelect').value; const type = currentLogType;
     let filtered = Object.values(eventLog).filter(e => e.month === month);
-    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История машины: ${logModalMachineFilter} за ${getMonthName(month)}`; }
-    else { let title = ''; if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; } else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; } else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; } else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; } else { title = 'Все события'; } $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`; }
-    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0); $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
-    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей за этот месяц</div>'; return; }
+    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
+    else {
+      let title = '';
+      if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
+      else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
+      else if (type === 'bv') { filtered = filtered.filter(e => e.status === 'bv'); title = 'БВ'; }
+      else if (type === 'line') { filtered = filtered.filter(e => e.status === 'line'); title = 'На линии'; }
+      else { title = 'Все события'; }
+      $('logModalTitle').textContent = `Журнал: ${title} за ${getMonthName(month)}`;
+    }
+    let totalMs = filtered.reduce((acc, e) => acc + (e.duration || 0), 0);
+    $('logTotalSum').textContent = `Итого: ${formatMs(totalMs)}`;
+    if (!filtered.length) { $('logModalContent').innerHTML = '<div class="log-empty">Нет записей</div>'; return; }
     let html = `<table class="log-table"><thead><tr><th>Дата / Время</th><th>Машина</th><th>Водитель</th><th>Причина</th><th>Длительность</th><th>Кто нажал</th></tr></thead><tbody>`;
     filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||'')).forEach(e => {
       html += `<tr><td>${e.date} <span style="color:#94a3b8;font-size:11px;">${e.time}</span></td><td><strong>${esc(e.machine)}</strong></td><td>${esc(e.driver || '—')}</td><td><span class="reason-badge ${e.status === 'parts' ? 'red' : ''}">${esc(e.cause)}</span></td><td style="font-family:monospace;font-weight:600;">${formatMs(e.duration || 0)}</td><td style="font-size:11px;color:#64748b;">${esc(e.author)}</td></tr>`;
     });
     $('logModalContent').innerHTML = html + '</tbody></table>';
-  }
-  function setReportStatus(status) {
+  };
+  window.setReportStatus = function(status) {
     reportStatusFilter = status;
     document.querySelectorAll('#reportStatusFilters .status-filter-btn').forEach(btn => btn.className = 'status-filter-btn');
     const activeBtn = document.querySelector(`#reportStatusFilters .status-filter-btn[data-status="${status}"]`);
-    if (activeBtn) { if (status === '') activeBtn.classList.add('active-all'); else if (status === 'line') activeBtn.classList.add('active-line'); else if (status === 'off') activeBtn.classList.add('active-off'); else if (status === 'parts') activeBtn.classList.add('active-parts'); else if (status === 'bv') activeBtn.classList.add('active-bv'); }
-    buildReport();
-  }
-  function buildReport() {
+    if (activeBtn) {
+      if (status === '') activeBtn.classList.add('active-all');
+      else if (status === 'line') activeBtn.classList.add('active-line');
+      else if (status === 'off') activeBtn.classList.add('active-off');
+      else if (status === 'parts') activeBtn.classList.add('active-parts');
+      else if (status === 'bv') activeBtn.classList.add('active-bv');
+    }
+    window.buildReport();
+  };
+  window.buildReport = function() {
     try {
       const dateFrom = $('repDateFrom').value; const dateTo = $('repDateTo').value;
       const filterCause = $('repCause').value; const filterCat = $('repCat').value;
@@ -1419,7 +1321,13 @@
       if (filterCause) filtered = filtered.filter(r => r.cause && r.cause.startsWith(filterCause));
       if (filterCat) filtered = filtered.filter(r => { const m = Object.values(MACHINES).find(x => `${x.num} ${x.model}` === r.machine); return m && m.catId === filterCat; });
       let totalOff = 0, totalParts = 0, totalBV = 0, totalLine = 0, totalOffMs = 0;
-      filtered.forEach(r => { const dur = r.duration || 0; if (r.status === 'off') { totalOff++; totalOffMs += dur; } if (r.status === 'parts') { totalParts++; totalOffMs += dur; } if (r.status === 'bv') { totalBV++; totalOffMs += dur; } if (r.status === 'line') { totalLine++; } });
+      filtered.forEach(r => {
+        const dur = r.duration || 0;
+        if (r.status === 'off') { totalOff++; totalOffMs += dur; }
+        if (r.status === 'parts') { totalParts++; totalOffMs += dur; }
+        if (r.status === 'bv') { totalBV++; totalOffMs += dur; }
+        if (r.status === 'line') totalLine++;
+      });
       $('reportStatsRow').innerHTML = `
         <div class="report-stat-card"><div class="num">${filtered.length}</div><div class="lbl">Записей</div></div>
         <div class="report-stat-card green"><div class="num">${totalLine}</div><div class="lbl">На линии</div></div>
@@ -1428,342 +1336,248 @@
         <div class="report-stat-card gray"><div class="num">${totalBV}</div><div class="lbl">БВ</div></div>
         <div class="report-stat-card red"><div class="num">${formatMs(totalOffMs)}</div><div class="lbl">Общий простой</div></div>`;
       $('reportTotalRow').style.display = 'block'; $('reportTotalTime').textContent = formatMs(totalOffMs);
-      if (!filtered.length) { $('reportContent').innerHTML = `<p class="empty">Нет данных по фильтрам</p>`; return; }
+      if (!filtered.length) { $('reportContent').innerHTML = `<p class="empty">Нет данных</p>`; return; }
       filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
-      $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина (клик = история)</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
-    } catch(err) { console.error(err); $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка формирования отчета: ${esc(err.message)}</p>`; }
-  }
-  function buildKpiReport() {
+      $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${r.machine}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
+    } catch(err) { $('reportContent').innerHTML = `<p class="empty" style="color:red;">Ошибка: ${esc(err.message)}</p>`; }
+  };
+  window.buildKpiReport = function() {
     const dateFrom = $('kpiDateFrom').value; const dateTo = $('kpiDateTo').value;
     if (!dateFrom || !dateTo) return showToast('Укажите период', true);
     const pFrom = dateFrom.split('-'); const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
     const pTo = dateTo.split('-'); const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
     const start = new Date(dateFrom); const end = new Date(dateTo);
-    const diffTime = Math.abs(end - start); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const diffDays = Math.ceil(Math.abs(end - start) / (1000*60*60*24)) + 1;
     const totalPeriodMs = diffDays * 24 * 60 * 60 * 1000;
     let machineStats = {};
     Object.values(MACHINES).forEach(m => { machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 }; });
     Object.values(eventLog).forEach(log => {
-      const machineEntry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
-      if (!machineEntry) return; const [id, stat] = machineEntry;
-      if (log.date >= dFromStr && log.date <= dToStr) { const dur = log.duration || 0; if (log.status === 'off') stat.offMs += dur; if (log.status === 'parts') stat.partsMs += dur; if (log.status === 'bv') stat.bvMs += dur; if (log.status === 'line') stat.lineMs += dur; }
+      const entry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
+      if (!entry) return;
+      if (log.date >= dFromStr && log.date <= dToStr) {
+        const dur = log.duration || 0;
+        if (log.status === 'off') entry[1].offMs += dur;
+        if (log.status === 'parts') entry[1].partsMs += dur;
+        if (log.status === 'bv') entry[1].bvMs += dur;
+        if (log.status === 'line') entry[1].lineMs += dur;
+      }
     });
-    let html = `<table class="report-table"><thead><tr><th>Машина</th><th>Работа (На линии)</th><th>Простой (Сход)</th><th>Ремонт</th><th>БВ</th><th>Общее время</th><th>KPI (Эффективность)</th></tr></thead><tbody>`;
+    let html = `<table class="report-table"><thead><tr><th>Машина</th><th>Работа</th><th>Сход</th><th>Ремонт</th><th>БВ</th><th>KPI</th></tr></thead><tbody>`;
     const sortedStats = Object.values(machineStats).map(s => {
-      const totalKnown = s.lineMs + s.offMs + s.partsMs + s.bvMs;
-      const baseMs = Math.max(totalPeriodMs, totalKnown);
-      const kpi = baseMs > 0 ? Math.round((s.lineMs / baseMs) * 100) : 0;
-      return { ...s, kpi, totalKnown };
-    }).sort((a,b) => b.kpi - a.kpi);
+      const totalKnown = s.offMs + s.partsMs + s.bvMs;
+      const totalWork = totalPeriodMs - totalKnown;
+      const kpi = totalPeriodMs > 0 ? (totalWork / totalPeriodMs) * 100 : 0;
+      return { ...s, totalWork, kpi };
+    }).sort((a, b) => b.kpi - a.kpi);
     sortedStats.forEach(s => {
-      let color = '#ef4444'; if (s.kpi >= 80) color = '#10b981'; else if (s.kpi >= 50) color = '#eab308';
-      html += `<tr><td><strong>${esc(s.num)} ${esc(s.model)}</strong></td><td style="color:#166534; font-weight:600;">${formatMs(s.lineMs)}</td><td style="color:#854d0e;">${formatMs(s.offMs)}</td><td style="color:#991b1b;">${formatMs(s.partsMs)}</td><td style="color:#475569;">${formatMs(s.bvMs)}</td><td>${formatMs(s.totalKnown)}</td><td><span class="kpi-badge" style="background:${color}">${s.kpi}%</span></td></tr>`;
+      html += `<tr><td><strong>${esc(s.num)} ${esc(s.model)}</strong></td><td>${formatMs(s.totalWork)}</td><td>${formatMs(s.offMs)}</td><td>${formatMs(s.partsMs)}</td><td>${formatMs(s.bvMs)}</td><td><span class="kpi-badge" style="background:${s.kpi > 80 ? '#10b981' : s.kpi > 50 ? '#f59e0b' : '#ef4444'}">${s.kpi.toFixed(1)}%</span></td></tr>`;
     });
-    html += `</tbody></table>`; $('kpiContent').innerHTML = html;
-  }
-
-  // === ОТЧЁТ ПО ВОДИТЕЛЯМ ===
-  function buildDriversReport() {
+    $('kpiContent').innerHTML = html + '</tbody></table>';
+  };
+  window.buildDriversReport = function() {
     const dateFrom = $('drvDateFrom').value; const dateTo = $('drvDateTo').value;
+    const search = $('drvSearch').value.trim().toLowerCase();
     if (!dateFrom || !dateTo) return showToast('Укажите период', true);
     const pFrom = dateFrom.split('-'); const dFromStr = `${pFrom[2]}.${pFrom[1]}.${pFrom[0]}`;
     const pTo = dateTo.split('-'); const dToStr = `${pTo[2]}.${pTo[1]}.${pTo[0]}`;
-    const search = ($('drvSearch')?.value || '').trim().toLowerCase();
-    const stats = {};
-    function ensure(name) { if (!stats[name]) stats[name] = { off: 0, parts: 0, bv: 0, line: 0, offMs: 0, partsMs: 0, bvMs: 0, lineMs: 0, causes: {} }; return stats[name]; }
+    let driverStats = {};
     Object.values(eventLog).forEach(log => {
-      if (!log.date || log.date < dFromStr || log.date > dToStr) return;
-      const drv = String(log.driver || '').trim();
-      if (!drv) return;
-      const s = ensure(drv); const dur = log.duration || 0;
-      if (log.status === 'off') { s.off++; s.offMs += dur; s.causes[log.cause || '—'] = (s.causes[log.cause || '—'] || 0) + dur; }
-      else if (log.status === 'parts') { s.parts++; s.partsMs += dur; s.causes[log.cause || '—'] = (s.causes[log.cause || '—'] || 0) + dur; }
-      else if (log.status === 'bv') { s.bv++; s.bvMs += dur; }
-      else if (log.status === 'line') { s.line++; s.lineMs += dur; }
+      if (log.date >= dFromStr && log.date <= dToStr && log.driver) {
+        if (!driverStats[log.driver]) driverStats[log.driver] = { off: 0, parts: 0, bv: 0, line: 0, totalMs: 0 };
+        const dur = log.duration || 0;
+        if (log.status === 'off') { driverStats[log.driver].off++; driverStats[log.driver].totalMs += dur; }
+        if (log.status === 'parts') { driverStats[log.driver].parts++; driverStats[log.driver].totalMs += dur; }
+        if (log.status === 'bv') { driverStats[log.driver].bv++; driverStats[log.driver].totalMs += dur; }
+        if (log.status === 'line') driverStats[log.driver].line++;
+      }
     });
-    let rows = Object.entries(stats).map(([name, s]) => {
-      const totalDowntime = s.offMs + s.partsMs + s.bvMs;
-      const totalWork = s.lineMs;
-      const base = totalWork + totalDowntime;
-      const kpi = base > 0 ? Math.round((totalWork / base) * 100) : 0;
-      return { name, ...s, totalDowntime, totalWork, kpi };
-    });
-    if (search) rows = rows.filter(r => r.name.toLowerCase().includes(search));
-    if (!rows.length) { $('driversReportContent').innerHTML = '<p class="empty">Нет данных по водителям за выбранный период</p>'; return; }
-    rows.sort((a, b) => b.kpi - a.kpi || a.name.localeCompare(b.name, 'ru'));
-    let html = `<table class="report-table"><thead><tr><th>Водитель</th><th>Сходов</th><th>Часы схода</th><th>Ремонтов</th><th>Часы ремонта</th><th>БВ</th><th>Часы БВ</th><th>Отработано</th><th>Общий простой</th><th>KPI</th></tr></thead><tbody>`;
-    rows.forEach(r => {
-      let color = '#ef4444'; if (r.kpi >= 80) color = '#10b981'; else if (r.kpi >= 50) color = '#eab308';
-      const causesStr = Object.entries(r.causes).sort((a, b) => b[1] - a[1]).map(([c, ms]) => `${esc(c)}: ${formatMs(ms)}`).join('<br>') || '—';
-      html += `<tr>
-        <td><strong>${esc(r.name)}</strong><div style="font-size:11px;color:#64748b;margin-top:4px;">${causesStr}</div></td>
-        <td style="color:#854d0e;font-weight:600;">${r.off}</td>
-        <td style="color:#854d0e;">${formatMs(r.offMs)}</td>
-        <td style="color:#991b1b;font-weight:600;">${r.parts}</td>
-        <td style="color:#991b1b;">${formatMs(r.partsMs)}</td>
-        <td style="color:#475569;font-weight:600;">${r.bv}</td>
-        <td style="color:#475569;">${formatMs(r.bvMs)}</td>
-        <td style="color:#166534;font-weight:700;">${formatMs(r.lineMs)}</td>
-        <td style="color:#991b1b;font-weight:700;">${formatMs(r.totalDowntime)}</td>
-        <td><span class="kpi-badge" style="background:${color}">${r.kpi}%</span></td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    $('driversReportContent').innerHTML = html;
-  }
-  function exportDriversReport() {
-    const table = document.querySelector('#driversReportContent .report-table');
-    if (!table) return showToast('Сначала сформируйте отчёт', true);
-    let csv = '\uFEFF';
-    table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    a.download = `СПТ_водители_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }
-  function exportExcel() {
-    const table = document.querySelector('.report-table'); if (!table) return showToast('Сначала сформируйте отчёт', true);
-    let csv = '\uFEFF';
-    const stats = $('reportStatsRow').innerText.replace(/\n/g, ';');
-    csv += `"ИТОГИ:";${stats}\r\n\r\n`;
-    table.querySelectorAll('tr').forEach(row => { csv += Array.from(row.querySelectorAll('th, td')).map(c => `"${c.innerText.replace(/"/g, '""')}"`).join(';') + '\r\n'; });
-    const totalTime = $('reportTotalTime').innerText;
-    csv += `\r\n"Общее накопленное время:";"${totalTime}"\r\n`;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    a.download = `СПТ_отчёт_${new Date().toLocaleDateString('ru-RU')}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }
-
-  // === АДМИН ===
-  function renderAdmin() { if (!$('adminUsersBlock').classList.contains('hidden')) renderUsers(); if (!$('adminBuilderBlock').classList.contains('hidden')) renderBuilder(); }
-  window.delCat = async function(key) { if(confirm('Удалить эту категорию?')) await remove(ref(db,'cats/' + key)); };
-  window.delMach = async function(key) { if(confirm('Удалить эту машину?')) await remove(ref(db,'machines/' + key)); };
-  window.delRole = async function(key) { if(confirm('Удалить эту должность?')) await remove(ref(db,'roles/' + key)); };
-  window.delCause = async function(key) { if(confirm('Удалить эту причину?')) await remove(ref(db,'causes/' + key)); };
-  window.userAction = function(uid, act) {
-    if (act === 'delete') { const u = USERS[uid]; if (u && u.roleName === CHIEF_ROLE_NAME) { showToast('Нельзя удалить Главного инженера', true); return; } }
-    pendingUserAction = { uid, act }; $('usersCodeInput').value = ''; $('usersCodeModal').classList.remove('hidden'); $('usersCodeInput').focus();
+    let drivers = Object.entries(driverStats).map(([name, s]) => ({ name, ...s }));
+    if (search) drivers = drivers.filter(d => d.name.toLowerCase().includes(search));
+    if (!drivers.length) { $('driversReportContent').innerHTML = `<p class="empty">Нет данных</p>`; return; }
+    $('driversReportContent').innerHTML = `<table class="report-table"><thead><tr><th>Водитель</th><th>Сходов</th><th>Ремонтов</th><th>БВ</th><th>На линии</th><th>Общий простой</th></tr></thead><tbody>${drivers.map(d => `<tr><td><strong>${esc(d.name)}</strong></td><td>${d.off}</td><td>${d.parts}</td><td>${d.bv}</td><td>${d.line}</td><td style="font-family:monospace;font-weight:600;">${formatMs(d.totalMs)}</td></tr>`).join('')}</tbody></table>`;
   };
-  window.openEditDriverModal = openEditDriverModal; window.saveNewDrivers = saveNewDrivers; window.openAddMachineModal = openAddMachineModal; window.confirmAddMachineAuth = confirmAddMachineAuth; window.addNewMachine = addNewMachine; window.setStatus = setStatus; window.trySetLine = trySetLine; window.openCauseModal = openCauseModal; window.applyCause = applyCause; window.showLogModal = showLogModal; window.renderLogTable = renderLogTable; window.buildReport = buildReport; window.buildKpiReport = buildKpiReport; window.buildDriversReport = buildDriversReport; window.exportDriversReport = exportDriversReport; window.exportExcel = exportExcel; window.setReportStatus = setReportStatus; window.closeModal = closeModal;
+  window.exportExcel = function() {
+    showToast('Функция экспорта будет доступна в следующей версии');
+  };
+  window.exportDriversReport = function() {
+    showToast('Функция экспорта будет доступна в следующей версии');
+  };
 
-  function renderUsers() {
-    const sorted = Object.entries(USERS).map(([key, u]) => ({ ...(u || {}), _key: key })).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    if (!sorted.length) { $('moderationList').innerHTML = '<p class="empty">Пользователей нет.</p>'; return; }
-    $('moderationList').innerHTML = sorted.map(u => {
-      const cls = u.status==='approved'?'approved':u.status==='rejected'?'rejected':'';
-      const statusText = u.status==='approved'?'✅ Подтвержден' : u.status==='rejected'?'⛔ Отклонён' : '⏳ На проверке';
-      const displayName = (!u.name || u.name === '0') ? 'Без имени' : u.name;
-      const displayPhone = (!u.phone || u.phone === '0') ? '—' : u.phone;
-      const chiefBadge = u.roleName === CHIEF_ROLE_NAME ? ' <span style="background:#fef08a; color:#854d0e; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">ГИ</span>' : '';
-      const delBtn = u.roleName === CHIEF_ROLE_NAME ? `<button class="btn gray small" disabled>🔒</button>` : `<button class="btn gray small" style="background:#dc2626;" onclick="userAction('${u._key}','delete')">Удалить</button>`;
-      return `<div class="moderation-user ${cls}"><div><strong>${esc(displayName)}</strong>${chiefBadge} (${esc(displayPhone)})<br><span style="font-size:12px;color:#64748b;">${esc(u.catLabel || '—')} · ${esc(u.roleName || '—')} · ${statusText}</span></div><div style="display:flex;gap:6px;">${u.status!=='approved'?`<button class="btn green small" onclick="userAction('${u._key}','approve')">Одобрить</button>`:''}${u.status!=='rejected'?`<button class="btn red small" onclick="userAction('${u._key}','reject')">Отклонить</button>`:''}${delBtn}</div></div>`;
-    }).join('');
-  }
-  async function cleanBrokenUsers() {
-    if (!confirm('Удалить всех битых пользователей?')) return;
-    let count = 0;
-    for (const [key, u] of Object.entries(USERS)) { if (!u || !u.name || !u.phone || u.name === '0' || u.phone === '0' || !u.id || u.id !== key) { try { await remove(ref(db, 'users/' + key)); count++; } catch(e) {} } }
-    showToast(`Удалено битых: ${count}`); try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {}
-  }
-  async function deleteAllUsers() {
-    if (!confirm('УДАЛИТЬ ВСЕХ пользователей?')) return; if (!confirm('Точно удалить ВСЕХ?')) return;
-    try { await remove(ref(db, 'users')); showToast('Все пользователи удалены'); localStorage.removeItem('spt_user'); USERS = {}; renderUsers(); } catch(e) { showToast('Ошибка: ' + e.message, true); }
-  }
-  async function resetStats() {
-    if (!confirm('Сбросить все общие счётчики за текущий месяц?')) return;
-    const curMonth = getCurrentMonthStr();
-    try { await update(ref(db, 'monthlyStats/' + curMonth), { total: 0, off: 0, parts: 0, bv: 0 }); showToast('Счётчики сброшены'); updateClocks(); }
-    catch (e) { showToast('Ошибка: ' + e.message, true); }
-  }
-  async function confirmUserAction() {
-    if ($('usersCodeInput').value !== USERS_CODE) { showToast('Неверный код', true); $('usersCodeInput').value = ''; return; }
-    if (!pendingUserAction) { closeModal('usersCodeModal'); return; }
-    const { uid, act } = pendingUserAction; const btn = $('confirmUsersCodeBtn'); btn.disabled = true; btn.textContent = '...';
-    try {
-      if (act === 'approve') { await update(ref(db, 'users/' + uid), { status: 'approved' }); showToast('Пользователь одобрен'); }
-      else if (act === 'reject') { await update(ref(db, 'users/' + uid), { status: 'rejected' }); showToast('Пользователь отклонен'); }
-      else if (act === 'delete') { await remove(ref(db, 'users/' + uid)); showToast('Пользователь удалён'); }
-    } catch (e) { showToast('Ошибка: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = 'Подтвердить'; closeModal('usersCodeModal'); pendingUserAction = null; try { USERS = (await get(ref(db, 'users'))).val() || {}; renderUsers(); } catch(e) {} }
-  }
-  function renderBuilder() {
-    $('builderCatsList').innerHTML = Object.entries(CATS).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCat('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([key, m])=>`<li><span>${esc(m.num)} ${esc(m.model||'')} <small>(${esc(catName(m.catId))})</small></span><div style="display:flex;gap:4px;"><button class="btn gray small" onclick="openEditMachineModal('${key}')">✏️</button><button class="btn red small" onclick="delMach('${key}')">✕</button></div></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('builderRolesList').innerHTML = Object.entries(ROLES).map(([key, r])=>{
-      const isChief = r.name === CHIEF_ROLE_NAME;
-      const delBtn = isChief ? `<button class="btn gray small" disabled>🔒</button>` : `<button class="btn red small" onclick="delRole('${key}')">✕</button>`;
-      return `<li><span>${esc(r.name)} <small>${r.cat}</small></span>${delBtn}</li>`;
-    }).join('') || '<li class="empty">Пусто</li>';
-    $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([key, c])=>`<li><span>${esc(c.name)}</span><button class="btn red small" onclick="delCause('${key}')">✕</button></li>`).join('') || '<li class="empty">Пусто</li>';
-    $('newMachineCat').innerHTML = Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  }
-  function catName(id) { const c = Object.values(CATS).find(x => x.id === id); return c ? c.name : '—'; }
-
-  // === ВОДИТЕЛИ UI ===
-  function renderDriversTab() {
-    const container = $('driversList'); if (!container) return;
+  // === ВОДИТЕЛИ ===
+  window.renderDriversTab = function() {
     const search = ($('driversSearch')?.value || '').trim().toLowerCase();
-    let list = Object.values(DRIVERS).filter(d => d && d.name);
-    if (search) list = list.filter(d => d.name.toLowerCase().includes(search) || (d.tabNum && d.tabNum.includes(search)) || (d.position && d.position.toLowerCase().includes(search)));
-    list.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-    if (!list.length) { container.innerHTML = '<p class="empty">Водителей не найдено</p>'; return; }
-    let html = `<table class="report-table"><thead><tr><th>ФИО</th><th>Должность</th><th>Табельный</th><th style="width:110px;">Действия</th></tr></thead><tbody>`;
-    list.forEach(d => {
-      html += `<tr><td><strong>${esc(d.name)}</strong></td><td>${esc(d.position || '—')}</td><td style="font-family:monospace;">${esc(d.tabNum || '—')}</td><td style="white-space:nowrap;"><button class="btn gray small" onclick="openEditDriverRecord('${d.id}')">✏️</button><button class="btn red small" onclick="deleteDriverRecord('${d.id}')">🗑</button></td></tr>`;
-    });
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-  }
-  window.renderDriversTab = renderDriversTab;
-  
+    let drivers = Object.values(DRIVERS);
+    if (search) drivers = drivers.filter(d => d.name.toLowerCase().includes(search) || (d.position && d.position.toLowerCase().includes(search)) || (d.tabNum && d.tabNum.includes(search)));
+    drivers.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    if (!drivers.length) { $('driversList').innerHTML = '<p class="empty">Нет водителей</p>'; return; }
+    $('driversList').innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px;">${drivers.map(d => `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;"><div style="font-weight:800; font-size:14px;">${esc(d.name)}</div><div style="font-size:12px; color:#64748b; margin-top:4px;">${esc(d.position || '—')}</div><div style="font-size:12px; color:#64748b;">Таб. № ${esc(d.tabNum || '—')}</div></div>`).join('')}</div>`;
+  };
   window.openAddDriverRecord = function() {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     $('driverEditId').value = ''; $('driverName').value = ''; $('driverPosition').value = ''; $('driverTabNum').value = '';
-    $('driverModalTitle').textContent = 'Добавить водителя'; 
-    window.pendingDriverTarget = null;
+    $('driverModalTitle').textContent = 'Новый водитель';
     $('driverModal').classList.remove('hidden');
   };
-  
-  window.openEditDriverRecord = function(id) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const d = DRIVERS[id]; if (!d) return;
-    $('driverEditId').value = id; $('driverName').value = d.name || ''; $('driverPosition').value = d.position || ''; $('driverTabNum').value = d.tabNum || '';
-    $('driverModalTitle').textContent = 'Редактировать водителя';
-    window.pendingDriverTarget = null;
-    $('driverModal').classList.remove('hidden');
-  };
-  
   window.saveDriverRecord = async function() {
-    const id = $('driverEditId').value; 
-    const name = $('driverName').value.trim(); 
-    const position = $('driverPosition').value.trim(); 
-    const tabNum = $('driverTabNum').value.trim();
-    
+    const name = $('driverName').value.trim();
     if (!name) return showToast('Введите ФИО', true);
-    if (!tabNum) return showToast('Введите табельный номер', true);
-
-    const conflict = Object.values(DRIVERS).find(d => d && d.tabNum === tabNum && d.id !== id);
-    if (conflict) {
-        return showToast(`Водитель с табельным номером ${tabNum} уже существует: ${conflict.name}`, true);
-    }
-
-    if (id) { 
-        await update(ref(db, 'drivers/' + id), { name, position, tabNum }); 
-        showToast('Водитель обновлён'); 
-    } else { 
-        const nid = newId('drv'); 
-        await set(ref(db, 'drivers/' + nid), { id: nid, name, position, tabNum }); 
-        showToast('Водитель добавлен');
-        
-        if (window.pendingDriverTarget) {
-            const targetInput = $(window.pendingDriverTarget.inputId);
-            if (targetInput) {
-                targetInput.value = name;
-                const createBtnId = window.pendingDriverTarget.inputId === 'addDriver1' ? 'btnAddNewDriverFromAdd1' : (window.pendingDriverTarget.inputId === 'addDriver2' ? 'btnAddNewDriverFromAdd2' : (window.pendingDriverTarget.inputId === 'editDriver1' ? 'btnAddNewDriverFromEdit1' : 'btnAddNewDriverFromEdit2'));
-                if ($(createBtnId)) $(createBtnId).style.display = 'none';
-            }
-            window.pendingDriverTarget = null;
-        }
-    }
+    const pos = $('driverPosition').value.trim(); const tab = $('driverTabNum').value.trim();
+    const id = $('driverEditId').value;
+    if (id) { await update(ref(db, 'drivers/' + id), { name, position: pos, tabNum: tab }); }
+    else { const newIdVal = newId('drv'); await set(ref(db, 'drivers/' + newIdVal), { id: newIdVal, name, position: pos, tabNum: tab }); }
     closeModal('driverModal');
-  };
-  
-  window.deleteDriverRecord = async function(id) {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const d = DRIVERS[id]; if (!d) return;
-    if (!confirm(`Удалить водителя «${d.name}»?`)) return;
-    await remove(ref(db, 'drivers/' + id)); showToast('Водитель удалён');
+    if (window.pendingDriverTarget) {
+      const { inputId } = window.pendingDriverTarget;
+      const input = $(inputId); if (input) { input.value = name; input.dispatchEvent(new Event('change')); }
+      window.pendingDriverTarget = null;
+    }
   };
 
-  function updateRoleSelect() {
-    const cat = $('loginCategory').value; const sel = $('loginRole');
-    if (Object.keys(ROLES).length === 0) { sel.innerHTML = '<option value="">— загрузка... —</option>'; sel.disabled = true; return; }
-    sel.disabled = false;
-    if (!cat) { sel.innerHTML = '<option value="">— сначала выберите категорию —</option>'; return; }
-    const list = Object.values(ROLES).filter(r=>r.cat===cat);
-    sel.innerHTML = '<option value="">— выберите должность —</option>' + list.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('spt_user'); if (savedUser) { try { loggedUser = JSON.parse(savedUser); } catch(e){} }
-    bindStatusBadges();
+  // === АВТОКОМПЛИТ ПРИВЯЗКА ===
+  setTimeout(() => {
     attachDriverAutocomplete($('editDriver1'));
     attachDriverAutocomplete($('editDriver2'));
     attachDriverAutocomplete($('addDriver1'));
     attachDriverAutocomplete($('addDriver2'));
+    attachDriverAutocomplete($('setLineDriverInput'));
+  }, 500);
 
-    $('tabMain').onclick = () => { $('tabMain').classList.add('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('tabDrivers').classList.remove('active'); $('mainView').classList.remove('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); $('driversView').classList.add('hidden'); if (loggedUser.name) { $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden'); renderMainGrid(); enforceStatusRules(); } else { $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); } };
-    $('tabReports').onclick = () => { $('tabReports').classList.add('active'); $('tabMain').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('tabDrivers').classList.remove('active'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('adminView').classList.add('hidden'); $('driversView').classList.add('hidden'); $('repCat').innerHTML = '<option value="">Все</option>' + Object.values(CATS).map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); $('repCause').innerHTML = '<option value="">Все</option>' + Object.values(CAUSES).map(c=>`<option value="${c.name}">${c.name}</option>`).join(''); if (!$('repDateFrom').value) { const d = new Date(); $('repDateFrom').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); $('repDateTo').value = d.toISOString().slice(0,10); } };
-    $('tabAdmin').onclick = () => { $('tabAdmin').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('tabDrivers').classList.remove('active'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); $('driversView').classList.add('hidden'); if (isAdminLoggedIn) { $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); } else { $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); } };
-    $('tabDrivers').onclick = () => { $('tabDrivers').classList.add('active'); $('tabMain').classList.remove('active'); $('tabReports').classList.remove('active'); $('tabAdmin').classList.remove('active'); $('driversView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); renderDriversTab(); };
-
-    $('loginCategory').onchange = updateRoleSelect;
-
-    $('loginBtn').onclick = async () => {
-      const name = $('loginName').value.trim(); const phone = $('loginPhone').value.trim(); const cat = $('loginCategory').value;
-      const roleSelect = $('loginRole'); const roleId = roleSelect.value;
-      if (!name || !phone || !cat || !roleId) return showToast('Заполните все поля', true);
-      let roleObj = ROLES[roleId];
-      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = Object.values(ROLES).find(r => r && r.name === roleNameInList); }
-      if (!roleObj) { const roleNameInList = roleSelect.options[roleSelect.selectedIndex].text; roleObj = { id: roleId, name: roleNameInList, cat: cat }; }
-      const norm = normPhone(phone);
-      const existingEntry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
-      if (existingEntry) {
-        const [key, u] = existingEntry;
-        if (u.cat !== cat) return showToast(`Этот номер уже привязан к службе "${u.catLabel}".`, true);
-        if (u.roleId !== roleObj.id) return showToast(`Этот номер уже привязан к должности "${u.roleName}".`, true);
-        if (roleObj.name === CHIEF_ROLE_NAME && u.status === 'approved') { /* ок */ }
-        else if (roleObj.name === CHIEF_ROLE_NAME) { const otherChief = findExistingChief(key); if (otherChief) return showToast('Главный инженер уже зарегистрирован.', true); }
-      } else {
-        if (roleObj.name === CHIEF_ROLE_NAME) { const existing = findExistingChief(); if (existing) return showToast('Главный инженер уже зарегистрирован.', true); }
-      }
-      if (roleObj.name === CHIEF_ROLE_NAME) { pendingChiefEngineerReg = { name, phone, cat, roleId: roleObj.id, roleName: roleObj.name }; $('chiefEngineerRegCode').value = ''; $('chiefEngineerRegModal').classList.remove('hidden'); return; }
-      await finishLogin({ name, phone, cat, roleId: roleObj.id, roleName: roleObj.name });
-    };
-
-    async function finishLogin(data, autoApprove = false) {
-      const norm = normPhone(data.phone);
-      const entry = Object.entries(USERS).find(([k, u]) => u && normPhone(u.phone) === norm);
-      if (entry) {
-        const [key, u] = entry;
-        if (u.status === 'rejected') return showToast('Ваш аккаунт отклонён Главным инженером', true);
-        const newStatus = autoApprove ? 'approved' : (u.status || 'pending');
-        loggedUser = { ...data, name: u.name || data.name, cat: u.cat || data.cat, catLabel: u.catLabel || data.catLabel, roleId: u.roleId || data.roleId, roleName: u.roleName || data.roleName, status: newStatus };
-        try { await update(ref(db, 'users/' + key), { id: key, name: loggedUser.name, phone: u.phone || data.phone, cat: loggedUser.cat, roleId: loggedUser.roleId, roleName: loggedUser.roleName, catLabel: loggedUser.catLabel, status: newStatus }); } catch(e) { console.error(e); }
-      } else {
-        const newUid = newId('u'); const status = autoApprove ? 'approved' : 'pending';
-        loggedUser = { ...data, catLabel: data.cat === 'SPT' ? 'Специалист СПТ' : 'ИТР ЦТКРС', status };
-        await set(ref(db, 'users/' + newUid), { id: newUid, ...loggedUser, createdAt: Date.now() });
-      }
-      localStorage.setItem('spt_user', JSON.stringify(loggedUser));
+  // === ВХОД ===
+  function updateRoleSelect() {
+    const cat = $('loginCategory').value;
+    const roleSelect = $('loginRole');
+    if (!cat) { roleSelect.disabled = true; roleSelect.innerHTML = '<option value="">— выберите категорию —</option>'; return; }
+    const roles = Object.values(ROLES).filter(r => r && r.cat === cat);
+    roleSelect.disabled = false;
+    roleSelect.innerHTML = '<option value="">— выберите должность —</option>' + roles.map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
+  }
+  $('loginCategory').addEventListener('change', updateRoleSelect);
+  $('loginBtn').addEventListener('click', async () => {
+    const name = $('loginName').value.trim();
+    const phone = $('loginPhone').value.trim();
+    const cat = $('loginCategory').value;
+    const roleName = $('loginRole').value;
+    if (!name || !phone || !cat || !roleName) return showToast('Заполните все поля', true);
+    const norm = normPhone(phone);
+    const existing = Object.entries(USERS).find(([k,u]) => u && normPhone(u.phone) === norm);
+    if (existing) {
+      const [key, u] = existing;
+      loggedUser = { name: u.name, phone: u.phone, cat: u.cat, role: u.role, roleName: u.roleName, status: u.status || 'pending' };
       $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
-      updateUserProfileBlock(); renderMainGrid(); enforceBlockState(); enforceStatusRules(); showToast('Добро пожаловать!');
+      updateUserProfileBlock(); renderMainGrid(); updateTopCounters();
+    } else {
+      const chiefExists = Object.entries(USERS).find(([k,u]) => u && u.roleName === CHIEF_ROLE_NAME && u.status === 'approved');
+      const status = (roleName === CHIEF_ROLE_NAME && !chiefExists) ? 'approved' : 'pending';
+      const id = newId('user');
+      const userData = { id, name, phone, cat, role: roleName, roleName, status, createdAt: Date.now() };
+      await set(ref(db, 'users/' + id), userData);
+      loggedUser = { name, phone, cat, role: roleName, roleName, status };
+      $('mainLoginBlock').classList.add('hidden'); $('mainWorkBlock').classList.remove('hidden');
+      updateUserProfileBlock(); renderMainGrid(); updateTopCounters();
+      if (status === 'pending') showToast('Заявка отправлена на подтверждение');
     }
-
-    $('logoutBtn').onclick = () => { localStorage.removeItem('spt_user'); loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' }; $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden'); };
-    $('adminLoginBtn').onclick = () => { if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true); isAdminLoggedIn = true; $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden'); renderAdmin(); };
-    $('logoutAdminBtn').onclick = () => { isAdminLoggedIn = false; $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden'); $('adminCodeInput').value = ''; };
-    $('adminTabUsers').onclick = () => { $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); renderUsers(); };
-    $('adminTabBuilder').onclick = () => { $('adminUsersBlock').classList.add('hidden'); $('adminBuilderBlock').classList.remove('hidden'); $('adminTabUsers').classList.remove('active'); $('adminTabBuilder').classList.add('active'); renderBuilder(); };
-    $('resetStatsBtn').onclick = resetStats;
-    $('cleanBrokenUsersBtn').onclick = cleanBrokenUsers; $('deleteAllUsersBtn').onclick = deleteAllUsers; $('confirmUsersCodeBtn').onclick = confirmUserAction;
-
-    $('confirmChiefEngineerRegBtn').onclick = async () => {
-      if ($('chiefEngineerRegCode').value !== CHIEF_ENGINEER_CODE) return showToast('Неверный код', true);
-      closeModal('chiefEngineerRegModal');
-      if (pendingChiefEngineerReg) {
-        const existing = findExistingChief();
-        if (existing) { const [, u] = existing; if (normPhone(u.phone) !== normPhone(pendingChiefEngineerReg.phone)) { showToast('Главный инженер уже зарегистрирован.', true); pendingChiefEngineerReg = null; return; } }
-        await finishLogin(pendingChiefEngineerReg, true); pendingChiefEngineerReg = null;
-      }
-    };
-
-    $('addCatBtn').onclick = async () => { const v = $('newCatName').value.trim(); if (v) { const id = newId('cat'); await set(ref(db, 'cats/' + id), { id, name: v }); $('newCatName').value = ''; } };
-    $('addMachineBtn').onclick = async () => { const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value; if (num && catId) { const id = newId('mach'); await set(ref(db, 'machines/' + id), { id, num, model, catId, driver1: '', driver2: '', lastStatus: 'bv', lastTime: 0 }); $('newMachineNum').value = ''; $('newMachineModel').value = ''; } };
-    $('addRoleBtn').onclick = async () => { const v = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (v) { if (Object.values(ROLES).some(r => r && r.name === v)) return showToast('Такая должность уже есть', true); const id = newId('role'); await set(ref(db, 'roles/' + id), { id, name: v, cat }); $('newRoleName').value = ''; } };
-    $('addCauseBtn').onclick = async () => { const v = $('newCauseName').value.trim(); if (v) { const id = newId('cause'); await set(ref(db, 'causes/' + id), { id, name: v }); $('newCauseName').value = ''; } };
-
-    const searchInput = $('driversSearch');
-    if (searchInput) searchInput.addEventListener('input', renderDriversTab);
-    const drvSearch = $('drvSearch');
-    if (drvSearch) drvSearch.addEventListener('input', () => { if ($('driversReportContent').querySelector('table')) buildDriversReport(); });
   });
+  $('logoutBtn').addEventListener('click', () => {
+    loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
+    $('mainLoginBlock').classList.remove('hidden'); $('mainWorkBlock').classList.add('hidden');
+    $('loginName').value = ''; $('loginPhone').value = ''; $('loginCategory').value = ''; $('loginRole').innerHTML = '<option value="">— загрузка —</option>';
+  });
+
+  // === АДМИН ===
+  $('adminLoginBtn').addEventListener('click', () => {
+    if ($('adminCodeInput').value !== ADMIN_CODE) return showToast('Неверный код', true);
+    isAdminLoggedIn = true;
+    $('adminLoginBlock').classList.add('hidden'); $('adminWorkBlock').classList.remove('hidden');
+    renderAdmin();
+  });
+  $('logoutAdminBtn').addEventListener('click', () => {
+    isAdminLoggedIn = false;
+    $('adminLoginBlock').classList.remove('hidden'); $('adminWorkBlock').classList.add('hidden');
+  });
+  $('adminTabUsers').addEventListener('click', () => { $('adminTabUsers').classList.add('active'); $('adminTabBuilder').classList.remove('active'); $('adminUsersBlock').classList.remove('hidden'); $('adminBuilderBlock').classList.add('hidden'); });
+  $('adminTabBuilder').addEventListener('click', () => { $('adminTabBuilder').classList.add('active'); $('adminTabUsers').classList.remove('active'); $('adminBuilderBlock').classList.remove('hidden'); $('adminUsersBlock').classList.add('hidden'); renderAdmin(); });
+
+  function renderAdmin() {
+    if (!isAdminLoggedIn) return;
+    const list = $('moderationList');
+    const users = Object.entries(USERS).sort((a,b) => (a[1].status || '').localeCompare(b[1].status || ''));
+    if (!users.length) { list.innerHTML = '<p class="empty">Нет пользователей</p>'; return; }
+    list.innerHTML = users.map(([key, u]) => {
+      const st = u.status || 'pending';
+      const cls = st === 'approved' ? 'approved' : st === 'rejected' ? 'rejected' : '';
+      const bg = st === 'pending' ? '#fef3c7' : st === 'approved' ? '#dcfce7' : '#fef2f2';
+      const border = st === 'pending' ? '#f59e0b' : st === 'approved' ? '#10b981' : '#ef4444';
+      return `<div class="moderation-user ${cls}" style="border-left-color:${border};background:${bg};">
+        <div><strong>${esc(u.name)}</strong><br><span style="font-size:12px;color:#64748b;">${esc(u.phone)} · ${esc(u.roleName || u.role || '—')} · ${esc(u.cat || '')}</span></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${st !== 'approved' ? `<button class="btn green small" onclick="approveUser('${key}')">✅ Подтвердить</button>` : ''}
+          ${st !== 'rejected' ? `<button class="btn red small" onclick="rejectUser('${key}')">❌ Отклонить</button>` : ''}
+          <button class="btn gray small" onclick="deleteUser('${key}')">🗑 Удалить</button>
+        </div>
+      </div>`;
+    }).join('');
+    // Builder
+    renderBuilderLists();
+  }
+  function renderBuilderLists() {
+    $('builderCatsList').innerHTML = Object.entries(CATS).map(([k,c]) => `<li><span>${esc(c.name)}</span><button class="btn red small" onclick="deleteCat('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
+    $('builderMachinesList').innerHTML = Object.entries(MACHINES).map(([k,m]) => `<li><span>${esc(m.num)} ${esc(m.model||'')}</span><div style="display:flex;gap:4px;"><button class="btn purple small" onclick="openEditMachineModal('${k}')">✏️</button><button class="btn red small" onclick="deleteMachine('${k}')">✕</button></div></li>`).join('') || '<li class="empty">Нет</li>';
+    $('builderRolesList').innerHTML = Object.entries(ROLES).map(([k,r]) => `<li><span>${esc(r.name)} <small style="color:#64748b;">(${r.cat === 'SPT' ? 'СПТ' : 'ИТР'})</small></span><button class="btn red small" onclick="deleteRole('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
+    $('builderCausesList').innerHTML = Object.entries(CAUSES).map(([k,c]) => `<li><span>${esc(c.name)}</span><button class="btn red small" onclick="deleteCause('${k}')">✕</button></li>`).join('') || '<li class="empty">Нет</li>';
+    $('newMachineCat').innerHTML = Object.values(CATS).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  window.approveUser = async (key) => { await update(ref(db, 'users/' + key), { status: 'approved' }); showToast('Пользователь подтверждён'); };
+  window.rejectUser = async (key) => { await update(ref(db, 'users/' + key), { status: 'rejected' }); showToast('Пользователь отклонён'); };
+  window.deleteUser = async (key) => {
+    if (!confirm('Удалить пользователя?')) return;
+    await remove(ref(db, 'users/' + key));
+  };
+  window.deleteCat = async (key) => { if (!confirm('Удалить категорию?')) return; await remove(ref(db, 'cats/' + key)); };
+  window.deleteMachine = async (key) => { if (!confirm('Удалить машину?')) return; await remove(ref(db, 'machines/' + key)); };
+  window.deleteRole = async (key) => { if (!confirm('Удалить должность?')) return; await remove(ref(db, 'roles/' + key)); };
+  window.deleteCause = async (key) => { if (!confirm('Удалить причину?')) return; await remove(ref(db, 'causes/' + key)); };
+  $('addCatBtn').onclick = async () => { const n = $('newCatName').value.trim(); if (!n) return; const id = newId('cat'); await set(ref(db,'cats/'+id), { id, name: n }); $('newCatName').value = ''; };
+  $('addMachineBtn').onclick = async () => { const num = $('newMachineNum').value.trim(); const model = $('newMachineModel').value.trim(); const catId = $('newMachineCat').value; if (!num) return; const id = newId('mach'); await set(ref(db,'machines/'+id), { id, num, model, catId, driver1: '', driver2: '', lastStatus: 'bv', lastCause: '', lastTime: 0, author: 'Админ' }); $('newMachineNum').value=''; $('newMachineModel').value=''; };
+  $('addRoleBtn').onclick = async () => { const n = $('newRoleName').value.trim(); const cat = $('newRoleCat').value; if (!n) return; const id = newId('role'); await set(ref(db,'roles/'+id), { id, name: n, cat }); $('newRoleName').value=''; };
+  $('addCauseBtn').onclick = async () => { const n = $('newCauseName').value.trim(); if (!n) return; const id = newId('cause'); await set(ref(db,'causes/'+id), { id, name: n }); $('newCauseName').value=''; };
+  $('resetStatsBtn').onclick = async () => { if (!confirm('Сбросить все счётчики времени?')) return; await set(ref(db,'monthlyStats'), {}); showToast('Счётчики сброшены'); };
+  $('cleanBrokenUsersBtn').onclick = async () => {
+    if (!confirm('Очистить пользователей без имени или телефона?')) return;
+    for (const [k, u] of Object.entries(USERS)) { if (!u || !u.name || !u.phone) await remove(ref(db,'users/'+k)); }
+    showToast('Битые аккаунты удалены');
+  };
+  $('deleteAllUsersBtn').onclick = async () => {
+    if (!confirm('УДАЛИТЬ ВСЕХ пользователей? Это необратимо!')) return;
+    await set(ref(db,'users'), {});
+    showToast('Все пользователи удалены');
+  };
+
+  // === ВКЛАДКИ ===
+  $('tabMain').onclick = () => { setActiveTab('tabMain'); $('mainView').classList.remove('hidden'); $('driversView').classList.add('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); };
+  $('tabDrivers').onclick = () => { setActiveTab('tabDrivers'); $('driversView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('reportsView').classList.add('hidden'); $('adminView').classList.add('hidden'); renderDriversTab(); };
+  $('tabReports').onclick = () => { setActiveTab('tabReports'); $('reportsView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('driversView').classList.add('hidden'); $('adminView').classList.add('hidden'); };
+  $('tabAdmin').onclick = () => { setActiveTab('tabAdmin'); $('adminView').classList.remove('hidden'); $('mainView').classList.add('hidden'); $('driversView').classList.add('hidden'); $('reportsView').classList.add('hidden'); };
+  function setActiveTab(id) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); $(id).classList.add('active'); }
+
+  $('driversSearch')?.addEventListener('input', renderDriversTab);
+
+  // === ИНИЦИАЛИЗАЦИЯ ===
+  $('tabMain').click();
+  bindStatusBadges();
+  setInterval(updateClocks, 1000);
+  setInterval(() => {
+    if (!isDataReady) return;
+    document.querySelectorAll('[id^="timer-"]').forEach(el => {
+      const mId = el.id.replace('timer-', '');
+      const m = MACHINES[mId];
+      if (m && (m.lastStatus === 'off' || m.lastStatus === 'parts') && m.lastTime) {
+        const elapsed = Date.now() - m.lastTime;
+        el.textContent = formatTimer(elapsed);
+        if (m.lastStatus === 'off' && elapsed > 2*60*60*1000) el.classList.add('blink-red');
+      }
+    });
+  }, 1000);
 </script>
 </body>
 </html>
