@@ -40,6 +40,20 @@
   @keyframes pulse-yellow { 0%{box-shadow:0 0 0 0 rgba(234,179,8,.7);} 70%{box-shadow:0 0 0 8px rgba(234,179,8,0);} 100%{box-shadow:0 0 0 0 rgba(234,179,8,0);} }
   .clock-block { font-size:14px; font-weight:700; color:#1e293b; background:#f1f5f9; padding:8px 15px; border-radius:8px; font-family:monospace; border:1px solid #cbd5e1; white-space:nowrap; }
   .clock-block span { color:#2563eb; }
+
+  /* Компактная панель фильтрации на главном экране */
+  .main-filter-bar { background:#fff; padding:10px 15px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.05); margin-bottom:15px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; border:1px solid #cbd5e1; }
+  .main-filter-pills { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .mf-btn { border:1.5px solid #cbd5e1; background:#f8fafc; color:#475569; padding:5px 12px; border-radius:99px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; }
+  .mf-btn:hover { background:#e2e8f0; }
+  .mf-btn.active-all { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .mf-btn.active-line { background:#16a34a; color:#fff; border-color:#16a34a; }
+  .mf-btn.active-off { background:#eab308; color:#000; border-color:#ca8a04; }
+  .mf-btn.active-parts { background:#dc2626; color:#fff; border-color:#dc2626; }
+  .mf-btn.active-bv { background:#475569; color:#fff; border-color:#334155; }
+  .main-search-box { display:flex; align-items:center; gap:6px; min-width:240px; flex:0 1 320px; }
+  .main-search-box input { padding:6px 10px; font-size:13px; border-radius:6px; border:1.5px solid #cbd5e1; }
+
   .grid-wrapper { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; align-items:start; }
   @media (max-width:1200px){ .grid-wrapper{ grid-template-columns:repeat(3,1fr); } }
   .col { background:#fff; border-radius:8px; border:2px solid #000; overflow:visible; display:flex; flex-direction:column; }
@@ -54,8 +68,9 @@
   .row-top { display:flex; justify-content:space-between; align-items:center; gap:4px; width:100%; flex-wrap:wrap; }
   .row-left { display:flex; align-items:center; gap:6px; flex-shrink:0; min-width:0; }
   .row-num { display:flex; align-items:center; justify-content:center; font-weight:900; color:#000; font-size:12px; width:22px; height:22px; background:#fff; border-radius:4px; border:1.5px solid #000; flex-shrink:0; }
-  .row-name { font-weight:900; font-size:14px; color:#000; background:#fff; padding:2px 6px; border-radius:4px; border:1.5px solid #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  
+  .row-name { font-weight:900; font-size:14px; color:#000; background:#fff; padding:2px 6px; border-radius:4px; border:1.5px solid #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; transition:background 0.15s, border-color 0.15s, color 0.15s; }
+  .row-name:hover { background:#eff6ff; border-color:#2563eb; color:#1e40af; }
+
   .btn-status { border:1px solid #000; border-radius:3px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; }
   .btn-status.line { background:#22c55e; color:#fff; }
   .btn-status.off { background:#eab308; color:#000; }
@@ -169,28 +184,16 @@
   .ac-wrap { position:relative; }
   .btn-add-driver-in-modal { background:#8b5cf6; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; display:none; margin-top:6px; width:100%; }
   .kpi-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-weight:800; color:#fff; font-size:14px; }
-  
-  /* Стили для карточек водителей, живого поиска и нескольких телефонов */
-  .drivers-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; align-items:center; }
-  .search-input-wrap { position:relative; flex:1; min-width:240px; }
-  .search-input-wrap input { padding-right:36px; }
-  .search-clear-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:#e2e8f0; border:none; border-radius:50%; width:22px; height:22px; font-size:12px; font-weight:700; color:#475569; cursor:pointer; display:none; align-items:center; justify-content:center; }
-  .search-clear-btn:hover { background:#cbd5e1; color:#0f172a; }
-  .drivers-count-bar { font-size:13px; color:#64748b; font-weight:600; margin-bottom:12px; }
+
   .driver-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; }
   .driver-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
   .driver-card-header { margin-bottom: 10px; }
   .driver-card-name { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
-  .driver-card-info { font-size: 13px; color: #64748b; margin-bottom: 3px; }
-  .driver-phones-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
-  .driver-phone-tag { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
-  .driver-phone-tag:hover { background:#dbeafe; }
-  .driver-card-actions { display: flex; justify-content: flex-start; gap:8px; margin-top: 10px; }
-  .phone-input-row { display:flex; gap:6px; margin-bottom:8px; align-items:center; }
-  .phone-input-row input { margin-bottom:0; }
-  .btn-add-phone { width:100%; padding:9px; margin-top:2px; border:1.5px solid #000; border-radius:6px; background:#fff; color:#2563eb; font-weight:700; cursor:pointer; font-size:13px; }
-  .btn-add-phone:hover { background:#eff6ff; }
-  
+  .driver-card-info { font-size: 13px; color: #64748b; margin-bottom: 2px; }
+  .driver-phones-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .driver-phone-pill { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; text-decoration: none; }
+  .driver-card-actions { display: flex; justify-content: flex-start; margin-top: 10px; }
+
   @media (max-width:768px){
     body { padding:8px; }
     .grid-wrapper { grid-template-columns:1fr; gap:15px; }
@@ -241,16 +244,16 @@
         <div class="header-right">
           <div class="stats-container" id="globalStatsBlock">
             <div class="stats-row">
-              <div class="stat-badge total" title="Всего машин"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
-              <div class="stat-badge off" id="badgeOffStat" title="Машин в сходе"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
-              <div class="stat-badge parts" id="badgePartsStat" title="Машин в ремонте"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
-              <div class="stat-badge bv" id="badgeBvStat" title="Машин без водителя"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
+              <div class="stat-badge total" onclick="setMainStatusFilter('')" title="Показать все машины"><span class="icon">📊</span><span class="val" id="statTotalCount">0</span><span class="lbl">Всего</span></div>
+              <div class="stat-badge off" id="badgeOffStat" onclick="openStatusListModal('off')" title="Машин в сходе"><span class="icon">🟡</span><span class="val" id="statOffCount">0</span><span class="lbl">Сход</span></div>
+              <div class="stat-badge parts" id="badgePartsStat" onclick="openStatusListModal('parts')" title="Машин в ремонте"><span class="icon">🔴</span><span class="val" id="statPartsCount">0</span><span class="lbl">Ремонт</span></div>
+              <div class="stat-badge bv" id="badgeBvStat" onclick="openStatusListModal('bv')" title="Машин без водителя"><span class="icon">⚪</span><span class="val" id="statBvCount">0</span><span class="lbl">БВ</span></div>
             </div>
             <div class="stats-row">
-              <div class="stat-badge total" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge off" id="badgeOffTime" title="Время в сходе"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge parts" id="badgePartsTime" title="Время в ремонте"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
-              <div class="stat-badge bv" id="badgeBvTime" title="Время в БВ"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge total" onclick="showLogModal('total')" title="Накопленное время за месяц"><span class="icon">⏱</span><span class="val" id="statTotalTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge off" id="badgeOffTime" onclick="showLogModal('off')" title="Время в сходе"><span class="icon">⏱</span><span class="val" id="statOffTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge parts" id="badgePartsTime" onclick="showLogModal('parts')" title="Время в ремонте"><span class="icon">⏱</span><span class="val" id="statPartsTime">0 ч 0 м</span><span class="lbl">Время</span></div>
+              <div class="stat-badge bv" id="badgeBvTime" onclick="showLogModal('bv')" title="Время в БВ"><span class="icon">⏱</span><span class="val" id="statBvTime">0 ч 0 м</span><span class="lbl">Время</span></div>
             </div>
           </div>
           <div class="clock-block" id="clock">Смена: <span id="shiftName">—</span> | <span id="timeText">00:00:00</span></div>
@@ -258,6 +261,22 @@
           <button class="btn gray small" id="logoutBtn">Выйти</button>
         </div>
       </div>
+
+      <!-- Компактная панель фильтрации на главной странице -->
+      <div class="main-filter-bar" id="mainFilterBar">
+        <div class="main-filter-pills" id="mainStatusPills">
+          <button type="button" class="mf-btn active-all" data-st="" onclick="setMainStatusFilter('')">Все (<span id="mfCountAll">0</span>)</button>
+          <button type="button" class="mf-btn" data-st="line" onclick="setMainStatusFilter('line')">🟢 На линии (<span id="mfCountLine">0</span>)</button>
+          <button type="button" class="mf-btn" data-st="off" onclick="setMainStatusFilter('off')">🟡 Сходы (<span id="mfCountOff">0</span>)</button>
+          <button type="button" class="mf-btn" data-st="parts" onclick="setMainStatusFilter('parts')">🔴 В ремонте (<span id="mfCountParts">0</span>)</button>
+          <button type="button" class="mf-btn" data-st="bv" onclick="setMainStatusFilter('bv')">⚪ БВ (<span id="mfCountBv">0</span>)</button>
+        </div>
+        <div class="main-search-box">
+          <input type="text" id="mainMachineSearch" placeholder="🔍 Быстрый поиск: номер, модель, водитель..." autocomplete="off">
+          <button type="button" id="mainSearchClearBtn" class="btn gray small hidden" onclick="clearMainSearch()">✖</button>
+        </div>
+      </div>
+
       <div id="blockedBanner" class="blocked-banner hidden">
         <h2>⛔ Доступ заблокирован</h2>
         <p id="blockedReasonText">Ваш аккаунт находится на проверке у Главного инженера.</p>
@@ -269,14 +288,14 @@
   <div id="driversView" class="hidden">
     <h1>👤 Водители</h1>
     <div class="card">
-      <div class="drivers-toolbar">
-        <div class="search-input-wrap">
-          <input type="text" id="driversSearch" placeholder="🔍 Начните вводить ФИО, должность, табельный или телефон..." autocomplete="off">
-          <button type="button" id="clearDriversSearchBtn" class="search-clear-btn" title="Очистить поиск">✕</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
+        <div style="position:relative; flex:1; min-width:220px;">
+          <input type="text" id="driversSearch" placeholder="🔍 Начните вводить фамилию, должность, табельный или телефон..." autocomplete="off" style="padding-right:36px;">
+          <button type="button" id="driversSearchClear" class="hidden" title="Очистить поиск" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:#e2e8f0; border:none; border-radius:50%; width:22px; height:22px; font-weight:700; color:#475569; cursor:pointer;">✕</button>
         </div>
-        <button type="button" class="btn green" onclick="openAddDriverRecord()">+ Добавить водителя</button>
+        <button class="btn green" onclick="openAddDriverRecord()">+ Добавить водителя</button>
       </div>
-      <div id="driversCountInfo" class="drivers-count-bar"></div>
+      <div id="driversCountInfo" style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:12px;"></div>
       <div id="driversList" class="driver-grid">
         <p class="empty">Загрузка...</p>
       </div>
@@ -488,10 +507,10 @@
     <label style="margin-top:10px;">Табельный номер</label><input type="text" id="driverTabNum" placeholder="12345">
     <label style="margin-top:10px;">Номера телефонов</label>
     <div id="driverPhonesContainer"></div>
-    <button type="button" id="addDriverPhoneBtn" class="btn-add-phone">➕ Добавить ещё номер телефона</button>
+    <button type="button" id="addDriverPhoneBtn" style="width:100%; padding:8px; margin-top:4px; border:1.5px solid #000; border-radius:6px; background:#fff; color:#2563eb; font-weight:700; cursor:pointer;">➕ Добавить ещё номер телефона</button>
     <div class="modal-actions">
-      <button type="button" class="btn-modal gray" onclick="closeModal('driverModal')">Отмена</button>
-      <button type="button" class="btn-modal green" onclick="saveDriverRecord()">Сохранить</button>
+      <button class="btn-modal gray" onclick="closeModal('driverModal')">Отмена</button>
+      <button class="btn-modal green" onclick="saveDriverRecord()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -518,16 +537,22 @@
   const CHIEF_ROLE_NAME = 'Главный инженер';
 
   const DEFAULT_CATS = {
-    'cat_1': { id: 'cat_1', name: 'ЦА' }, 'cat_2': { id: 'cat_2', name: 'АЦН' },
-    'cat_3': { id: 'cat_3', name: 'АК' }, 'cat_4': { id: 'cat_4', name: 'С/Т' },
-    'cat_5': { id: 'cat_5', name: 'С/С' }, 'cat_6': { id: 'cat_6', name: 'ППУ' },
+    'cat_1': { id: 'cat_1', name: 'ЦА' },
+    'cat_2': { id: 'cat_2', name: 'АЦН' },
+    'cat_3': { id: 'cat_3', name: 'АК' },
+    'cat_4': { id: 'cat_4', name: 'С/Т' },
+    'cat_5': { id: 'cat_5', name: 'С/С' },
+    'cat_6': { id: 'cat_6', name: 'ППУ' },
     'cat_7': { id: 'cat_7', name: 'Опер.' }
   };
 
   const DEFAULT_CAUSES = {
-    'c1': { id: 'c1', name: 'ДВС' }, 'c2': { id: 'c2', name: 'КПП' },
-    'c3': { id: 'c3', name: 'Гидравлика' }, 'c4': { id: 'c4', name: 'ШМР' },
-    'c5': { id: 'c5', name: 'Ходовая' }, 'c6': { id: 'c6', name: 'Тормозная' }
+    'c1': { id: 'c1', name: 'ДВС' },
+    'c2': { id: 'c2', name: 'КПП' },
+    'c3': { id: 'c3', name: 'Гидравлика' },
+    'c4': { id: 'c4', name: 'ШМР' },
+    'c5': { id: 'c5', name: 'Ходовая' },
+    'c6': { id: 'c6', name: 'Тормозная' }
   };
 
   const DEFAULT_ROLES = {
@@ -721,8 +746,8 @@
     });
     return out;
   }
-  const DEFAULT_DRIVERS = buildDefaultDrivers();
 
+  const DEFAULT_DRIVERS = buildDefaultDrivers();
   let CATS = {}, MACHINES = {}, USERS = {}, ROLES = {}, CAUSES = {}, DRIVERS = {};
   let monthlyStats = {}, eventLog = {};
   let loggedUser = { name:'', phone:'', cat:'', role:'', roleName:'', status:'pending' };
@@ -734,6 +759,8 @@
   let sessionRestored = false;
   let panelOpenMachineId = null;
   let currentReportData = [];
+  let mainStatusFilter = '';
+  let mainSearchQuery = '';
 
   const $ = id => document.getElementById(id);
   function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -746,20 +773,21 @@
   function showToast(msg, isErr){ const t = $('toast'); t.textContent = msg; t.classList.toggle('error', !!isErr); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200); }
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
   function shortDriverName(fullName) { const parts = String(fullName || '').trim().split(/\s+/); if (parts.length >= 2) return parts[0] + ' ' + parts[1]; return parts[0] || ''; }
-  window.closeModal = function(id) { $(id).classList.add('hidden'); };
 
   function getDriverPhonesArray(d) {
     if (!d) return [];
     const list = [];
     if (Array.isArray(d.phones)) {
-      d.phones.forEach(p => { const val = String(p || '').trim(); if (val && !list.includes(val)) list.push(val); });
+      d.phones.forEach(p => { const s = String(p || '').trim(); if (s && !list.includes(s)) list.push(s); });
     }
     if (d.phone) {
-      const legacy = String(d.phone).trim();
-      if (legacy && !list.includes(legacy)) list.unshift(legacy);
+      const s = String(d.phone).trim();
+      if (s && !list.includes(s)) list.unshift(s);
     }
     return list;
   }
+
+  window.closeModal = function(id) { $(id).classList.add('hidden'); };
 
   // === АВТОКОМПЛИТ ===
   function driverSearch(query) {
@@ -918,6 +946,7 @@
     }
   }
   updateNotifyButtonState();
+
   // === СИНХРОНИЗАЦИЯ С FIREBASE ===
   onValue(ref(db, 'cats'), snap => {
     CATS = snap.val() || {};
@@ -931,8 +960,6 @@
   onValue(ref(db, 'machines'), snap => {
     MACHINES = snap.val() || {};
     checkDataReady();
-
-    // АВТО-ПЕРЕВОД В БВ, ЕСЛИ НЕТ ВОДИТЕЛЯ НА ТЕКУЩЕЙ СМЕНЕ
     const { isShift1 } = getShiftInfo();
     let changed = false;
     for (const [id, m] of Object.entries(MACHINES)) {
@@ -940,13 +967,9 @@
         const activeDriver = isShift1 ? m.driver1 : m.driver2;
         if (!activeDriver || activeDriver.trim() === '') {
           m.lastStatus = 'bv';
-          m.author = 'БВ (нет водителя): ' + loggedUser.name;
+          m.author = 'БВ (нет водителя): ' + (loggedUser.name || 'Система');
           m.lastTime = Date.now();
-          update(ref(db, 'machines/' + id), {
-            lastStatus: 'bv',
-            author: m.author,
-            lastTime: m.lastTime
-          }).catch(() => {});
+          update(ref(db, 'machines/' + id), { lastStatus: 'bv', author: m.author, lastTime: m.lastTime }).catch(() => {});
           changed = true;
         }
       }
@@ -1070,10 +1093,12 @@
   function enforceBlockState() {
     const blockBanner = $('blockedBanner');
     const grid = $('mainGrid');
+    const filterBar = $('mainFilterBar');
     const isBlocked = loggedUser.status !== 'approved';
     if (isBlocked) {
       blockBanner.classList.remove('hidden');
       if (grid) grid.classList.add('hidden');
+      if (filterBar) filterBar.classList.add('hidden');
       if (loggedUser.status === 'rejected') {
         $('blockedReasonText').textContent = 'Ваш аккаунт отклонён.';
         blockBanner.querySelector('h2').textContent = '⛔ Доступ отклонён';
@@ -1089,6 +1114,7 @@
     } else {
       blockBanner.classList.add('hidden');
       if (grid) grid.classList.remove('hidden');
+      if (filterBar) filterBar.classList.remove('hidden');
     }
   }
 
@@ -1112,17 +1138,26 @@
 
   function updateTopCounters() {
     if (!isDataReady) return;
-    let countOff = 0, countParts = 0, countBv = 0, countTotal = 0;
+    let countOff = 0, countParts = 0, countBv = 0, countLine = 0, countTotal = 0;
     for (const m of Object.values(MACHINES)) {
       countTotal++;
-      if (m.lastStatus === 'off') countOff++;
-      if (m.lastStatus === 'parts') countParts++;
-      if (m.lastStatus === 'bv') countBv++;
+      const st = m.lastStatus || 'line';
+      if (st === 'line') countLine++;
+      else if (st === 'off') countOff++;
+      else if (st === 'parts') countParts++;
+      else if (st === 'bv') countBv++;
     }
     if ($('statTotalCount')) $('statTotalCount').textContent = countTotal;
     if ($('statOffCount')) $('statOffCount').textContent = countOff;
     if ($('statPartsCount')) $('statPartsCount').textContent = countParts;
     if ($('statBvCount')) $('statBvCount').textContent = countBv;
+
+    if ($('mfCountAll')) $('mfCountAll').textContent = countTotal;
+    if ($('mfCountLine')) $('mfCountLine').textContent = countLine;
+    if ($('mfCountOff')) $('mfCountOff').textContent = countOff;
+    if ($('mfCountParts')) $('mfCountParts').textContent = countParts;
+    if ($('mfCountBv')) $('mfCountBv').textContent = countBv;
+
     const stats = monthlyStats[getCurrentMonthStr()] || { total: 0, off: 0, parts: 0, bv: 0 };
     if ($('statTotalTime')) $('statTotalTime').textContent = formatMs(stats.total);
     if ($('statOffTime')) $('statOffTime').textContent = formatMs(stats.off);
@@ -1133,6 +1168,45 @@
       if (countOff > 0) badgeOff.classList.add('animate-pulse');
       else badgeOff.classList.remove('animate-pulse');
     }
+  }
+
+  // === ФИЛЬТРЫ НА ГЛАВНОЙ СТРАНИЦЕ ===
+  window.setMainStatusFilter = function(status) {
+    mainStatusFilter = status;
+    document.querySelectorAll('#mainStatusBtns .mf-btn').forEach(btn => {
+      btn.className = 'mf-btn';
+    });
+    const activeBtn = document.querySelector(`#mainStatusBtns .mf-btn[data-st="${status}"]`);
+    if (activeBtn) {
+      if (status === '') activeBtn.classList.add('active-all');
+      else if (status === 'line') activeBtn.classList.add('active-line');
+      else if (status === 'off') activeBtn.classList.add('active-off');
+      else if (status === 'parts') activeBtn.classList.add('active-parts');
+      else if (status === 'bv') activeBtn.classList.add('active-bv');
+    }
+    updateMainClearBtn();
+    renderMainGrid();
+  };
+
+  window.onMainSearchInput = function() {
+    const inp = $('mainSearchInput');
+    mainSearchQuery = inp ? inp.value.trim().toLowerCase() : '';
+    updateMainClearBtn();
+    renderMainGrid();
+  };
+
+  window.clearMainFilters = function() {
+    mainStatusFilter = '';
+    mainSearchQuery = '';
+    if ($('mainSearchInput')) $('mainSearchInput').value = '';
+    window.setMainStatusFilter('');
+  };
+
+  function updateMainClearBtn() {
+    const btn = $('mainFilterClearBtn');
+    if (!btn) return;
+    if (mainStatusFilter !== '' || mainSearchQuery !== '') btn.classList.remove('hidden');
+    else btn.classList.add('hidden');
   }
 
   setInterval(async () => {
@@ -1175,7 +1249,7 @@
     enforceBlockState();
   }
 
-  // === ПАНЕЛЬ СТАТУСОВ ===
+  // === ПАНЕЛЬ СТАТУСОВ (FIXED) ===
   window.toggleStatusPanel = function(event, machineId, btnElement) {
     event.stopPropagation();
     const panel = $('status-panel-' + machineId);
@@ -1332,113 +1406,52 @@
       showToast('Ошибка сохранения: ' + e.message, true);
     }
   };
-
-  window.setStatus = async function(machineId, status, causeText = '') {
-    if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    const m = MACHINES[machineId];
-    if (!m) return;
-    const { isShift1 } = getShiftInfo();
-    if (status === 'line') {
-      const activeDriver = isShift1 ? m.driver1 : m.driver2;
-      if (!activeDriver || activeDriver.trim() === '') {
-        pendingSetLineMachineId = machineId;
-        $('setLineDriverInput').value = '';
-        $('btnAddNewDriverForLine').style.display = 'none';
-        $('setLineDriverModal').classList.remove('hidden');
-        setTimeout(() => {
-          const inp = $('setLineDriverInput');
-          attachDriverAutocomplete(inp);
-          inp.focus();
-        }, 50);
-        return;
-      }
-    }
-    if (status === 'bv') {
-      const field = isShift1 ? 'driver1' : 'driver2';
-      if (m[field]) {
-        await update(ref(db, `machines/${machineId}/${field}`), '');
-        m[field] = '';
-      }
-    }
-    const now = Date.now();
-    const monthStr = getCurrentMonthStr();
-    let stats = (await get(ref(db, `monthlyStats/${monthStr}`))).val() || { total: 0, off: 0, parts: 0, bv: 0 };
-    if (m.lastStatus && m.lastStatus !== 'line' && m.lastTime) {
-      const elapsed = now - m.lastTime;
-      stats.total += elapsed;
-      if (m.lastStatus === 'off') stats.off += elapsed;
-      if (m.lastStatus === 'parts') stats.parts += elapsed;
-      if (m.lastStatus === 'bv') stats.bv += elapsed;
-      await push(ref(db, 'eventLog'), {
-        month: monthStr,
-        date: new Date(m.lastTime).toLocaleDateString('ru-RU'),
-        time: new Date(m.lastTime).toLocaleTimeString('ru-RU'),
-        machine: `${m.num} ${m.model || ''}`,
-        driver: isShift1 ? m.driver1 : m.driver2,
-        status: m.lastStatus,
-        cause: m.lastCause || '—',
-        duration: elapsed,
-        author: m.author || 'Неизвестно'
-      });
-    } else if (m.lastStatus === 'line' && status !== 'line') {
-      await push(ref(db, 'eventLog'), {
-        month: monthStr,
-        date: new Date(now).toLocaleDateString('ru-RU'),
-        time: new Date(now).toLocaleTimeString('ru-RU'),
-        machine: `${m.num} ${m.model || ''}`,
-        driver: isShift1 ? m.driver1 : m.driver2,
-        status: 'line',
-        cause: '—',
-        duration: 0,
-        author: loggedUser.name
-      });
-    }
-    if (status === 'line' && m.lastStatus && m.lastStatus !== 'line') {
-      await push(ref(db, 'eventLog'), {
-        month: monthStr,
-        date: new Date(now).toLocaleDateString('ru-RU'),
-        time: new Date(now).toLocaleTimeString('ru-RU'),
-        machine: `${m.num} ${m.model || ''}`,
-        driver: isShift1 ? m.driver1 : m.driver2,
-        status: 'line',
-        cause: '—',
-        duration: 0,
-        author: loggedUser.name
-      });
-    }
-    await set(ref(db, `monthlyStats/${monthStr}`), stats);
-    m.lastStatus = status;
-    m.lastCause = causeText;
-    m.lastTime = status === 'line' ? 0 : now;
-    const labels = { line: 'На линии: ', off: 'Сход: ', parts: 'Ремонт: ', bv: 'БВ: ' };
-    m.author = labels[status] + loggedUser.name;
-    lastMachineStatuses[machineId] = status;
-    delete alertedMachineIds[machineId];
-    await update(ref(db, 'machines/' + machineId), {
-      lastStatus: m.lastStatus,
-      lastCause: m.lastCause,
-      lastTime: m.lastTime,
-      author: m.author,
-      driver1: m.driver1,
-      driver2: m.driver2
-    });
-  };
-  // === РЕНДЕР ===
+  // === РЕНДЕР ГЛАВНОЙ СЕТКИ (С ФИЛЬТРАМИ И ИСТОРИЕЙ ПО КЛИКУ) ===
   function renderMainGrid(){
     for (let key in activeTimers) clearInterval(activeTimers[key]);
     for (let key in activeTimers) delete activeTimers[key];
     if (!loggedUser.name || loggedUser.status !== 'approved') return;
+
+    if (typeof updateMainFilterCounts === 'function') updateMainFilterCounts();
+
+    const searchQ = (mainSearchQuery || '').trim().toLowerCase();
+    const statusF = mainStatusFilter || '';
+    const isFiltering = !!(searchQ || statusF);
+
     let html = '';
     Object.values(CATS).forEach(cat => {
-      let catMachines = Object.values(MACHINES).filter(m=>m.catId===cat.id);
+      let catMachines = Object.values(MACHINES).filter(m => m.catId === cat.id);
+
+      // Применяем фильтрацию по статусу и поиску
+      if (isFiltering) {
+        catMachines = catMachines.filter(m => {
+          const st = m.lastStatus || 'line';
+          if (statusF && st !== statusF) return false;
+          if (searchQ) {
+            const fullTitle = `${m.num || ''} ${m.model || ''}`.toLowerCase();
+            const d1 = (m.driver1 || '').toLowerCase();
+            const d2 = (m.driver2 || '').toLowerCase();
+            if (!fullTitle.includes(searchQ) && !d1.includes(searchQ) && !d2.includes(searchQ)) {
+              return false;
+            }
+          }
+          return true;
+        });
+      }
+
+      // При активном фильтре скрываем пустые колонки, чтобы не занимали место
+      if (isFiltering && !catMachines.length) return;
+
       catMachines.sort((a, b) => {
         const getRank = (st) => (st === 'line' || !st) ? 0 : st === 'off' ? 1 : st === 'parts' ? 2 : st === 'bv' ? 3 : 4;
         const rankA = getRank(a.lastStatus); const rankB = getRank(b.lastStatus);
         return rankA !== rankB ? rankA - rankB : 0;
       });
-      html += `<div class="col"><div class="col-header">${esc(cat.name)}</div><div class="col-body" id="rows-container-${cat.id}">`;
-      if (!catMachines.length) { html += `<p class="empty">Нет машин</p>`; }
-      else {
+
+      html += `<div class="col"><div class="col-header">${esc(cat.name)} <span style="font-size:13px;font-weight:700;opacity:0.7;">(${catMachines.length})</span></div><div class="col-body" id="rows-container-${cat.id}">`;
+      if (!catMachines.length) {
+        html += `<p class="empty">Нет машин</p>`;
+      } else {
         catMachines.forEach((m, idx) => {
           const st = m.lastStatus || 'line'; const cause = m.lastCause || '';
           let rowClass = st === 'line' ? 'st-line' : st === 'off' ? 'st-off' : st === 'parts' ? 'st-parts' : 'st-bv';
@@ -1447,18 +1460,27 @@
             const activeDriver = getShiftInfo().isShift1 ? (m.driver1 || '') : (m.driver2 || '');
             const shortName = activeDriver ? shortDriverName(activeDriver) : 'Нет';
             bottomHtml += `<span class="driver-badge" title="${esc(activeDriver || 'Нет водителя')}"><button class="edit-driver-btn" onclick="openEditDriverModal('${m.id}')">✏️</button><span class="driver-text">${esc(shortName)}</span></span>`;
-          } else bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          } else {
+            bottomHtml += `<span class="no-driver-badge">БЕЗ ВОДИТЕЛЯ</span>`;
+          }
           if ((st === 'off' || st === 'parts') && cause) {
             const isLongOff = st === 'off' && m.lastTime && (Date.now() - m.lastTime) > (2 * 60 * 60 * 1000);
             const timerClass = isLongOff ? 'timer-badge blink-red' : 'timer-badge';
             bottomHtml += `<span class="reason-badge ${st==='parts'?'red':''}">${esc(cause)}</span><span class="${timerClass}" id="timer-${m.id}">⏱ 00:00:00</span>`;
           }
           bottomHtml += `<span class="author-badge">${esc(m.author || '')}</span>`;
+
           const btnText = st === 'line' ? 'На линии' : st === 'off' ? 'Сход' : st === 'parts' ? 'Ож. ремонта' : 'БВ';
           const btnClass = st;
+          const machineFullName = `${m.num} ${m.model || ''}`.trim();
+          const safeMachineArg = machineFullName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
           html += `<div class="row ${rowClass}" id="row-${m.id}">
             <div class="row-top">
-              <div class="row-left"><span class="row-num">${idx + 1}</span><span class="row-name" title="${esc(m.num)} ${esc(m.model || '')}">${esc(m.num)} ${esc(m.model || '')}</span></div>
+              <div class="row-left">
+                <span class="row-num">${idx + 1}</span>
+                <span class="row-name" onclick="showLogModal('', '${safeMachineArg}')" title="Нажмите, чтобы открыть историю: ${esc(machineFullName)}">📋 ${esc(machineFullName)}</span>
+              </div>
               <div style="position:relative;">
                 <button class="btn-status ${btnClass}" onclick="toggleStatusPanel(event, '${m.id}', this)">${btnText} ▾</button>
                 <div class="status-panel" id="status-panel-${m.id}">
@@ -1471,6 +1493,7 @@
             </div>
             <div class="row-info-line">${bottomHtml}</div>
           </div>`;
+
           if ((st === 'off' || st === 'parts') && m.lastTime) {
             setTimeout(() => {
               const timerSpan = $('timer-' + m.id);
@@ -1489,8 +1512,87 @@
       }
       html += `</div><div class="col-footer"><button class="footer-btn" onclick="openAddMachineModal('${cat.id}')">+ Добавить машину</button></div></div>`;
     });
-    $('mainGrid').innerHTML = html; updateClocks(); updateTopCounters();
+
+    if (isFiltering && !html) {
+      html = `<div style="grid-column:1/-1; background:#fff; padding:30px; border-radius:8px; border:2px dashed #cbd5e1; text-align:center; color:#64748b; font-weight:600;">По выбранному фильтру машин не найдено</div>`;
+    }
+
+    $('mainGrid').innerHTML = html;
+    updateClocks();
+    updateTopCounters();
   }
+
+  // === ВОДИТЕЛИ (ЖИВОЙ ПОИСК И НЕСКОЛЬКО НОМЕРОВ ТЕЛЕФОНОВ) ===
+  window.renderDriversTab = function() {
+    const searchInput = $('driversSearch');
+    const clearBtn = $('driversSearchClear');
+    const countBadge = $('driversSearchCount');
+    const rawSearch = (searchInput?.value || '').trim();
+    const search = rawSearch.toLowerCase();
+    const searchDigits = rawSearch.replace(/\D/g, '');
+
+    if (clearBtn) clearBtn.style.display = rawSearch ? 'inline-block' : 'none';
+
+    const allDrivers = Object.values(DRIVERS);
+    let drivers = allDrivers;
+
+    if (search) {
+      drivers = allDrivers.filter(d => {
+        const nameMatch = (d.name || '').toLowerCase().includes(search);
+        const posMatch = (d.position || '').toLowerCase().includes(search);
+        const tabMatch = (d.tabNum || '').toLowerCase().includes(search);
+        const phones = getDriverPhonesArray(d);
+        const phoneMatch = phones.some(ph => {
+          if (ph.toLowerCase().includes(search)) return true;
+          if (searchDigits && ph.replace(/\D/g, '').includes(searchDigits)) return true;
+          return false;
+        });
+        return nameMatch || posMatch || tabMatch || phoneMatch;
+      });
+    }
+
+    drivers.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ru'));
+
+    if (countBadge) {
+      countBadge.textContent = search
+        ? `Найдено: ${drivers.length} из ${allDrivers.length}`
+        : `Всего водителей: ${allDrivers.length}`;
+    }
+
+    if (!drivers.length) {
+      $('driversList').innerHTML = '<p class="empty" style="grid-column:1/-1;">Совпадений не найдено</p>';
+      return;
+    }
+
+    $('driversList').innerHTML = drivers.map(d => {
+      const phones = getDriverPhonesArray(d);
+      const phonesHtml = phones.length
+        ? phones.map((ph, i) => `<div class="driver-card-info">Тел${phones.length > 1 ? ' ' + (i + 1) : ''}: <a href="tel:${esc(ph)}" style="color:#2563eb;text-decoration:none;font-weight:600;">${esc(ph)}</a></div>`).join('')
+        : '';
+      return `
+        <div class="driver-card">
+          <div class="driver-card-header">
+            <div class="driver-card-name">${esc(d.name)}</div>
+            <div class="driver-card-info">${esc(d.position || '—')}</div>
+            <div class="driver-card-info">Таб. № ${esc(d.tabNum || '—')}</div>
+            ${phonesHtml}
+          </div>
+          <div class="driver-card-actions">
+            <button class="btn small" style="background:#2563eb;" onclick="openEditDriverRecord('${d.id}')">✏️ Редактировать</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  window.clearDriversSearch = function() {
+    const inp = $('driversSearch');
+    if (inp) {
+      inp.value = '';
+      inp.focus();
+      window.renderDriversTab();
+    }
+  };
 
   // === УПРАВЛЕНИЕ НЕСКОЛЬКИМИ ТЕЛЕФОНАМИ ВОДИТЕЛЯ ===
   window.renderDriverPhoneInputs = function(phonesList) {
@@ -1523,87 +1625,12 @@
     window.renderDriverPhoneInputs(currentValues);
   };
 
-  // Надёжная привязка кнопки добавления телефона
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('#addDriverPhoneBtn');
-    if (btn) {
+    if (e.target && e.target.closest('#addDriverPhoneBtn')) {
       e.preventDefault();
-      e.stopPropagation();
       window.addDriverPhoneField();
     }
   });
-
-  // === ВОДИТЕЛИ (ЖИВОЙ ПОИСК + НЕСКОЛЬКО ТЕЛЕФОНОВ) ===
-  window.renderDriversTab = function() {
-    const searchEl = $('driversSearch');
-    const clearBtn = $('clearDriversSearchBtn');
-    const countEl = $('driversMatchCount');
-    const rawSearch = (searchEl?.value || '').trim();
-    const search = rawSearch.toLowerCase();
-    const digitsSearch = rawSearch.replace(/\D/g, '');
-
-    if (clearBtn) clearBtn.style.display = rawSearch ? 'inline-block' : 'none';
-
-    let drivers = Object.values(DRIVERS).filter(Boolean);
-    const totalCount = drivers.length;
-
-    if (search) {
-      drivers = drivers.filter(d => {
-        const nameMatch = d.name && d.name.toLowerCase().includes(search);
-        const posMatch = d.position && d.position.toLowerCase().includes(search);
-        const tabMatch = d.tabNum && d.tabNum.toLowerCase().includes(search);
-        const phonesArr = getDriverPhonesArray(d);
-        const phoneMatch = phonesArr.some(p => {
-          if (p.toLowerCase().includes(search)) return true;
-          if (digitsSearch.length >= 2) {
-            const pDigits = p.replace(/\D/g, '');
-            if (pDigits.includes(digitsSearch)) return true;
-          }
-          return false;
-        });
-        return nameMatch || posMatch || tabMatch || phoneMatch;
-      });
-    }
-
-    drivers.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ru'));
-
-    if (countEl) {
-      countEl.textContent = search ? `Найдено: ${drivers.length} из ${totalCount}` : `Всего водителей: ${totalCount}`;
-    }
-
-    if (!drivers.length) {
-      $('driversList').innerHTML = '<p class="empty">Совпадений не найдено</p>';
-      return;
-    }
-
-    $('driversList').innerHTML = drivers.map(d => {
-      const phonesArr = getDriverPhonesArray(d);
-      const phonesHtml = phonesArr.length
-        ? `<div class="driver-card-info" style="margin-top:4px;">Тел: ${phonesArr.map(p => `<a href="tel:${esc(p)}" style="color:#2563eb; text-decoration:none; font-weight:600; margin-right:8px;">${esc(p)}</a>`).join('')}</div>`
-        : '';
-      return `
-      <div class="driver-card">
-        <div class="driver-card-header">
-          <div class="driver-card-name">${esc(d.name)}</div>
-          <div class="driver-card-info">${esc(d.position || '—')}</div>
-          <div class="driver-card-info">Таб. № ${esc(d.tabNum || '—')}</div>
-          ${phonesHtml}
-        </div>
-        <div class="driver-card-actions">
-          <button class="btn small" style="background:#2563eb;" onclick="openEditDriverRecord('${d.id}')">✏️ Редактировать</button>
-        </div>
-      </div>`;
-    }).join('');
-  };
-
-  window.clearDriversSearch = function() {
-    const searchEl = $('driversSearch');
-    if (searchEl) {
-      searchEl.value = '';
-      searchEl.focus();
-    }
-    window.renderDriversTab();
-  };
 
   window.openAddDriverRecord = function() {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
@@ -1660,6 +1687,7 @@
     }
   };
 
+  // === МОДАЛЬНОЕ ОКНО СПИСКА ПО СТАТУСУ И ЖУРНАЛ ===
   window.openStatusListModal = function(statusType) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
     const titles = { off: '🟡 Машины в сходе', parts: '🔴 Машины в ожидании ремонта', bv: '⚪ Машины без водителя' };
@@ -1675,30 +1703,39 @@
       let timeText = '—'; if (m.lastTime) timeText = formatMs(Date.now() - m.lastTime);
       const causeText = m.lastCause ? m.lastCause : 'Без причины';
       const reasonHtml = (statusType === 'off' || statusType === 'parts') ? `<span class="reason-badge ${statusType === 'parts' ? 'red' : ''}">${esc(causeText)}</span>` : '';
-      const machineLogKey = `${m.num} ${m.model || ''}`;
-      return `<div class="status-list-item" onclick="showLogModal('', '${esc(machineLogKey).replace(/'/g, "\\'")}')">
-        <div class="sli-main"><span class="sli-name">${esc(m.num)} ${esc(m.model || '')}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
+      const machineLogKey = `${m.num} ${m.model || ''}`.trim();
+      const safeKey = machineLogKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `<div class="status-list-item" onclick="showLogModal('', '${safeKey}')">
+        <div class="sli-main"><span class="sli-name">${esc(machineLogKey)}</span><span class="sli-sub">Водитель: ${esc(driverText)} · ${esc(m.author || '')}</span></div>
         <div class="sli-right">${reasonHtml}<span class="timer-badge">⏱ ${timeText}</span></div>
       </div>`;
     }).join('');
     $('statusListContent').innerHTML = html; $('statusListModal').classList.remove('hidden');
   };
 
+  let logModalMachineFilter = null;
   window.showLogModal = function(type, machineName = null) {
     if (loggedUser.status !== 'approved') return showToast('Аккаунт не подтверждён', true);
-    currentLogType = type; logModalMachineFilter = machineName;
-    const logsArr = Object.values(eventLog); const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
-    const curMonth = getCurrentMonthStr(); if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
+    currentLogType = type;
+    logModalMachineFilter = machineName;
+    const logsArr = Object.values(eventLog);
+    const uniqueMonths = [...new Set(logsArr.map(e => e.month))].sort().reverse();
+    const curMonth = getCurrentMonthStr();
+    if (!uniqueMonths.includes(curMonth)) uniqueMonths.unshift(curMonth);
     $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
-    $('logModal').classList.remove('hidden'); window.renderLogTable();
+    $('logModal').classList.remove('hidden');
+    window.renderLogTable();
   };
 
-  let logModalMachineFilter = null;
   window.renderLogTable = function() {
-    const month = $('logMonthSelect').value; const type = currentLogType;
+    const month = $('logMonthSelect').value;
+    const type = currentLogType;
     let filtered = Object.values(eventLog).filter(e => e.month === month);
-    if (logModalMachineFilter) { filtered = filtered.filter(e => e.machine === logModalMachineFilter); $('logModalTitle').textContent = `История: ${logModalMachineFilter} за ${getMonthName(month)}`; }
-    else {
+    if (logModalMachineFilter) {
+      const target = logModalMachineFilter.trim();
+      filtered = filtered.filter(e => String(e.machine || '').trim() === target);
+      $('logModalTitle').textContent = `История: ${target} за ${getMonthName(month)}`;
+    } else {
       let title = '';
       if (type === 'off') { filtered = filtered.filter(e => e.status === 'off'); title = 'Сходы'; }
       else if (type === 'parts') { filtered = filtered.filter(e => e.status === 'parts'); title = 'Ремонт'; }
@@ -1716,6 +1753,7 @@
     });
     $('logModalContent').innerHTML = html + '</tbody></table>';
   };
+
   // === ОТЧЁТЫ ===
   window.setReportStatus = function(status) {
     reportStatusFilter = status;
@@ -1784,7 +1822,10 @@
       }
       filtered.sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.time||'').localeCompare(a.time||''));
       if (grouping === 'events') {
-        $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => `<tr onclick="showLogModal('', '${esc(r.machine)}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`).join('')}</tbody></table>`;
+        $('reportContent').innerHTML = `<table class="report-table"><thead><tr><th>Дата</th><th>Машина</th><th>Водитель</th><th>Статус</th><th>Время</th><th>Длительность</th><th>Причина</th></tr></thead><tbody>${filtered.map(r => {
+          const safeM = String(r.machine || '').trim().replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          return `<tr onclick="showLogModal('', '${safeM}')"><td>${r.date}</td><td><strong>${esc(r.machine)}</strong></td><td>${esc(r.driver || '—')}</td><td><span class="status-badge ${r.status}">${r.status === 'line' ? '🟢 На линии' : r.status === 'off' ? '🟡 Сход' : r.status === 'parts' ? '🔴 Ремонт' : '⚪ БВ'}</span></td><td>${r.time}</td><td style="font-family:monospace;font-weight:600;">${formatMs(r.duration || 0)}</td><td>${esc(r.cause)}</td></tr>`;
+        }).join('')}</tbody></table>`;
         currentReportData = filtered.map(r => ({ Дата: r.date, Машина: r.machine, Водитель: r.driver, Статус: r.status, Время: r.time, Длительность: formatMs(r.duration), Причина: r.cause }));
       } else if (grouping === 'machines') {
         const groups = {};
@@ -1832,7 +1873,7 @@
     let machineStats = {};
     Object.values(MACHINES).forEach(m => { machineStats[m.id] = { num: m.num, model: m.model || '', lineMs: 0, offMs: 0, partsMs: 0, bvMs: 0 }; });
     Object.values(eventLog).forEach(log => {
-      const entry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === log.machine);
+      const entry = Object.entries(machineStats).find(([id, s]) => `${s.num} ${s.model}`.trim() === String(log.machine || '').trim());
       if (!entry) return;
       if (log.date >= dFromStr && log.date <= dToStr) {
         const dur = log.duration || 0;
@@ -1976,7 +2017,6 @@
     window.searchTimeout = setTimeout(() => buildReport(), 500);
   });
 
-  // Живой поиск по водителям при вводе каждой буквы
   const drvSearchInput = $('driversSearch');
   if (drvSearchInput) {
     drvSearchInput.addEventListener('input', () => {
