@@ -946,7 +946,6 @@
     }
   }
   updateNotifyButtonState();
-
   // === СИНХРОНИЗАЦИЯ С FIREBASE ===
   onValue(ref(db, 'cats'), snap => {
     CATS = snap.val() || {};
@@ -1753,7 +1752,6 @@
     });
     $('logModalContent').innerHTML = html + '</tbody></table>';
   };
-
   // === ОТЧЁТЫ ===
   window.setReportStatus = function(status) {
     reportStatusFilter = status;
