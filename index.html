@@ -529,6 +529,38 @@
 </div>
 <div class="modal-overlay hidden" id="statusListModal"><div class="modal wide"><h3 id="statusListTitle">Машины</h3><p id="statusListSub">Список машин в выбранном статусе.</p><div id="statusListContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button></div></div></div>
 <div class="toast" id="toast"></div>
+ <script type="module">
+  import { initializeApp } from "https://gstatic.com";
+  import { getDatabase, ref, set, push, update, remove, onValue } from "https://gstatic.com";
+
+  const firebaseConfig = {
+    databaseURL: "https://firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const ADMIN_CODE = 'admin2483';
+  const CHIEF_ROLE_NAME = 'Главный инженер';
+
+  const DEFAULT_CATS = {
+    'cat1': { id: 'cat1', name: 'АЦН' },
+    'cat2': { id: 'cat2', name: 'ЦА-320' },
+    'cat3': { id: 'cat3', name: 'ТЯГАЧИ' },
+    'cat4': { id: 'cat4', name: 'АВТОКРАНЫ' },
+    'cat5': { id: 'cat5', name: 'ППДУ' },
+    'cat6': { id: 'cat6', name: 'ПРОЧАЯ СПТ' }
+  };
+
+  const DEFAULT_CAUSES = {
+    'c1': { id: 'c1', name: 'Тех. неисправность' },
+    'c2': { id: 'c2', name: 'ТО / Ремонт' },
+    'c3': { id: 'c3', name: 'Ожидание запчастей' },
+    'c4': { id: 'c4', name: 'Отсутствие водителя' },
+    'c5': { id: 'c5', name: 'Погодные условия (РПА)' },
+    'c6': { id: 'c6', name: 'Прочие причины' }
+  };
+
   const DEFAULT_ROLES = {
     'r1': { id: 'r1', name: 'Зам. нач. автоколонны', cat: 'SPT' },
     'r2': { id: 'r2', name: 'Механик СПТ', cat: 'SPT' },
