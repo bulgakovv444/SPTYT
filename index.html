@@ -953,28 +953,7 @@
     }
   }
   updateNotifyButtonState();
-     function checkForNewOffStatus(machinesData) {
-    if (!isDataReady) return;
-    if (Object.keys(lastMachineStatuses).length === 0) {
-      for (const [id, m] of Object.entries(machinesData)) lastMachineStatuses[id] = m.lastStatus;
-      return;
-    }
-    let newOffMachines = [];
-    for (const [id, m] of Object.entries(machinesData)) {
-      const prevStatus = lastMachineStatuses[id];
-      const currStatus = m.lastStatus;
-      if (currStatus === 'off' && prevStatus !== 'off') newOffMachines.push(m);
-      lastMachineStatuses[id] = currStatus;
-    }
-    if (newOffMachines.length > 0) {
-      playNotificationSound();
-      newOffMachines.forEach((m, index) => {
-        setTimeout(() => showPushNotification('⚠️ Новый сход!', `Машина ${m.num} ${m.model || ''} (${m.lastCause || 'Сход'})`), index * 500);
-      });
-    }
-  }
-
-  function checkForLongDowntime(machinesData) {
+       function checkForLongDowntime(machinesData) {
     if (!isDataReady) return;
     const TWO_HOURS = 2 * 60 * 60 * 1000;
     for (const [id, m] of Object.entries(machinesData)) {
