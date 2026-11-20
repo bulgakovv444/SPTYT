@@ -530,11 +530,11 @@
 <div class="modal-overlay hidden" id="statusListModal"><div class="modal wide"><h3 id="statusListTitle">Машины</h3><p id="statusListSub">Список машин в выбранном статусе.</p><div id="statusListContent"></div><div class="modal-actions"><button class="btn-modal gray" onclick="closeModal('statusListModal')">Закрыть</button></div></div></div>
 <div class="toast" id="toast"></div>
  <script type="module">
-  import { initializeApp } from "https://gstatic.com";
-  import { getDatabase, ref, set, push, update, remove, onValue } from "https://gstatic.com";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, set, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
   const firebaseConfig = {
-    databaseURL: "https://firebaseio.com"
+   databaseURL: "https://" + "://firebaseio.com"
   };
 
 
