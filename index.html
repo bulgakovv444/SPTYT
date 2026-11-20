@@ -2034,7 +2034,6 @@
     $('logMonthSelect').innerHTML = uniqueMonths.map(m => `<option value="${m}">${getMonthName(m)}</option>`).join('');
     $('logModal').classList.remove('hidden'); window.renderLogTable();
   };
-  let logModalMachineFilter = null;
   window.renderLogTable = function() {
     const month = $('logMonthSelect').value; const type = currentLogType;
     let filtered = Object.values(eventLog).filter(e => e.month === month);
