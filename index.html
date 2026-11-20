@@ -953,24 +953,7 @@
     }
   }
   updateNotifyButtonState();
-       function checkForLongDowntime(machinesData) {
-    if (!isDataReady) return;
-    const TWO_HOURS = 2 * 60 * 60 * 1000;
-    for (const [id, m] of Object.entries(machinesData)) {
-      if (m.lastStatus === 'off' && m.lastTime) {
-        const elapsed = Date.now() - m.lastTime;
-        if (elapsed > TWO_HOURS && !alertedMachineIds[id]) {
-          playNotificationSound();
-          showPushNotification('🚨 ДОЛГИЙ СХОД!', `Машина ${m.num} ${m.model || ''} в сходе > 2 часов!`);
-          alertedMachineIds[id] = true;
-        }
-      } else if (alertedMachineIds[id]) {
-        delete alertedMachineIds[id];
-      }
-    }
-  }
-  updateNotifyButtonState();
-
+     
   // === ФИЛЬТРЫ ГЛАВНОГО ЭКРАНА ===
   function updateMainFilterCounters() {
     const list = Object.values(MACHINES);
