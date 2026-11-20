@@ -779,7 +779,7 @@
   function getCurrentMonthStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
   function formatMs(ms) { const t = Math.floor(ms / 60000); return `${Math.floor(t / 60)} ч ${t % 60} м`; }
   function formatTimer(ms) { const s = Math.floor(ms / 1000); return `⏱ ${String(Math.floor(s / 3600)).padStart(2,'0')}:${String(Math.floor((s % 3600) / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`; }
-  function getShiftInfo() { const h = new Date().getHours(); const isShift1 = (h >= 8 && h < 20); return { isShift1, shiftName: isShift1 ? '1 (08–20)' : '2 (20–08)', timeStr: new Date().toLocaleTimeString('ru-RU') }; }
+  function getShiftInfo() { const d = new Date(); const mins = d.getHours() * 60 + d.getMinutes(); const isShift1 = (mins >= 450 && mins < 1170); return { isShift1, shiftName: isShift1 ? '1 (07:30-19:30)' : '2 (19:30-07:30)' }; }
   function getMonthName(mStr) { const [y, m] = mStr.split('-'); const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']; return `${months[parseInt(m)-1]} ${y}`; }
   function showToast(msg, isErr){ const t = $('toast'); t.textContent = msg; t.classList.toggle('error', !!isErr); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200); }
   function normPhone(p) { return String(p || '').replace(/\D/g, '').slice(-10); }
